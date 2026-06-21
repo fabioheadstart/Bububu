@@ -47,6 +47,8 @@ import { FloatingIsland } from '@/components/ui/FloatingIsland'
 import { BububuLore } from '@/components/ui/BububuLore'
 import { SleepScreen } from '@/features/feed/SleepScreen'
 import { SuperPeidoOverlay } from '@/components/ui/SuperPeidoOverlay'
+import { EvolutionOverlay } from '@/components/ui/EvolutionOverlay'
+import type { EvolutionStage } from '@/components/bububu/BububuCharacter'
 import { SatiationScreen } from '@/features/feed/SatiationScreen'
 import { ShareCard } from '@/features/share/ShareCard'
 import { MemoryGame } from '@/features/memory/MemoryGame'
@@ -220,6 +222,8 @@ export function FeedScreen() {
   const feedsSinceCombo  = useRef(0)
 
   const [superPeido,    setSuperPeido]    = useState(false)
+  const [evolutionStage, setEvolutionStage] = useState<EvolutionStage | null>(null)
+  const prevStageRef = useRef<EvolutionStage>(getStage(computedLevel))
   const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
   const [hintIds,       setHintIds]       = useState<Set<string>>(new Set())
   const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
@@ -306,6 +310,15 @@ export function FeedScreen() {
 
   // Preload do peido jackpot via ElevenLabs (faz uma só vez no mount)
   useEffect(() => { void preloadJackpotFart() }, [])
+
+  // Detecta mudança de estágio de evolução durante a sessão
+  useEffect(() => {
+    const newStage = getStage(computedLevel)
+    if (newStage !== prevStageRef.current) {
+      setEvolutionStage(newStage)
+      prevStageRef.current = newStage
+    }
+  }, [computedLevel])
 
   // Fome na abertura — se não alimentou nada hoje, Bububu pede logo
   useEffect(() => {
@@ -1413,6 +1426,9 @@ export function FeedScreen() {
 
       <SuperPeidoOverlay active={superPeido} onDone={() => setSuperPeido(false)} />
       <WorldUnlockOverlay worldId={newlyUnlocked} onDone={dismissNewlyUnlocked} />
+      {evolutionStage && (
+        <EvolutionOverlay stage={evolutionStage} onDone={() => setEvolutionStage(null)} />
+      )}
 
       <ComboOverlay combo={activeCombo} onDone={() => setActiveCombo(null)} />
 

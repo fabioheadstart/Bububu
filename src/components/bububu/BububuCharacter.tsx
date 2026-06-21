@@ -243,6 +243,14 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, 
     return stageCfg.baseColor           // cor do estágio de evolução
   })()
 
+  const stageGlow = stage === 'adult'
+    ? 'drop-shadow(0 0 22px rgba(245,158,11,0.65)) drop-shadow(0 0 44px rgba(245,158,11,0.30))'
+    : stage === 'teen'
+    ? 'drop-shadow(0 0 16px rgba(251,191,36,0.55)) drop-shadow(0 0 32px rgba(251,191,36,0.22))'
+    : stage === 'growing'
+    ? 'drop-shadow(0 0 10px rgba(167,139,250,0.35))'
+    : ''
+
   const shadowColor = tapReaction
     ? 'rgba(124,58,237,0.50)'
     : state === 'sleeping'
@@ -414,7 +422,7 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, 
 
       <div
         style={{
-          filter: `drop-shadow(0 8px 20px ${shadowColor})`,
+          filter: `drop-shadow(0 8px 20px ${shadowColor}) ${stageGlow}`,
           animation,
           display: 'inline-block',
           transition: 'filter 0.3s ease',
