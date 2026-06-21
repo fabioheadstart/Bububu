@@ -94,16 +94,16 @@ export function BububuLore() {
               gap: 14,
             }}>
               <p style={{ margin: 0 }}>
-                Bububu nasceu em São Sebastião do Rio Verde, Minas Gerais — uma cidadezinha onde o queijo é artesanal, a linguiça é de sábado, o biscoito de polvilho some em segundos e todo mundo ainda diz bom-dia para quem não conhece.
+                Bububu nasceu em São Sebastião do Rio Verde, Minas Gerais — uma cidadezinha onde o queijo é artesanal, a linguiça é de sábado, o biscoito de polvilho some em segundos e todo mundo se conhece.
               </p>
               <p style={{ margin: 0 }}>
-                Certa noite, na casa da avó, um televisor velho captou um sinal esquisito. Na tela apareceu um episódio de <em>Friends</em> — em inglês, sem legenda. Era a Rachel Green. Bububu ficou imóvel. Não entendeu uma palavra. Mas o som daquela língua fez algo estranho acontecer no peito dele: pareceu que o mundo era maior do que São Sebastião do Rio Verde.
+                Certa noite, na casa da avó, um televisor velho sintonizou num canal que não devia existir ali. Na tela apareceu um episódio de <em>Friends</em> — em inglês, sem legenda. Era a Rachel Green. Bububu ficou imóvel. Não entendeu uma palavra. Mas o som daquela língua fez algo estranho acontecer no peito dele: pareceu que o mundo era maior do que São Sebastião do Rio Verde.
               </p>
               <p style={{ margin: 0 }}>
                 Foi amor. Pelos dois: pela Jennifer Aniston e pelo inglês.
               </p>
               <p style={{ margin: 0 }}>
-                Desde então, Bububu tem um único plano: ir para os Estados Unidos, chegar em Hollywood, encontrar Jennifer Aniston e dizer, em inglês perfeito, algo bonito e inteligente.
+                Desde então, Bububu tem um único plano: ir para os Estados Unidos, chegar em Hollywood, encontrar Jennifer Aniston e dizer, em inglês perfeito, uma frase que ela nunca vai esquecer.
               </p>
               <p style={{ margin: 0 }}>
                 Ele ainda não sabe exatamente o quê. Mas sabe que precisa das palavras primeiro.
