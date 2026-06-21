@@ -1,4 +1,5 @@
 // Fundo do mundo do Bububu — modo Pro (noite) ou Kids (dia)
+import { useState, useEffect } from 'react'
 
 const STARS = [
   { x:  5, y:  7, r: 1.5, dur: 2.1, delay: 0.0 },
@@ -162,6 +163,149 @@ function ProBackground() {
   )
 }
 
+// ── Easter egg: Maria fumaça de São Sebastião do Rio Verde ────────────────────
+function TinyTrain() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>
+
+    function schedule(delay: number) {
+      t = setTimeout(() => {
+        setVisible(true)
+        setTimeout(() => setVisible(false), 14000)
+        schedule(Math.round((9 + Math.random() * 6) * 60_000))
+      }, delay)
+    }
+
+    schedule(30_000) // primeira aparição em 30s (para teste); depois ~10 min
+    return () => clearTimeout(t)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <>
+      <style>{`
+        @keyframes train-cross {
+          from { transform: translateX(100vw); }
+          to   { transform: translateX(-220px); }
+        }
+        @keyframes smoke-puff {
+          0%   { opacity: 0.55; transform: translateY(0px) scale(1); }
+          100% { opacity: 0;    transform: translateY(-32px) scale(2.4); }
+        }
+      `}</style>
+      <div style={{
+        position: 'absolute',
+        bottom: '31%',
+        left: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        opacity: 0.52,
+        animation: 'train-cross 14s linear forwards',
+      }}>
+        {/* Trilho */}
+        <svg width="220" height="4" viewBox="0 0 220 4" style={{ display: 'block', marginBottom: -2 }}>
+          <line x1="0" y1="2" x2="220" y2="2" stroke="rgba(196,181,253,0.22)" strokeWidth="2" strokeDasharray="8 6" />
+        </svg>
+
+        {/* Trem SVG */}
+        <svg width="210" height="68" viewBox="0 0 210 68">
+          {/* Fumaça saindo da chaminé */}
+          {[0, 1, 2].map(i => (
+            <circle
+              key={i}
+              cx={22} cy={6 - i * 3}
+              r={3 + i * 2.5}
+              fill="rgba(196,181,253,0.45)"
+              style={{ animation: `smoke-puff 2.2s ${i * 0.75}s ease-out infinite` }}
+            />
+          ))}
+
+          {/* ─── Locomotiva ─── */}
+          {/* Chaminé */}
+          <rect x="14" y="12" width="11" height="20" rx="2" fill="#5b21b6" />
+          <rect x="10" y="10" width="19" height="5" rx="2" fill="#4c1d95" />
+          {/* Caldeira (boiler) */}
+          <ellipse cx="44" cy="35" rx="26" ry="14" fill="#7c3aed" />
+          {/* Cúpula (steam dome) */}
+          <ellipse cx="52" cy="23" rx="8" ry="6" fill="#6d28d9" />
+          {/* Cabine */}
+          <rect x="58" y="17" width="22" height="34" rx="3" fill="#6d28d9" />
+          {/* Janela da cabine */}
+          <rect x="62" y="21" width="14" height="10" rx="2" fill="#ddd6fe" opacity="0.55" />
+          {/* Piloto (nariz) */}
+          <polygon points="6,46 18,40 18,52" fill="#4c1d95" />
+          {/* Farol */}
+          <circle cx="5"  cy="41" r="4"  fill="#fde68a" opacity="0.9" />
+          <circle cx="5"  cy="41" r="7"  fill="rgba(253,230,138,0.18)" />
+          {/* Roda motriz grande */}
+          <circle cx="38" cy="55" r="12" fill="none" stroke="#4c1d95" strokeWidth="2.5" />
+          <circle cx="38" cy="55" r="7"  fill="#5b21b6" />
+          <circle cx="38" cy="55" r="2.5" fill="#c4b5fd" />
+          {/* Raios da roda motriz */}
+          {[0, 60, 120, 180, 240, 300].map((deg, i) => (
+            <line
+              key={i}
+              x1={38} y1={55}
+              x2={38 + 9 * Math.cos((deg * Math.PI) / 180)}
+              y2={55 + 9 * Math.sin((deg * Math.PI) / 180)}
+              stroke="#4c1d95" strokeWidth="1.2"
+            />
+          ))}
+          {/* Roda dianteira */}
+          <circle cx="14" cy="57" r="8" fill="none" stroke="#4c1d95" strokeWidth="2" />
+          <circle cx="14" cy="57" r="4" fill="#5b21b6" />
+          {/* Roda traseira */}
+          <circle cx="62" cy="57" r="8" fill="none" stroke="#4c1d95" strokeWidth="2" />
+          <circle cx="62" cy="57" r="4" fill="#5b21b6" />
+          {/* Biela */}
+          <line x1="14" y1="55" x2="62" y2="55" stroke="#4c1d95" strokeWidth="1.5" opacity="0.6" />
+          {/* Tubo de vapor */}
+          <path d="M30,22 Q30,16 36,16" stroke="#8b5cf6" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+
+          {/* ─── Engate ─── */}
+          <line x1="80" y1="45" x2="88" y2="45" stroke="#4c1d95" strokeWidth="2" />
+
+          {/* ─── Vagão de passageiros ─── */}
+          <rect x="88" y="24" width="72" height="30" rx="4" fill="#6d28d9" />
+          {/* Telhado */}
+          <rect x="90" y="22" width="68" height="4" rx="2" fill="#5b21b6" />
+          {/* Janelas */}
+          {[94, 111, 128, 145].map(x => (
+            <rect key={x} x={x} y={30} width="11" height="10" rx="2" fill="#ddd6fe" opacity="0.42" />
+          ))}
+          {/* Rodas do vagão */}
+          <circle cx="104" cy="57" r="8" fill="none" stroke="#4c1d95" strokeWidth="2" />
+          <circle cx="104" cy="57" r="4" fill="#5b21b6" />
+          <circle cx="148" cy="57" r="8" fill="none" stroke="#4c1d95" strokeWidth="2" />
+          <circle cx="148" cy="57" r="4" fill="#5b21b6" />
+
+          {/* ─── Segundo vagão ─── */}
+          <line x1="160" y1="45" x2="168" y2="45" stroke="#4c1d95" strokeWidth="2" />
+          <rect x="168" y="26" width="38" height="28" rx="4" fill="#5b21b6" />
+          <rect x="170" y="24" width="34" height="4" rx="2" fill="#4c1d95" />
+          <rect x="173" y="32" width="11" height="9" rx="2" fill="#ddd6fe" opacity="0.38" />
+          <rect x="188" y="32" width="11" height="9" rx="2" fill="#ddd6fe" opacity="0.38" />
+          <circle cx="180" cy="57" r="7" fill="none" stroke="#4c1d95" strokeWidth="2" />
+          <circle cx="180" cy="57" r="3.5" fill="#4c1d95" />
+          <circle cx="198" cy="57" r="7" fill="none" stroke="#4c1d95" strokeWidth="2" />
+          <circle cx="198" cy="57" r="3.5" fill="#4c1d95" />
+        </svg>
+      </div>
+    </>
+  )
+}
+
 export function SceneBackground({ isKids = false }: { isKids?: boolean }) {
-  return isKids ? <KidsBackground /> : <ProBackground />
+  return (
+    <>
+      {isKids ? <KidsBackground /> : <ProBackground />}
+      {/* Overlay separado para o trem, com próprio overflow:hidden */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+        <TinyTrain />
+      </div>
+    </>
+  )
 }
