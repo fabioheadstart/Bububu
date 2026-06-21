@@ -370,4 +370,5 @@ export const A1_WORDS: VocabEntry[] = [
     exampleSentence: 'She rides her bike to school.',
     exampleTranslation: 'Ela vai para a escola de bicicleta.',
   },
-]
+
+ 

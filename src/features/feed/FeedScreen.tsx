@@ -57,7 +57,7 @@ import type { BubState } from '@/components/bububu/BububuCharacter'
 import type { FeedResult, VocabEntry } from '@/types'
 
 // ─── Fome do dia — categoria que o Bububu quer comer hoje ────────────────────
-const CRAVING_CATS = ['food', 'actions', 'adjectives', 'time', 'transport', 'animals', 'home', 'phrases']
+const CRAVING_CATS = ['food', 'actions', 'adjectives', 'time', 'transport', 'animals', 'colors', 'home', 'phrases']
 
 function getDailyCraving(date: string): string {
   const hash = date.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
@@ -1406,76 +1406,4 @@ export function FeedScreen() {
           mode={progress.mode}
           level={computedLevel}
           wordsLearned={progress.wordsLearned.length}
-          streak={progress.streak}
-          onClose={() => setShowShare(false)}
-        />
-      )}
-
-      <SuperPeidoOverlay active={superPeido} onDone={() => setSuperPeido(false)} />
-      <WorldUnlockOverlay worldId={newlyUnlocked} onDone={dismissNewlyUnlocked} />
-
-      <ComboOverlay combo={activeCombo} onDone={() => setActiveCombo(null)} />
-
-      {/* ── Confetti jackpot ───────────────────────────────────────── */}
-      <ConfettiRain active={confettiActive} />
-
-      {/* ── Particle bursts (via portal, fora do DOM) ──────────────── */}
-      {bursts.map(b => (
-        <ParticleBurst
-          key={b.id}
-          burst={b}
-          onDone={id => setBursts(prev => prev.filter(x => x.id !== id))}
-        />
-      ))}
-
-      {/* ── Screen flash jackpot / bonus ───────────────────────────── */}
-      {screenFlash && createPortal(
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 9998,
-          background: screenFlash,
-          pointerEvents: 'none',
-          animation: 'screen-flash 0.48s ease-out forwards',
-        }} />,
-        document.body
-      )}
-
-      {/* ── Easter egg: bullet time ─────────────────────────────────── */}
-      {bulletTimePhase !== 'off' && createPortal(
-        <>
-          <style>{`
-            @keyframes bt-zoom {
-              from { opacity:0; transform:scale(0.05) rotate(-8deg); filter:blur(6px); }
-              to   { opacity:1; transform:scale(1)    rotate(0deg);  filter:blur(0);  }
-            }
-            @keyframes bt-impact {
-              0%   { transform:scale(1);   opacity:1; filter:brightness(1); }
-              35%  { transform:scale(1.5); opacity:1; filter:brightness(2.5); }
-              100% { transform:scale(2.5); opacity:0; filter:brightness(1); }
-            }
-          `}</style>
-          <div style={{
-            position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 9990,
-            pointerEvents: 'none',
-          }}>
-            <div style={{
-              fontSize: 52, fontWeight: 900,
-              color: '#ffffff',
-              letterSpacing: 6,
-              textShadow: '0 0 40px rgba(251,191,36,0.9), 0 0 80px rgba(251,191,36,0.4)',
-              willChange: 'transform, opacity, filter',
-              animation: bulletTimePhase === 'fly'
-                ? 'bt-zoom 2.5s cubic-bezier(0.12,0,0.04,1) forwards'
-                : 'bt-impact 0.55s ease-out forwards',
-            }}>
-              {bulletTimeWord}
-            </div>
-          </div>
-        </>,
-        document.body
-      )}
-    </div>
-  )
-}
+          streak={progress.

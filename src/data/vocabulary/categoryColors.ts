@@ -16,13 +16,5 @@ export const CATEGORY_COLORS: Record<string, CategoryColor> = {
   time:       { bg: '#0e7490', glow: 'rgba(34,211,238,0.50)',  ring: '#22d3ee', overlayFrom: 'rgba(8,145,178,0.50)', label: 'tempo'      },
   transport:  { bg: '#334155', glow: 'rgba(148,163,184,0.50)', ring: '#94a3b8', overlayFrom: 'rgba(71,85,105,0.50)', label: 'transporte' },
   phrases:    { bg: '#0f766e', glow: 'rgba(45,212,191,0.50)',  ring: '#2dd4bf', overlayFrom: 'rgba(20,184,166,0.50)', label: 'expressões'  },
-}
-
-const FALLBACK: CategoryColor = {
-  bg: '#7c3aed', glow: 'rgba(167,139,250,0.50)', ring: '#a78bfa',
-  overlayFrom: 'rgba(124,58,237,0.26)', label: '',
-}
-
-export function getCategoryColor(category: string): CategoryColor {
-  return CATEGORY_COLORS[category] ?? FALLBACK
-}
+  animals:    { bg: '#15803d', glow: 'rgba(74,222,128,0.50)',  ring: '#4ade80', overlayFrom: 'rgba(22,163,74,0.50)',  label: 'animais'    },
+  colors:     { bg: '#9333ea', glow: 'rgba(216,180,254,0.50)', ring: '#d8b4fe', overlayFrom: 'rgba(147,51,234,0.50)', label: 'cores' 
