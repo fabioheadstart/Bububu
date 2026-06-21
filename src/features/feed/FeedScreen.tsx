@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { PoopReveal } from '@/components/ui/PoopReveal'
 import { WordChips } from '@/components/ui/WordChips'
@@ -33,7 +33,7 @@ import { SleepScreen } from '@/features/feed/SleepScreen'
 import { SatiationScreen } from '@/features/feed/SatiationScreen'
 import { ShareCard } from '@/features/share/ShareCard'
 import { MemoryGame } from '@/features/memory/MemoryGame'
-import { getWordsByDifficulty } from '@/data/vocabulary'
+import { getUnlockedPool, getNewlyUnlockedCategories, getTutorialChips } from '@/data/vocabulary/unlockSchedule'
 import type { BubState } from '@/components/bububu/BububuCharacter'
 import type { FeedResult, VocabEntry, DifficultyLevel } from '@/types'
 
@@ -44,11 +44,10 @@ interface FlyingData { word: string; startX: number; startY: number; endX: numbe
 const MOUTH_OFFSET_X = (60 / 120) * 140   // = 70px do left do SVG
 const MOUTH_OFFSET_Y = (80 / 140) * 160   // ≈ 91px do top do SVG
 
-function getRandomChips(count: number, difficulty: DifficultyLevel, excludeIds: string[] = []): VocabEntry[] {
-  const allForLevel = getWordsByDifficulty(difficulty)
-  const pool        = allForLevel.filter(w => !excludeIds.includes(w.id))
-  const source      = pool.length >= count ? pool : allForLevel
-  return [...source].sort(() => Math.random() - 0.5).slice(0, count)
+function getRandomChips(count: number, pool: VocabEntry[], excludeIds: string[] = []): VocabEntry[] {
+  const source = pool.filter(w => !excludeIds.includes(w.id))
+  const from   = source.length >= count ? source : pool
+  return [...from].sort(() => Math.random() - 0.5).slice(0, count)
 }
 
 function delay(ms: number) { return new Promise<void>(r => setTimeout(r, ms)) }
@@ -75,7 +74,20 @@ export function FeedScreen() {
   const [showSettings, setShowSettings] = useState(false)
   const [showShare, setShowShare]       = useState(false)
 
-  const [chips, setChips]         = useState<VocabEntry[]>(() => getRandomChips(3, progress.difficulty))
+  // Pool de vocabulário desbloqueado para o nível atual
+  const pool    = useMemo(() => getUnlockedPool(computedLevel, progress.difficulty), [computedLevel, progress.difficulty])
+  const poolRef = useRef<VocabEntry[]>(pool)
+  useEffect(() => { poolRef.current = pool }, [pool])
+
+  const [chips, setChips] = useState<VocabEntry[]>(() => {
+    const initPool = getUnlockedPool(computedLevel, progress.difficulty)
+    // Tutorial: primeira sessão → banana, juice, milk para garantir Trio
+    if (progress.wordsLearned.length === 0) {
+      const tutorial = getTutorialChips(initPool)
+      if (tutorial) return tutorial
+    }
+    return getRandomChips(3, initPool)
+  })
   const [flying, setFlying]       = useState<FlyingData | null>(null)
   const [flyingId, setFlyingId]   = useState<string | null>(null)
   const [result, setResult]       = useState<FeedResult | null>(null)
@@ -83,7 +95,7 @@ export function FeedScreen() {
   const [isReview, setIsReview]   = useState(false)
   const [xpPops, setXpPops]       = useState<XpPop[]>([])
   const [munchText, setMunchText] = useState(false)
-  const [levelUpShow, setLevelUpShow] = useState<number | null>(null)
+  const [levelUpData, setLevelUpData] = useState<{ level: number; newCats: string[] } | null>(null)
   const [poopHint, setPoopHint]         = useState(false)
   const [isBurp, setIsBurp]             = useState(false)
   const [showSatiation,  setShowSatiation]  = useState(false)
@@ -135,8 +147,9 @@ export function FeedScreen() {
 
   useEffect(() => {
     if (computedLevel > prevLevel.current) {
+      const newCats = getNewlyUnlockedCategories(prevLevel.current, computedLevel)
       prevLevel.current = computedLevel
-      setLevelUpShow(computedLevel)
+      setLevelUpData({ level: computedLevel, newCats })
     }
   }, [computedLevel])
 
@@ -294,7 +307,7 @@ export function FeedScreen() {
     setChips(prev => {
       const remaining = prev.filter(c => c.id !== entry.id)
       const exclude   = [...remaining.map(c => c.id), entry.id]
-      return [...remaining, ...getRandomChips(1, progress.difficulty, exclude)]
+      return [...remaining, ...getRandomChips(1, poolRef.current, exclude)]
     })
     setBubState('idle')
     feeding.current = false
@@ -551,7 +564,7 @@ export function FeedScreen() {
                     key={d}
                     onClick={() => {
                       setDifficulty(d)
-                      setChips(getRandomChips(3, d))
+                      setChips(getRandomChips(3, getUnlockedPool(computedLevel, d)))
                       setShowSettings(false)
                     }}
                     style={{
@@ -806,10 +819,11 @@ export function FeedScreen() {
         </div>
       )}
 
-      {levelUpShow !== null && (
+      {levelUpData !== null && (
         <LevelUpOverlay
-          level={levelUpShow}
-          onDone={() => setLevelUpShow(null)}
+          level={levelUpData.level}
+          newCategories={levelUpData.newCats}
+          onDone={() => setLevelUpData(null)}
         />
       )}
 

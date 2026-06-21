@@ -1,17 +1,21 @@
 import { useEffect } from 'react'
 import { playLevelUp } from '@/lib/audio/sounds'
+import { getCategoryBadges } from '@/data/vocabulary/unlockSchedule'
 
 interface Props {
   level: number
+  newCategories?: string[]
   onDone: () => void
 }
 
-export function LevelUpOverlay({ level, onDone }: Props) {
+export function LevelUpOverlay({ level, newCategories = [], onDone }: Props) {
   useEffect(() => {
     playLevelUp()
-    const t = setTimeout(onDone, 2300)
+    const t = setTimeout(onDone, newCategories.length > 0 ? 3200 : 2300)
     return () => clearTimeout(t)
-  }, [onDone])
+  }, [onDone, newCategories.length])
+
+  const badges = getCategoryBadges(newCategories)
 
   return (
     <div style={{
@@ -53,6 +57,49 @@ export function LevelUpOverlay({ level, onDone }: Props) {
       }}>
         Bububu está mais forte 💪
       </div>
+
+      {/* Novas categorias desbloqueadas */}
+      {badges.length > 0 && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
+          marginTop: 8,
+          animation: 'fadeSlideUp 0.4s 0.65s ease both',
+          opacity: 0,
+        }}>
+          <div style={{
+            fontSize: 12,
+            fontWeight: 800,
+            letterSpacing: 2,
+            color: 'rgba(221,214,254,0.60)',
+            textTransform: 'uppercase',
+          }}>
+            🔓 palavras novas desbloqueadas
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {badges.map(({ cat, color }) => (
+              <div
+                key={cat}
+                style={{
+                  background: `${color.bg}cc`,
+                  border: `1px solid ${color.ring}88`,
+                  borderRadius: 99,
+                  padding: '5px 14px',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: '#fff',
+                  boxShadow: `0 0 12px ${color.glow}`,
+                  animation: 'levelup-star 0.5s cubic-bezier(0.34,1.56,0.64,1) both',
+                }}
+              >
+                {color.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Partículas decorativas */}
       <div style={{
