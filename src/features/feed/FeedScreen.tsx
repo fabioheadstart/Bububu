@@ -35,7 +35,7 @@ import { ShareCard } from '@/features/share/ShareCard'
 import { MemoryGame } from '@/features/memory/MemoryGame'
 import { getUnlockedPool, getNewlyUnlockedCategories, getTutorialChips } from '@/data/vocabulary/unlockSchedule'
 import type { BubState } from '@/components/bububu/BububuCharacter'
-import type { FeedResult, VocabEntry, DifficultyLevel } from '@/types'
+import type { FeedResult, VocabEntry } from '@/types'
 
 interface XpPop { id: number; amount: number; x: number }
 interface FlyingData { word: string; startX: number; startY: number; endX: number; endY: number }
