@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProgress } from '@/hooks/useProgress'
 import { playMenuHover } from '@/lib/audio/sounds'
+import { BububuCharacter } from '@/components/bububu/BububuCharacter'
 import type { AppMode, DifficultyLevel } from '@/types'
 
 interface Props {
@@ -46,7 +47,7 @@ const MODES: ModeCard[] = [
   },
   {
     mode: 'pro',
-    icon: '⚡',
+    icon: '👑',
     title: 'Pro',
     age: '13 anos ou mais',
     bullets: [
@@ -142,8 +143,10 @@ export function OnboardingScreen({ onComplete }: Props) {
 
         {/* ── Mascote ── */}
         <div style={{ textAlign: 'center' }}>
-          <div className="bub-mascot" style={{ fontSize: 84, lineHeight: 1 }}>🫧</div>
-          <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '14px 0 4px', color: '#f0e6ff' }}>
+          <div className="bub-mascot" style={{ width: 140, height: 160, margin: '0 auto' }}>
+            <BububuCharacter state="idle" />
+          </div>
+          <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '10px 0 4px', color: '#f0e6ff' }}>
             Bububu
           </h1>
           <p style={{ color: 'rgba(196,132,252,0.7)', fontSize: 14, margin: 0 }}>
