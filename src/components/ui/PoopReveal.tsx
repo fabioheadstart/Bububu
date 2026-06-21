@@ -83,7 +83,17 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false }: Props) 
         )}
       </div>
 
-      {/* ── Linha 2: tradução ── */}
+      {/* ── Linha 2: badge + tradução ── */}
+      <div style={{
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: 0.6,
+        color: isKids ? 'rgba(45,31,107,0.28)' : 'rgba(255,255,255,0.22)',
+        marginTop: 6,
+        textAlign: 'center',
+      }}>
+        digerido ✓
+      </div>
       <div style={{
         fontSize: isKids ? 28 : 30,
         fontWeight: 900,
@@ -91,7 +101,7 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false }: Props) 
         letterSpacing: -1,
         lineHeight: 1,
         textAlign: 'center',
-        marginTop: 5,
+        marginTop: 2,
       }}>
         {entry.translation}
       </div>

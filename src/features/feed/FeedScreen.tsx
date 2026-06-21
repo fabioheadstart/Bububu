@@ -745,13 +745,24 @@ export function FeedScreen() {
           </div>
         )}
         {!result && !munchText && !isFeeding && (
-          <p style={{
-            color: isKids ? 'rgba(45,31,107,0.50)' : 'rgba(255,255,255,0.55)',
-            fontSize: 14, margin: 0, textAlign: 'center', lineHeight: 1.6,
-            fontWeight: isKids ? 600 : 400,
-          }}>
-            {isKids ? 'Dá uma palavra pro Bububu! 🍭' : 'Dá uma palavra pro Bububu... 👀'}
-          </p>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{
+              color: isKids ? 'rgba(45,31,107,0.55)' : 'rgba(255,255,255,0.60)',
+              fontSize: 14, margin: '0 0 3px', lineHeight: 1.5,
+              fontWeight: isKids ? 700 : 400,
+            }}>
+              {isKids ? 'Dá uma palavra pro Bububu! 🍭' : 'Dá uma palavra pro Bububu... 👀'}
+            </p>
+            <p style={{
+              color: isKids ? 'rgba(45,31,107,0.32)' : 'rgba(255,255,255,0.28)',
+              fontSize: 12, margin: 0, lineHeight: 1.4,
+              fontWeight: 400,
+            }}>
+              {isKids
+                ? 'ele come em inglês e transforma em português'
+                : 'ele come em inglês, digere, e entrega em português'}
+            </p>
+          </div>
         )}
       </div>
 
