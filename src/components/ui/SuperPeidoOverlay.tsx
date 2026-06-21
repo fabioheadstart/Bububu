@@ -38,7 +38,7 @@ const STYLES = `
 export function SuperPeidoOverlay({ active, onDone }: Props) {
   useEffect(() => {
     if (!active) return
-    const t = setTimeout(onDone, 2500)
+    const t = setTimeout(onDone, 1600)
     return () => clearTimeout(t)
   }, [active, onDone])
 
@@ -53,9 +53,12 @@ export function SuperPeidoOverlay({ active, onDone }: Props) {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         gap: 0,
-        pointerEvents: 'none',
+        pointerEvents: 'all',
+        cursor: 'pointer',
         animation: 'sp-bg 0.22s ease forwards',
-      }}>
+      }}
+      onClick={onDone}
+      >
         {/* Texto principal */}
         <div style={{
           fontSize: 'clamp(64px, 18vw, 88px)',
