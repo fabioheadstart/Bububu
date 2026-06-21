@@ -100,13 +100,17 @@ export function FeedScreen() {
   const resultZoneRef    = useRef<HTMLDivElement>(null)
   const poopTimerRef    = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const clearTimerRef   = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const hintTimerRef    = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const popId            = useRef(0)
   const feeding          = useRef(false)
   const prevLevel        = useRef(computedLevel)
   const lastFedWords     = useRef<VocabEntry[]>([])
   const konamiProgress   = useRef(0)
+  const chipsRef         = useRef<VocabEntry[]>([])
 
-  const [activeCombo, setActiveCombo] = useState<ComboData | null>(null)
+  const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
+  const [hintIds,       setHintIds]       = useState<Set<string>>(new Set())
+  const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
 
   // Calculate fixed-position poop drop when showPoop triggers
   useEffect(() => {
@@ -136,6 +140,57 @@ export function FeedScreen() {
     }
   }, [computedLevel])
 
+  // Mantém ref de chips sempre atualizada
+  useEffect(() => { chipsRef.current = chips }, [chips])
+
+  // Hint system — 4s idle → pulsa chips com combo potencial
+  useEffect(() => {
+    clearTimeout(hintTimerRef.current)
+    setHintIds(new Set())
+    setKonamiHintId(null)
+
+    hintTimerRef.current = setTimeout(() => {
+      if (feeding.current) return
+      const current = chipsRef.current
+      const hints = new Set<string>()
+      let konami: string | null = null
+
+      // VS hint: par de opostos entre os chips
+      for (let i = 0; i < current.length; i++) {
+        for (let j = i + 1; j < current.length; j++) {
+          const w1 = current[i].word.toLowerCase()
+          const w2 = current[j].word.toLowerCase()
+          if (OPPOSITE_PAIRS[w1] === w2 || OPPOSITE_PAIRS[w2] === w1) {
+            hints.add(current[i].id)
+            hints.add(current[j].id)
+          }
+        }
+      }
+
+      // Trio hint: 2+ chips da mesma categoria
+      const byCat: Record<string, string[]> = {}
+      current.forEach(c => {
+        byCat[c.category] = byCat[c.category] ?? []
+        byCat[c.category].push(c.id)
+      })
+      Object.values(byCat).forEach(ids => {
+        if (ids.length >= 2) ids.forEach(id => hints.add(id))
+      })
+
+      // Konami hint sutil: ✨ na próxima palavra da sequência (se em progresso)
+      if (konamiProgress.current > 0) {
+        const nextWord = KONAMI_SEQUENCE[konamiProgress.current]
+        const match = current.find(c => c.word.toLowerCase() === nextWord)
+        if (match) konami = match.id
+      }
+
+      setHintIds(hints)
+      setKonamiHintId(konami)
+    }, 4000)
+
+    return () => clearTimeout(hintTimerRef.current)
+  }, [chips])
+
   function getMouthPos(): { x: number; y: number } {
     const c = bubContainerRef.current
     if (!c) return { x: window.innerWidth / 2, y: 150 }
@@ -156,6 +211,11 @@ export function FeedScreen() {
   const handleChipSelect = useCallback(async (entry: VocabEntry, rect: DOMRect) => {
     if (feeding.current) return
     feeding.current = true
+
+    // Limpa hints imediatamente ao tocar
+    clearTimeout(hintTimerRef.current)
+    setHintIds(new Set())
+    setKonamiHintId(null)
 
     const mouth = getMouthPos()
 
@@ -708,6 +768,8 @@ export function FeedScreen() {
           disabled={isFeeding}
           flyingId={flyingId}
           isKids={isKids}
+          hintIds={hintIds}
+          konamiHintId={konamiHintId}
         />
       </div>
 

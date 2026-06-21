@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { getCategoryColor } from '@/data/vocabulary/categoryColors'
 
 export type ComboType = 'trio' | 'versus' | 'konami'
 
@@ -41,10 +42,6 @@ export function ComboOverlay({ combo, onDone }: Props) {
           60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
           80%  { transform: scale(0.96) rotate(-1deg); }
           100% { transform: scale(1) rotate(0deg); }
-        }
-        @keyframes combo-out {
-          0%   { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; transform: scale(0.85); }
         }
         @keyframes vs-left {
           from { transform: translateX(-120px); opacity: 0; }
@@ -90,9 +87,9 @@ export function ComboOverlay({ combo, onDone }: Props) {
           animation: 'combo-bg-in 0.18s ease',
         }}
       >
-        {combo.type === 'trio'    && <TrioView    combo={combo} />}
-        {combo.type === 'versus'  && <VersusView  combo={combo} />}
-        {combo.type === 'konami'  && <KonamiView  combo={combo} />}
+        {combo.type === 'trio'   && <TrioView   combo={combo} />}
+        {combo.type === 'versus' && <VersusView combo={combo} />}
+        {combo.type === 'konami' && <KonamiView combo={combo} />}
       </div>
     </>,
     document.body
@@ -101,29 +98,35 @@ export function ComboOverlay({ combo, onDone }: Props) {
 
 // ─── Trio ─────────────────────────────────────────────────────────────────────
 function TrioView({ combo }: { combo: ComboData }) {
-  const cat = combo.category ?? 'words'
+  const cat   = combo.category ?? ''
+  const color = getCategoryColor(cat)
+  const label = color.label || cat
+
+  // Versão rgba mais escura do bg para o overlay
+  const overlayBg = `radial-gradient(circle at 50% 40%, ${color.overlayFrom} 0%, rgba(10,4,30,0.92) 70%)`
+
   return (
     <div style={{
-      background: 'radial-gradient(circle at 50% 40%, rgba(251,191,36,0.22) 0%, rgba(10,4,30,0.92) 70%)',
+      background: overlayBg,
       position: 'fixed', inset: 0,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 18,
     }}>
-      {/* Label */}
+      {/* Label categoria */}
       <div style={{
         fontSize: 13, fontWeight: 900, letterSpacing: 4,
         textTransform: 'uppercase',
-        color: 'rgba(251,191,36,0.7)',
+        color: `${color.ring}bb`,
         animation: 'konami-sub 0.3s 0.1s ease both',
       }}>
-        {cat} · 3 SEGUIDAS
+        {label} · 3 SEGUIDAS
       </div>
 
       {/* COMBO! */}
       <div style={{
-        fontSize: 72, fontWeight: 900, color: '#fbbf24',
+        fontSize: 72, fontWeight: 900, color: color.ring,
         letterSpacing: -2, lineHeight: 1,
-        textShadow: '0 0 40px rgba(251,191,36,0.6), 0 4px 0 rgba(180,83,9,0.8)',
+        textShadow: `0 0 40px ${color.glow}, 0 4px 0 rgba(0,0,0,0.6)`,
         animation: 'combo-slam 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
       }}>
         COMBO!
@@ -133,10 +136,10 @@ function TrioView({ combo }: { combo: ComboData }) {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
         {combo.words.map((w, i) => (
           <div key={w} style={{
-            background: 'rgba(251,191,36,0.15)',
-            border: '2px solid rgba(251,191,36,0.45)',
+            background: `${color.bg}28`,
+            border: `2px solid ${color.ring}66`,
             borderRadius: 12, padding: '10px 18px',
-            fontSize: 20, fontWeight: 800, color: '#fde68a',
+            fontSize: 20, fontWeight: 800, color: color.ring,
             animation: `word-chip-in 0.35s cubic-bezier(0.34,1.56,0.64,1) ${0.18 + i * 0.08}s both`,
           }}>
             {w}
@@ -146,9 +149,9 @@ function TrioView({ combo }: { combo: ComboData }) {
 
       {/* XP bonus */}
       <div style={{
-        fontSize: 15, fontWeight: 800, color: '#fbbf24',
-        background: 'rgba(251,191,36,0.12)',
-        border: '1px solid rgba(251,191,36,0.30)',
+        fontSize: 15, fontWeight: 800, color: color.ring,
+        background: `${color.bg}20`,
+        border: `1px solid ${color.ring}44`,
         borderRadius: 99, padding: '6px 20px',
         animation: 'konami-sub 0.3s 0.45s ease both',
       }}>
@@ -191,7 +194,6 @@ function VersusView({ combo }: { combo: ComboData }) {
         position: 'relative', zIndex: 1,
         animation: 'vs-center 0.35s 0.15s cubic-bezier(0.34,1.56,0.64,1) both',
       }}>
-        {/* Lightning lines */}
         <div style={{
           position: 'absolute', top: 0, bottom: 0, left: '50%',
           width: 2, background: 'linear-gradient(to bottom, transparent, #a78bfa, transparent)',
@@ -244,7 +246,6 @@ function KonamiView({ combo: _ }: { combo: ComboData }) {
       alignItems: 'center', justifyContent: 'center', gap: 16,
       overflow: 'hidden',
     }}>
-      {/* Partículas */}
       {STAR_DATA.map((s, i) => (
         <div key={i} style={{
           position: 'absolute', top: '50%', left: '50%',
@@ -258,7 +259,6 @@ function KonamiView({ combo: _ }: { combo: ComboData }) {
         </div>
       ))}
 
-      {/* ULTRA */}
       <div style={{
         fontSize: 14, fontWeight: 900, letterSpacing: 6,
         color: 'rgba(196,181,253,0.6)', textTransform: 'uppercase',
@@ -267,7 +267,6 @@ function KonamiView({ combo: _ }: { combo: ComboData }) {
         ☆ SEGREDO DESCOBERTO ☆
       </div>
 
-      {/* ULTRA COMBO */}
       <div style={{
         fontSize: 58, fontWeight: 900, color: '#c084fc',
         lineHeight: 1.1, textAlign: 'center',
@@ -277,7 +276,6 @@ function KonamiView({ combo: _ }: { combo: ComboData }) {
         ULTRA<br/>COMBO
       </div>
 
-      {/* Bububus */}
       <div style={{
         fontSize: 36, letterSpacing: 8,
         animation: 'konami-sub 0.4s 0.55s ease both',
@@ -285,7 +283,6 @@ function KonamiView({ combo: _ }: { combo: ComboData }) {
         🫧🫧🫧🫧🫧
       </div>
 
-      {/* XP */}
       <div style={{
         fontSize: 16, fontWeight: 800, color: '#c084fc',
         background: 'rgba(192,132,252,0.12)',
