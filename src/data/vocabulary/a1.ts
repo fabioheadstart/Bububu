@@ -371,4 +371,187 @@ export const A1_WORDS: VocabEntry[] = [
     exampleTranslation: 'Ela vai para a escola de bicicleta.',
   },
 
- 
+  // ── animals ───────────────────────────────────────────────────────────────
+  {
+    id: 'a1-animals-001', word: 'cat', translation: 'gato', phonetic: '/kæt/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The cat is sleeping on the sofa.',
+    exampleTranslation: 'O gato está dormindo no sofá.',
+  },
+  {
+    id: 'a1-animals-002', word: 'dog', translation: 'cachorro', phonetic: '/dɒɡ/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'My dog loves to play in the park.',
+    exampleTranslation: 'Meu cachorro ama brincar no parque.',
+  },
+  {
+    id: 'a1-animals-003', word: 'bird', translation: 'pássaro', phonetic: '/bɜːrd/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'A bird is singing in the tree.',
+    exampleTranslation: 'Um pássaro está cantando na árvore.',
+  },
+  {
+    id: 'a1-animals-004', word: 'fish', translation: 'peixe', phonetic: '/fɪʃ/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'There are many fish in the sea.',
+    exampleTranslation: 'Há muitos peixes no mar.',
+  },
+  {
+    id: 'a1-animals-005', word: 'lion', translation: 'leão', phonetic: '/ˈlaɪ.ən/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The lion is the king of the jungle.',
+    exampleTranslation: 'O leão é o rei da selva.',
+  },
+  {
+    id: 'a1-animals-006', word: 'elephant', translation: 'elefante', phonetic: '/ˈel.ɪ.fənt/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The elephant has a very long trunk.',
+    exampleTranslation: 'O elefante tem uma tromba muito comprida.',
+  },
+  {
+    id: 'a1-animals-007', word: 'monkey', translation: 'macaco', phonetic: '/ˈmʌŋ.ki/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The monkey climbs the tree very fast.',
+    exampleTranslation: 'O macaco sobe na árvore muito rápido.',
+  },
+  {
+    id: 'a1-animals-008', word: 'rabbit', translation: 'coelho', phonetic: '/ˈræb.ɪt/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The rabbit eats carrots in the garden.',
+    exampleTranslation: 'O coelho come cenouras no jardim.',
+  },
+  {
+    id: 'a1-animals-009', word: 'frog', translation: 'sapo', phonetic: '/frɒɡ/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The frog jumps into the pond.',
+    exampleTranslation: 'O sapo pula no lago.',
+  },
+  {
+    id: 'a1-animals-010', word: 'bear', translation: 'urso', phonetic: '/beər/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The bear sleeps all winter.',
+    exampleTranslation: 'O urso dorme durante todo o inverno.',
+  },
+  {
+    id: 'a1-animals-011', word: 'horse', translation: 'cavalo', phonetic: '/hɔːrs/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'She rides a horse on the farm.',
+    exampleTranslation: 'Ela monta a cavalo na fazenda.',
+  },
+  {
+    id: 'a1-animals-012', word: 'cow', translation: 'vaca', phonetic: '/kaʊ/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The cow gives us milk every day.',
+    exampleTranslation: 'A vaca nos dá leite todo dia.',
+  },
+  {
+    id: 'a1-animals-013', word: 'pig', translation: 'porco', phonetic: '/pɪɡ/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The pig rolls in the mud.',
+    exampleTranslation: 'O porco se rola na lama.',
+  },
+  {
+    id: 'a1-animals-014', word: 'duck', translation: 'pato', phonetic: '/dʌk/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The duck swims on the lake.',
+    exampleTranslation: 'O pato nada no lago.',
+  },
+  {
+    id: 'a1-animals-015', word: 'snake', translation: 'cobra', phonetic: '/sneɪk/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The snake moves very quietly.',
+    exampleTranslation: 'A cobra se move muito quietinha.',
+  },
+  {
+    id: 'a1-animals-016', word: 'butterfly', translation: 'borboleta', phonetic: '/ˈbʌt.ər.flaɪ/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'A butterfly landed on the flower.',
+    exampleTranslation: 'Uma borboleta pousou na flor.',
+  },
+  {
+    id: 'a1-animals-017', word: 'bee', translation: 'abelha', phonetic: '/biː/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The bee makes honey in its hive.',
+    exampleTranslation: 'A abelha faz mel na colmeia.',
+  },
+  {
+    id: 'a1-animals-018', word: 'turtle', translation: 'tartaruga', phonetic: '/ˈtɜː.tl/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The turtle walks very slowly.',
+    exampleTranslation: 'A tartaruga anda muito devagar.',
+  },
+  {
+    id: 'a1-animals-019', word: 'tiger', translation: 'tigre', phonetic: '/ˈtaɪ.ɡər/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The tiger has orange and black stripes.',
+    exampleTranslation: 'O tigre tem listras laranja e preto.',
+  },
+  {
+    id: 'a1-animals-020', word: 'owl', translation: 'coruja', phonetic: '/aʊl/',
+    level: 'A1', category: 'animals',
+    exampleSentence: 'The owl is awake at night.',
+    exampleTranslation: 'A coruja fica acordada à noite.',
+  },
+
+  // ── colors ────────────────────────────────────────────────────────────────
+  {
+    id: 'a1-colors-001', word: 'red', translation: 'vermelho', phonetic: '/red/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'She is wearing a red dress.',
+    exampleTranslation: 'Ela está usando um vestido vermelho.',
+  },
+  {
+    id: 'a1-colors-002', word: 'blue', translation: 'azul', phonetic: '/bluː/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'The sky is blue today.',
+    exampleTranslation: 'O céu está azul hoje.',
+  },
+  {
+    id: 'a1-colors-003', word: 'green', translation: 'verde', phonetic: '/ɡriːn/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'The grass is green after the rain.',
+    exampleTranslation: 'A grama fica verde depois da chuva.',
+  },
+  {
+    id: 'a1-colors-004', word: 'yellow', translation: 'amarelo', phonetic: '/ˈjel.əʊ/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'The sun is big and yellow.',
+    exampleTranslation: 'O sol é grande e amarelo.',
+  },
+  {
+    id: 'a1-colors-005', word: 'pink', translation: 'rosa', phonetic: '/pɪŋk/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'She painted her room pink.',
+    exampleTranslation: 'Ela pintou o quarto de rosa.',
+  },
+  {
+    id: 'a1-colors-006', word: 'purple', translation: 'roxo', phonetic: '/ˈpɜː.pl/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'He likes purple grapes.',
+    exampleTranslation: 'Ele gosta de uvas roxas.',
+  },
+  {
+    id: 'a1-colors-007', word: 'orange', translation: 'laranja', phonetic: '/ˈɒr.ɪndʒ/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'I like orange juice in the morning.',
+    exampleTranslation: 'Eu gosto de suco de laranja de manhã.',
+  },
+  {
+    id: 'a1-colors-008', word: 'black', translation: 'preto', phonetic: '/blæk/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'The cat is all black.',
+    exampleTranslation: 'O gato é todo preto.',
+  },
+  {
+    id: 'a1-colors-009', word: 'white', translation: 'branco', phonetic: '/waɪt/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'There is white snow on the mountain.',
+    exampleTranslation: 'Tem neve branca na montanha.',
+  },
+  {
+    id: 'a1-colors-010', word: 'brown', translation: 'marrom', phonetic: '/braʊn/',
+    level: 'A1', category: 'colors',
+    exampleSentence: 'The dog has brown and white fur.',
+    exampleTranslation: 'O cachorro tem pelo marrom e branco.',
+  },
+]
