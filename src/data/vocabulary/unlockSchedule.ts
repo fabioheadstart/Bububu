@@ -2,60 +2,41 @@ import { getWordsByDifficulty } from '@/data/vocabulary'
 import { getCategoryColor } from '@/data/vocabulary/categoryColors'
 import type { VocabEntry, DifficultyLevel } from '@/types'
 
-// ─── Unlock schedule (easy / A1) ─────────────────────────────────────────────
+// ─── Unlock schedule (por nível de CEFR, não por categoria) ──────────────────
 //
-//  A1 total = 59 words across 8 categories:
-//    food(10), actions(10), adjectives(8), home(7), body(7), time(6), family(6), transport(5)
+//  Todos os A1 (59 palavras) ficam disponíveis desde o level 1 para garantir
+//  variedade. O desbloqueio progressivo acontece no salto de competência real:
+//    Level 1-4  → pool A1 completo (59 palavras)
+//    Level 5+   → + A2 (33 palavras) = 92
+//    Level 10+  → + B1 (24 palavras) = 116
 //
-//  Level thresholds (from computeLevel in useProgress):
-//    L1 = 0-11 words   L2 = 12-23   L3 = 24-35   L4 = 36-47   L5 = 48-59
-//
-//  Pool must always be ≥ threshold to level up:
-//    L1 pool = food+body       = 17  ✓ (need 12 to reach L2)
-//    L2 pool = +family+time    = 29  ✓ (need 24)
-//    L3 pool = +actions        = 39  ✓ (need 36)
-//    L4 pool = +home+adj       = 54  ✓ (need 48)
-//    L5 pool = +transport      = 59  ✓ (all A1)
-//
-const A1_UNLOCK: { fromLevel: number; categories: string[] }[] = [
-  { fromLevel: 1, categories: ['food', 'body'] },
-  { fromLevel: 2, categories: ['family', 'time'] },
-  { fromLevel: 3, categories: ['actions'] },
-  { fromLevel: 4, categories: ['home', 'adjectives'] },
-  { fromLevel: 5, categories: ['transport'] },
-]
+//  Isso preserva a sensação de "unlock" sem tornar o jogo repetitivo no início.
 
 /** Returns the vocab pool visible to the user at their current level + difficulty. */
 export function getUnlockedPool(level: number, difficulty: DifficultyLevel): VocabEntry[] {
   const all = getWordsByDifficulty(difficulty)
 
-  // Medium/hard users are already experienced — full pool from the start
-  if (difficulty !== 'easy') return all
-
-  // Easy: progressively unlock A1 categories
-  const unlocked = new Set<string>()
-  for (const { fromLevel, categories } of A1_UNLOCK) {
-    if (level >= fromLevel) categories.forEach(c => unlocked.add(c))
+  if (difficulty === 'easy') {
+    // Easy: A1 always, A2 unlocks at level 5, B1 at level 10
+    return all.filter(w => {
+      if (w.level === 'A1') return true
+      if (w.level === 'A2') return level >= 5
+      if (w.level === 'B1') return level >= 10
+      return false
+    })
   }
 
-  const filtered = all.filter(w => unlocked.has(w.category))
-  // Safety fallback: if pool is somehow empty, return all
-  return filtered.length > 0 ? filtered : all
+  // Medium/hard: all available from the start
+  return all
 }
 
-/** Returns newly-unlocked category names when leveling from prevLevel → newLevel. */
+/** Returns newly-unlocked CEFR level label when leveling up. */
 export function getNewlyUnlockedCategories(prevLevel: number, newLevel: number): string[] {
   if (prevLevel >= newLevel) return []
-
-  const prev = new Set<string>()
-  const next = new Set<string>()
-
-  for (const { fromLevel, categories } of A1_UNLOCK) {
-    if (prevLevel >= fromLevel) categories.forEach(c => prev.add(c))
-    if (newLevel  >= fromLevel) categories.forEach(c => next.add(c))
-  }
-
-  return [...next].filter(c => !prev.has(c))
+  const unlocked: string[] = []
+  if (prevLevel < 5  && newLevel >= 5)  unlocked.push('A2 — intermediário')
+  if (prevLevel < 10 && newLevel >= 10) unlocked.push('B1 — avançado')
+  return unlocked
 }
 
 /** Category badge data for LevelUpOverlay. */
