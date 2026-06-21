@@ -45,20 +45,40 @@ export function useAudio(provider: AudioProvider = defaultAudioProvider): UseAud
   return { speak, speakWord, speakSentence, cancel, isPlaying, isSupported: provider.isSupported }
 }
 
-export function useBububuVoice() {
+import type { EvolutionStage } from '@/components/bububu/BububuCharacter'
+
+const STAGE_RATE: Record<EvolutionStage, number> = {
+  baby:    1.65,   // vozinha fininha
+  growing: 1.25,   // um pouco mais maduro
+  teen:    1.00,   // voz atual
+  adult:   0.82,   // levemente mais grave
+}
+
+const STAGE_PITCH: Record<EvolutionStage, number> = {
+  baby:    2.5,
+  growing: 2.0,
+  teen:    2.0,
+  adult:   1.5,
+}
+
+export function useBububuVoice(stage: EvolutionStage = 'teen') {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const speakBububu = useCallback(() => {
+    const rate = STAGE_RATE[stage]
     if (!audioRef.current) audioRef.current = new Audio('/audio/bububu.mp3')
-    audioRef.current.currentTime = 0
+    audioRef.current.playbackRate = rate
+    audioRef.current.currentTime  = 0
     audioRef.current.play().catch(() => {
       if (!('speechSynthesis' in window)) return
       window.speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance('bububu!')
-      u.lang = 'pt-BR'; u.pitch = 2.0
+      u.lang  = 'pt-BR'
+      u.pitch = STAGE_PITCH[stage]
+      u.rate  = rate
       window.speechSynthesis.speak(u)
     })
-  }, [])
+  }, [stage])
 
   return { speakBububu }
 }

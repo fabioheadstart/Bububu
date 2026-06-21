@@ -104,9 +104,9 @@ const KONAMI_SEQUENCE = ['sleep', 'morning', 'coffee', 'work', 'happy']
 
 export function FeedScreen() {
   const { feedWord }                                           = useFeed()
-  const { speakBububu }                                        = useBububuVoice()
   const { speakWord }                                          = useAudio()
   const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty } = useProgress()
+  const { speakBububu }                                        = useBububuVoice(getStage(computedLevel))
   const [showSettings, setShowSettings] = useState(false)
   const [showShare, setShowShare]       = useState(false)
 
