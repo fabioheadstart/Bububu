@@ -1,8 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useProgress } from '@/hooks/useProgress'
 import { playMenuHover } from '@/lib/audio/sounds'
 import { BububuCharacter } from '@/components/bububu/BububuCharacter'
 import type { AppMode, DifficultyLevel } from '@/types'
+
+const STORY: { id: number; text: string; delay: number }[] = [
+  { id: 1, text: 'Oi!! Eu sou o Bububu! 👋',                                                     delay: 300  },
+  { id: 2, text: 'Nasci em São Sebastião do Rio Verde, em Minas Gerais 🌄',                       delay: 900  },
+  { id: 3, text: 'Todo mundo se conhece lá... mas eu precisava de algo maior 🌎',                  delay: 1600 },
+  { id: 4, text: 'Eu aprendo inglês com você — cada palavra vira energia pra eu crescer! 🌱',     delay: 2400 },
+  { id: 5, text: 'Meu sonho? Ir pra Hollywood e dizer uma frase que a Jennifer Aniston nunca vai esquecer 🌟', delay: 3300 },
+]
+const CTA_DELAY = 4400
 
 interface Props {
   onComplete: () => void
@@ -94,7 +103,14 @@ const DIFFICULTIES: DiffCard[] = [
 
 export function OnboardingScreen({ onComplete }: Props) {
   const { setMode, setDifficulty } = useProgress()
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<0 | 1 | 2>(0)
+  const [ctaVisible, setCtaVisible] = useState(false)
+
+  useEffect(() => {
+    if (step !== 0) return
+    const t = setTimeout(() => setCtaVisible(true), CTA_DELAY)
+    return () => clearTimeout(t)
+  }, [step])
 
   function handleModeChoose(mode: AppMode) {
     setMode(mode)
@@ -128,6 +144,14 @@ export function OnboardingScreen({ onComplete }: Props) {
           to   { opacity: 1; transform: translateX(0); }
         }
         .slide-in { animation: slideInRight 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes msg-pop {
+          from { opacity: 0; transform: translateY(12px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        @keyframes cta-in {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
       <div style={{
@@ -142,30 +166,100 @@ export function OnboardingScreen({ onComplete }: Props) {
         background: 'linear-gradient(160deg, #0a041e 0%, #130826 60%, #0d0520 100%)',
       }}>
 
-        {/* ── Mascote ── */}
+        {/* ── Mascote (step 0: maior + sem texto abaixo; steps 1/2: menor) ── */}
         <div style={{ textAlign: 'center' }}>
-          <div className="bub-mascot" style={{ width: 140, height: 160, margin: '0 auto' }}>
+          <div className="bub-mascot" style={{
+            width: step === 0 ? 160 : 140,
+            height: step === 0 ? 180 : 160,
+            margin: '0 auto',
+            transition: 'all 0.4s ease',
+          }}>
             <BububuCharacter state="idle" />
           </div>
-          <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '10px 0 4px', color: '#f0e6ff' }}>
-            Bububu
-          </h1>
-          <p style={{ color: 'rgba(196,132,252,0.7)', fontSize: 14, margin: 0 }}>
-            Me dê palavras em inglês e eu vou crescer com você.
-          </p>
+          {step === 0 ? (
+            <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '10px 0 0', color: '#f0e6ff' }}>
+              Bububu
+            </h1>
+          ) : (
+            <>
+              <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '10px 0 4px', color: '#f0e6ff' }}>
+                Bububu
+              </h1>
+              <p style={{ color: 'rgba(196,132,252,0.7)', fontSize: 14, margin: 0 }}>
+                Me dê palavras em inglês e eu vou crescer com você.
+              </p>
+            </>
+          )}
         </div>
 
-        {/* ── Step indicators ── */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {[1, 2].map(s => (
-            <div key={s} style={{
-              height: 6, borderRadius: 99,
-              width: step === s ? 24 : 8,
-              background: step >= s ? '#c084fc' : 'rgba(255,255,255,0.15)',
-              transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-            }} />
-          ))}
-        </div>
+        {/* ── Step indicators (só nos steps 1 e 2) ── */}
+        {step > 0 && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {[1, 2].map(s => (
+              <div key={s} style={{
+                height: 6, borderRadius: 99,
+                width: step === s ? 24 : 8,
+                background: step >= s ? '#c084fc' : 'rgba(255,255,255,0.15)',
+                transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+              }} />
+            ))}
+          </div>
+        )}
+
+        {/* ── Step 0: História do Bububu ── */}
+        {step === 0 && (
+          <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {STORY.map(msg => (
+              <div key={msg.id} style={{
+                display: 'flex', alignItems: 'flex-end', gap: 10,
+                animation: `msg-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) ${msg.delay}ms both`,
+              }}>
+                <div style={{
+                  width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(124,58,237,0.25)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16,
+                }}>🫧</div>
+                <div style={{
+                  background: 'rgba(124,58,237,0.18)',
+                  border: '1px solid rgba(167,139,250,0.18)',
+                  borderRadius: '16px 16px 16px 4px',
+                  padding: '10px 14px',
+                  fontSize: 14,
+                  color: 'rgba(255,255,255,0.88)',
+                  lineHeight: 1.5,
+                  maxWidth: '85%',
+                }}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+
+            {/* CTA — aparece após as mensagens */}
+            {ctaVisible && (
+              <button
+                onClick={() => setStep(1)}
+                style={{
+                  marginTop: 12,
+                  alignSelf: 'center',
+                  padding: '14px 36px',
+                  borderRadius: 99,
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+                  color: 'white',
+                  fontSize: 16,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 32px rgba(124,58,237,0.45)',
+                  animation: 'cta-in 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                Vamos começar! 🚀
+              </button>
+            )}
+          </div>
+        )}
 
         {/* ── Step 1: Quem vai jogar? ── */}
         {step === 1 && (
@@ -247,7 +341,7 @@ export function OnboardingScreen({ onComplete }: Props) {
           </div>
         )}
 
-        {/* ── Back (step 2 only) ── */}
+        {/* ── Back / hint ── */}
         {step === 2 && (
           <button
             onClick={() => setStep(1)}
