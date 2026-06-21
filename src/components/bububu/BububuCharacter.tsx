@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { RewardTier } from '@/types'
 
 export type BubState = 'idle' | 'eating' | 'celebrating' | 'sleeping' | 'sad' | 'yawning'
@@ -11,7 +11,16 @@ const TAP_PARTICLES = ['⭐', '💜', '✨', '💫', '🌟', '💕']
 const MEGA_FART_THRESHOLD = 10
 const TAP_WINDOW_MS       = 12_000  // janela de 12 segundos
 
+// Jackpot — 10 partículas grandes voando do corpo
+const JACKPOT_ANGLES = Array.from({ length: 10 }, (_, i) => (360 / 10) * i)
+const JACKPOT_EMOJIS = ['⭐', '🌟', '✨', '💫', '⚡', '💥', '🎆', '🎇', '⭐', '✨']
+
 interface Particle { id: number; emoji: string; x: number; y: number }
+interface JackpotParticle {
+  id: number; emoji: string
+  dx: number; dy: number
+  size: number; dur: number
+}
 
 interface Props {
   state: BubState
@@ -20,6 +29,7 @@ interface Props {
   onMegaFart?: () => void   // callback para tocar sons na FeedScreen
   hungry?: boolean
   level?: number            // nível atual — define estágio de evolução
+  jackpotKey?: number       // incrementar para disparar explosão jackpot
 }
 
 // ── Estágios de evolução ───────────────────────────────────────────────────────
@@ -154,10 +164,17 @@ function Eyes({ state, squeezed, hungry }: { state: BubState; squeezed: boolean;
   if (hungry) {
     return (
       <>
-        <circle cx="44" cy="50" r="9" fill="#1a1a2e" />
-        <circle cx="76" cy="50" r="9" fill="#1a1a2e" />
-        <circle cx="41" cy="50" r="3" fill="white" />
-        <circle cx="73" cy="50" r="3" fill="white" />
+        {/* Sobrancelhas levantadas — súplica */}
+        <path d="M 34 36 Q 44 30 54 36" stroke="#1a1a2e" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M 66 36 Q 76 30 86 36" stroke="#1a1a2e" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        {/* Olhos grandes suplicantes */}
+        <circle cx="44" cy="51" r="11" fill="#1a1a2e" />
+        <circle cx="76" cy="51" r="11" fill="#1a1a2e" />
+        {/* Reflexos grandes — olhos brilhantes de fome */}
+        <circle cx="39" cy="46" r="4.5" fill="white" />
+        <circle cx="71" cy="46" r="4.5" fill="white" />
+        <circle cx="50" cy="55" r="2"   fill="white" opacity="0.55" />
+        <circle cx="82" cy="55" r="2"   fill="white" opacity="0.55" />
       </>
     )
   }
@@ -171,12 +188,43 @@ function Eyes({ state, squeezed, hungry }: { state: BubState; squeezed: boolean;
   )
 }
 
-export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, level = 1 }: Props) {
+export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, level = 1, jackpotKey = 0 }: Props) {
   const stage  = getStage(level)
   const stageCfg = STAGE_CONFIG[stage]
   const [tapReaction, setTapReaction]   = useState<TapReaction | null>(null)
   const [particles, setParticles]       = useState<Particle[]>([])
   const [megaFart, setMegaFart]         = useState(false)
+  const [jackpotActive, setJackpotActive]   = useState(false)
+  const [jackpotParticles, setJackpotParticles] = useState<JackpotParticle[]>([])
+  const jackpotTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const jackpotPId   = useRef(0)
+
+  // Dispara explosão visual quando jackpotKey muda (mas não na montagem inicial)
+  const prevJackpotKey = useRef(jackpotKey)
+  useEffect(() => {
+    if (jackpotKey === prevJackpotKey.current) return
+    prevJackpotKey.current = jackpotKey
+
+    setJackpotActive(true)
+    clearTimeout(jackpotTimer.current)
+    jackpotTimer.current = setTimeout(() => setJackpotActive(false), 1300)
+
+    // Gera 10 partículas grandes em ângulos distribuídos
+    const newPs: JackpotParticle[] = JACKPOT_ANGLES.map((angle, i) => {
+      const dist = 80 + (i % 3) * 30   // 80–140px
+      const rad  = (angle * Math.PI) / 180
+      return {
+        id:    ++jackpotPId.current,
+        emoji: JACKPOT_EMOJIS[i],
+        dx:    Math.cos(rad) * dist,
+        dy:    Math.sin(rad) * dist,
+        size:  20 + (i % 3) * 6,       // 20–32px
+        dur:   0.7 + (i % 4) * 0.1,    // 0.7–1.0s
+      }
+    })
+    setJackpotParticles(newPs)
+    setTimeout(() => setJackpotParticles([]), 1100)
+  }, [jackpotKey])
   const tapTimeout    = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const megaFartTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const tapWindowTimer= useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -247,6 +295,7 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, 
   const squeezed = tapReaction === 'squish'
 
   const animation = (() => {
+    if (jackpotActive) return 'bub-jackpot 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) 1'
     if (tapReaction) {
       const dur  = tapReaction === 'squish' ? '0.45s' : '0.52s'
       const ease = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -285,6 +334,26 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, 
             animation: 'bub-particle 0.75s ease-out forwards',
             zIndex: 10,
           }}
+        >
+          {p.emoji}
+        </span>
+      ))}
+
+      {/* Jackpot — partículas grandes voando do centro do corpo */}
+      {jackpotParticles.map(p => (
+        <span
+          key={p.id}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            fontSize: p.size,
+            pointerEvents: 'none',
+            zIndex: 20,
+            animation: `bub-jackpot-particle ${p.dur}s ease-out forwards`,
+            ['--jdx' as string]: `${p.dx}px`,
+            ['--jdy' as string]: `${p.dy}px`,
+          } as React.CSSProperties}
         >
           {p.emoji}
         </span>
@@ -410,6 +479,14 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, 
 
           <Eyes state={state} squeezed={squeezed} hungry={hungry && state === 'idle'} />
           <Mouth state={state} squeezed={squeezed} />
+
+          {/* Drool — só quando faminto e idle */}
+          {hungry && state === 'idle' && (
+            <g style={{ animation: 'drool-drop 1.6s ease-in-out infinite' }}>
+              <ellipse cx="57" cy="90" rx="2.8" ry="2.2" fill="rgba(147,197,253,0.85)" />
+              <ellipse cx="57" cy="95" rx="2.2" ry="3.5" fill="rgba(147,197,253,0.75)" />
+            </g>
+          )}
 
           {state === 'celebrating' && (
             <>

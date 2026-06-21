@@ -30,7 +30,8 @@ export function BububuSpeech({ text, isKids = false }: Props) {
         style={{
           position: 'absolute',
           top: '14%',
-          left: 'calc(50% + 14px)',
+          left: 'calc(50% + 8px)',
+          maxWidth: 'min(168px, calc(50% - 16px))',
           zIndex: 10,
           pointerEvents: 'none',
           animation: 'speech-life 2.9s ease-out forwards',
@@ -46,7 +47,7 @@ export function BububuSpeech({ text, isKids = false }: Props) {
           fontSize: 13,
           fontWeight: 700,
           lineHeight: 1.35,
-          maxWidth: 180,
+          maxWidth: '100%',
           boxShadow: '0 6px 20px rgba(0,0,0,0.28)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',

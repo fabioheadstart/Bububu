@@ -330,8 +330,17 @@ function ProgressDots({ total, current, isKids = false }: { total: number; curre
   )
 }
 
+// Extrai o primeiro emoji de uma string (situação)
+function extractLeadingEmoji(text: string): { emoji: string; rest: string } {
+  const m = text.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u)
+  if (m) return { emoji: m[0].trim(), rest: text.slice(m[0].length) }
+  return { emoji: '', rest: text }
+}
+
 // ─── Fase 1: Enigma ───────────────────────────────────────────────────────────
 function EnigmaView({ problem, onTap, isKids = false }: { problem: Problem; onTap: () => void; isKids?: boolean }) {
+  const { emoji, rest } = isKids ? extractLeadingEmoji(problem.situation) : { emoji: '', rest: problem.situation }
+
   return (
     <div
       onClick={onTap}
@@ -345,23 +354,38 @@ function EnigmaView({ problem, onTap, isKids = false }: { problem: Problem; onTa
         cursor: 'pointer',
         animation: 'card-pulse 2.2s ease-in-out infinite, fadeSlideUp 0.35s ease',
         WebkitTapHighlightColor: 'transparent',
+        textAlign: isKids ? 'center' : 'left',
       }}
     >
-      {/* Categoria pill */}
-      <div style={{
-        display: 'inline-block',
-        fontSize: 10, fontWeight: 800,
-        color: isKids ? '#7C3AED' : '#c4b5fd',
-        background: isKids ? 'rgba(124,58,237,0.08)' : 'rgba(196,181,253,0.12)',
-        border: isKids ? '1px solid rgba(124,58,237,0.20)' : '1px solid rgba(196,181,253,0.22)',
-        padding: '3px 10px', borderRadius: 99,
-        letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16,
-      }}>
-        {problem.category}
-      </div>
+      {/* Emoji grande Kids */}
+      {isKids && emoji && (
+        <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 14 }}>{emoji}</div>
+      )}
 
-      <p style={{ fontSize: 17, lineHeight: 1.65, color: isKids ? '#2D1F6B' : 'rgba(255,255,255,0.92)', margin: 0, fontWeight: isKids ? 600 : 500 }}>
-        {problem.situation}
+      {/* Categoria pill */}
+      {!isKids && (
+        <div style={{
+          display: 'inline-block',
+          fontSize: 10, fontWeight: 800,
+          color: '#c4b5fd',
+          background: 'rgba(196,181,253,0.12)',
+          border: '1px solid rgba(196,181,253,0.22)',
+          padding: '3px 10px', borderRadius: 99,
+          letterSpacing: 1, textTransform: 'uppercase', marginBottom: 16,
+        }}>
+          {problem.category}
+        </div>
+      )}
+
+      <p style={{
+        fontSize: isKids ? 19 : 17,
+        lineHeight: 1.65,
+        color: isKids ? '#2D1F6B' : 'rgba(255,255,255,0.92)',
+        margin: 0,
+        fontWeight: isKids ? 700 : 500,
+        textAlign: isKids ? 'center' : 'left',
+      }}>
+        {isKids ? rest : problem.situation}
       </p>
 
       {/* Tap hint */}
@@ -434,6 +458,19 @@ function OptionsView({ problem, hintVisible, usedHint, choosing, pressedOpt, onH
       {/* Botões — visual idêntico, sem hierarquia de cor */}
       {problem.options.map((opt, i) => {
         const pressed = pressedOpt === opt.key
+        // Kids: cores e ícones distintos por opção (sem revelar qual é correta)
+        const kidsIcon  = opt.key === 'A' ? '🔵' : '🟣'
+        const kidsBg    = opt.key === 'A'
+          ? (pressed ? 'rgba(59,130,246,0.14)' : 'rgba(219,234,254,0.95)')
+          : (pressed ? 'rgba(124,58,237,0.14)' : 'rgba(237,233,254,0.95)')
+        const kidsBorder = opt.key === 'A'
+          ? '2.5px solid rgba(59,130,246,0.35)'
+          : '2.5px solid rgba(124,58,237,0.35)'
+        const kidsBoxShadow = pressed ? 'none'
+          : opt.key === 'A'
+            ? '0 5px 0 rgba(59,130,246,0.20), 0 8px 20px rgba(59,130,246,0.10)'
+            : '0 5px 0 rgba(124,58,237,0.20), 0 8px 20px rgba(124,58,237,0.10)'
+
         return (
           <button
             key={opt.key}
@@ -442,49 +479,42 @@ function OptionsView({ problem, hintVisible, usedHint, choosing, pressedOpt, onH
             onPointerUp={() => !choosing && onChoose(opt.key)}
             onPointerLeave={() => onPressStart(null as unknown as 'A')}
             style={{
-              padding: '18px 20px',
+              padding: isKids ? '20px 18px' : '18px 20px',
               borderRadius: 18,
-              border: isKids ? '2px solid rgba(124,58,237,0.15)' : '1px solid rgba(255,255,255,0.15)',
+              border: isKids ? kidsBorder : '1px solid rgba(255,255,255,0.15)',
               textAlign: 'left',
-              fontSize: 15,
-              fontWeight: 600,
+              fontSize: isKids ? 16 : 15,
+              fontWeight: isKids ? 700 : 600,
               lineHeight: 1.5,
               color: isKids ? '#2D1F6B' : 'rgba(255,255,255,0.93)',
               cursor: choosing ? 'default' : 'pointer',
               WebkitTapHighlightColor: 'transparent',
               display: 'flex', alignItems: 'flex-start', gap: 14,
               animation: `burst-in 0.42s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.08}s both`,
-              background: isKids
-                ? (pressed ? 'rgba(124,58,237,0.08)' : '#FFFFFF')
-                : (pressed ? 'rgba(167,139,250,0.18)' : 'rgba(255,255,255,0.07)'),
+              background: isKids ? kidsBg : (pressed ? 'rgba(167,139,250,0.18)' : 'rgba(255,255,255,0.07)'),
               backdropFilter: isKids ? 'none' : 'blur(14px)',
               WebkitBackdropFilter: isKids ? 'none' : 'blur(14px)',
               transform: pressed ? 'translateY(3px) scale(0.985)' : 'translateY(0) scale(1)',
-              boxShadow: pressed
-                ? 'none'
-                : isKids
-                  ? '0 5px 0 rgba(124,58,237,0.12), 0 8px 20px rgba(0,0,0,0.06)'
-                  : '0 4px 0 rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15)',
+              boxShadow: isKids ? kidsBoxShadow : (pressed ? 'none' : '0 4px 0 rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15)'),
               transition: pressed ? 'none' : 'transform 0.14s, box-shadow 0.14s, background 0.14s',
               opacity: choosing ? 0.75 : 1,
             }}
           >
-            {/* Label pill — candy color rotativo, pequeno */}
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-              background: isKids
-                ? (opt.key === 'A' ? 'rgba(255,159,67,0.18)' : 'rgba(107,203,119,0.18)')
-                : 'rgba(196,181,253,0.18)',
-              border: isKids
-                ? (opt.key === 'A' ? '1px solid rgba(255,159,67,0.40)' : '1px solid rgba(107,203,119,0.40)')
-                : '1px solid rgba(196,181,253,0.30)',
-              fontWeight: 900, fontSize: 12,
-              color: isKids ? (opt.key === 'A' ? '#B45309' : '#166534') : '#c4b5fd',
-            }}>
-              {opt.key}
-            </span>
-            <span style={{ paddingTop: 3 }}>{opt.text}</span>
+            {/* Ícone Kids grande / Label Pro pequeno */}
+            {isKids ? (
+              <span style={{ fontSize: 28, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{kidsIcon}</span>
+            ) : (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+                background: 'rgba(196,181,253,0.18)',
+                border: '1px solid rgba(196,181,253,0.30)',
+                fontWeight: 900, fontSize: 12, color: '#c4b5fd',
+              }}>
+                {opt.key}
+              </span>
+            )}
+            <span style={{ paddingTop: isKids ? 4 : 3 }}>{opt.text}</span>
           </button>
         )
       })}
@@ -525,13 +555,13 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
   const otherOption  = problem.options.find(o => o.key !== chosen)!
 
   // Emoji, título e subtítulo variam por caso
-  const feedbackEmoji = isHigh ? '🔥' : isBwithHint ? '✅' : '👍'
-  const feedbackTitle = isHigh ? 'Perfeito!' : isBwithHint ? 'Certo!' : 'Funciona!'
+  const feedbackEmoji = isHigh ? (isKids ? '🎉' : '🔥') : isBwithHint ? '✅' : (isKids ? '💪' : '👍')
+  const feedbackTitle = isHigh ? (isKids ? 'Arrasou!' : 'Perfeito!') : isBwithHint ? 'Certo!' : (isKids ? 'Quase lá!' : 'Funciona!')
   const feedbackSub   = isHigh
-    ? 'É exatamente o que um nativo diria.'
+    ? (isKids ? 'Essa é a resposta mais legal! 🌟' : 'É exatamente o que um nativo diria.')
     : isBwithHint
-      ? 'Você acertou, mas precisou da dica desta vez.'
-      : 'Funciona, mas B seria mais natural.'
+      ? (isKids ? 'Você acertou! Mas tente sem dica da próxima vez 😊' : 'Você acertou, mas precisou da dica desta vez.')
+      : (isKids ? 'Funciona! Mas a outra opção seria mais natural 👇' : 'Funciona, mas B seria mais natural.')
 
   // Cores do card de feedback
   const fbBgKids   = isHigh ? 'linear-gradient(135deg, #D6F5D6, #B8F0C8)' : isBwithHint ? 'linear-gradient(135deg, #DBEAFE, #BFDBFE)' : '#FFF9E6'
@@ -564,7 +594,7 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
           ? (isHigh ? '0 4px 20px rgba(255,107,107,0.20)' : isBwithHint ? '0 4px 20px rgba(107,203,119,0.20)' : '0 4px 12px rgba(255,217,61,0.15)')
           : (isHigh ? '0 0 40px rgba(124,58,237,0.25)' : 'none'),
       }}>
-        <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>{feedbackEmoji}</div>
+        <div style={{ fontSize: isKids ? 64 : 38, marginBottom: 8, lineHeight: 1 }}>{feedbackEmoji}</div>
         <div style={{ fontWeight: 900, fontSize: 18, marginBottom: 5, color: isKids ? fbColorKids : fbColorPro }}>
           {feedbackTitle}
         </div>

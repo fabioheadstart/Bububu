@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { playLevelUp } from '@/lib/audio/sounds'
 import { getCategoryBadges } from '@/data/vocabulary/unlockSchedule'
 import { BububuCharacter, getStage } from '@/components/bububu/BububuCharacter'
@@ -31,11 +32,11 @@ export function LevelUpOverlay({ level, newCategories = [], onDone }: Props) {
 
   const badges = getCategoryBadges(newCategories)
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed',
       inset: 0,
-      zIndex: 1000,
+      zIndex: 2500,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -183,6 +184,7 @@ export function LevelUpOverlay({ level, newCategories = [], onDone }: Props) {
           </span>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

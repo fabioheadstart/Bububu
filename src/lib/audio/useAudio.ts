@@ -80,5 +80,21 @@ export function useBububuVoice(stage: EvolutionStage = 'teen') {
     })
   }, [stage])
 
-  return { speakBububu }
+  // Easter egg: voz ultra-grave e lenta para o bullet time
+  const speakBububuBulletTime = useCallback(() => {
+    if (!audioRef.current) audioRef.current = new Audio('/audio/bububu.mp3')
+    audioRef.current.playbackRate = 0.35
+    audioRef.current.currentTime  = 0
+    audioRef.current.play().catch(() => {
+      if (!('speechSynthesis' in window)) return
+      window.speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance('bububu!')
+      u.lang  = 'pt-BR'
+      u.pitch = 0.1
+      u.rate  = 0.35
+      window.speechSynthesis.speak(u)
+    })
+  }, [])
+
+  return { speakBububu, speakBububuBulletTime }
 }

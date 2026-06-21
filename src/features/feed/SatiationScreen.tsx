@@ -10,9 +10,15 @@ interface Props {
   onPlayMemory?: () => void   // jogar memory com as palavras do dia
 }
 
+function getMidnightMs(): number {
+  const d = new Date()
+  d.setHours(24, 0, 0, 0)   // próxima meia-noite
+  return d.getTime()
+}
+
 function getReturnTime(): string {
-  const d = new Date(Date.now() + 60 * 60 * 1000)
-  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  // Mostra "amanhã" se meia-noite já passou ou está próxima
+  return 'amanhã'
 }
 
 function useCountdown(targetMs: number) {
@@ -25,15 +31,17 @@ function useCountdown(targetMs: number) {
     }, 1000)
     return () => clearInterval(id)
   }, [targetMs])
-  const mins = Math.floor(remaining / 60000)
+  const hrs  = Math.floor(remaining / 3600000)
+  const mins = Math.floor((remaining % 3600000) / 60000)
   const secs = Math.floor((remaining % 60000) / 1000)
+  if (hrs > 0) return `${hrs}h ${mins.toString().padStart(2,'0')}min`
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
 export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMemory }: Props) {
   const limit      = DAILY_LIMIT[mode]
   const returnTime = getReturnTime()
-  const targetMs   = Date.now() + 60 * 60 * 1000
+  const targetMs   = getMidnightMs()
   const countdown  = useCountdown(targetMs)
   const isKids     = mode === 'kids'
 
@@ -44,8 +52,8 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
       background: isKids
         ? 'linear-gradient(170deg, #fef3c7 0%, #fde68a 40%, #fcd34d 100%)'
         : 'linear-gradient(170deg, #1c0a3d 0%, #2d1060 50%, #1a1040 100%)',
-      padding: '32px 24px',
-      position: 'relative', overflow: 'hidden',
+      padding: '12px 20px',
+      position: 'relative', overflowY: 'auto',
     }}>
 
       {/* Partículas de fundo */}
@@ -65,12 +73,12 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
       <div style={{
         position: 'relative',
         animation: 'bub-celebrate 2s ease-in-out infinite',
-        marginBottom: 4,
+        marginBottom: 0,
         filter: isKids
           ? 'drop-shadow(0 12px 28px rgba(251,191,36,0.50))'
           : 'drop-shadow(0 12px 28px rgba(167,139,250,0.50))',
       }}>
-        <svg width="150" height="170" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+        <svg width="110" height="128" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
           <ellipse cx="60" cy="135" rx="42" ry="7" fill="rgba(0,0,0,0.10)" />
 
           {/* Corpo mais redondo / satisfeito */}
@@ -109,19 +117,19 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
 
       {/* Título */}
       <div style={{
-        textAlign: 'center', marginTop: 16, marginBottom: 20,
+        textAlign: 'center', marginTop: 8, marginBottom: 10,
       }}>
         <div style={{
-          fontSize: 26, fontWeight: 900,
+          fontSize: 22, fontWeight: 900,
           color: isKids ? '#92400e' : '#e9d5ff',
-          marginBottom: 6, lineHeight: 1.2,
+          marginBottom: 4, lineHeight: 1.2,
         }}>
           Bububu está saciado! 🎉
         </div>
         <div style={{
-          fontSize: 14,
+          fontSize: 13,
           color: isKids ? 'rgba(120,60,0,0.70)' : 'rgba(196,181,253,0.70)',
-          lineHeight: 1.6,
+          lineHeight: 1.4,
         }}>
           Você alimentou {wordsToday} de {limit} palavras hoje.
           <br />Ótimo trabalho!
@@ -133,17 +141,17 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
         width: '100%', maxWidth: 320,
         background: isKids ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.07)',
         border: `1px solid ${isKids ? 'rgba(251,191,36,0.40)' : 'rgba(167,139,250,0.25)'}`,
-        borderRadius: 18, padding: '16px 20px',
+        borderRadius: 18, padding: '12px 16px',
         display: 'flex', gap: 0, flexDirection: 'column',
-        marginBottom: 20,
+        marginBottom: 12,
       }}>
         <div style={{
           display: 'flex', justifyContent: 'space-around',
           borderBottom: `1px solid ${isKids ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'}`,
-          paddingBottom: 14, marginBottom: 14,
+          paddingBottom: 10, marginBottom: 10,
         }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 900, color: isKids ? '#b45309' : '#c4b5fd' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: isKids ? '#b45309' : '#c4b5fd' }}>
               {wordsToday}
             </div>
             <div style={{ fontSize: 11, color: isKids ? 'rgba(0,0,0,0.45)' : 'rgba(196,181,253,0.50)', marginTop: 2 }}>
@@ -152,7 +160,7 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
           </div>
           <div style={{ width: 1, background: isKids ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' }} />
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 900, color: isKids ? '#b45309' : '#c4b5fd' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: isKids ? '#b45309' : '#c4b5fd' }}>
               {streak > 0 ? `🔥 ${streak}` : '—'}
             </div>
             <div style={{ fontSize: 11, color: isKids ? 'rgba(0,0,0,0.45)' : 'rgba(196,181,253,0.50)', marginTop: 2 }}>
@@ -167,10 +175,10 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
             Bububu digere melhor com descanso
           </div>
           <div style={{ fontSize: 15, fontWeight: 800, color: isKids ? '#92400e' : '#e9d5ff' }}>
-            Volte às {returnTime} ⏰
+            Volte {returnTime} ⏰
           </div>
           <div style={{ fontSize: 12, color: isKids ? 'rgba(0,0,0,0.35)' : 'rgba(196,181,253,0.35)', marginTop: 3 }}>
-            {countdown} restantes
+            {countdown} até meia-noite
           </div>
         </div>
       </div>
@@ -180,7 +188,7 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
         <button
           onClick={onPlayMemory}
           style={{
-            padding: '14px 32px', borderRadius: 16, border: 'none',
+            padding: '11px 28px', borderRadius: 16, border: 'none',
             background: isKids
               ? 'linear-gradient(135deg, #f59e0b, #fbbf24)'
               : 'linear-gradient(135deg, #7c3aed, #a855f7)',

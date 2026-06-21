@@ -1,5 +1,10 @@
 // Falas do Bububu — agrupadas por momento
 // Regra: curtas, em português, na voz de um mineiro fofo que come palavras
+//
+// ATENÇÃO: categorias 'body' e 'family' nunca devem usar templates que incluam
+// a palavra diretamente — "adoro um mother", "breast — que delícia" etc. são
+// involuntariamente sexuais ou perturbadores. Use SAFE_WITH_WORD_CATS para
+// controlar quais categorias podem receber o template com palavra.
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -40,13 +45,21 @@ const EAT_NORMAL = [
   'primeira não conta, dá mais',
 ]
 
+// Categorias onde é SEGURO incluir a palavra no comentário.
+// Body e family ficam de fora — "adoro um breast/mother" é inaceitável.
+const SAFE_WITH_WORD_CATS = new Set([
+  'food', 'actions', 'adjectives', 'time', 'transport',
+  'animals', 'nature', 'work', 'play', 'school',
+  'friends', 'travel', 'games', 'home', 'phrases',
+])
+
 const EAT_WITH_WORD = (word: string) =>
   pick([
-    `"${word}" — que delícia`,
-    `${word}... engolido!`,
-    `gostei dessa: ${word}`,
-    `${word} é nutritiva`,
-    `adoro um "${word}"`,
+    `"${word}" — muito boa!`,
+    `${word}... anotado!`,
+    `essa eu gostei: ${word}`,
+    `${word} é das boas`,
+    `"${word}" ficou guardada`,
   ])
 
 // ── Revisão ────────────────────────────────────────────────────────────────────
@@ -78,13 +91,15 @@ const EAT_CONTEXT = [
 ]
 
 // ── Mastery ────────────────────────────────────────────────────────────────────
+// MASTERY: "faz parte de mim agora" era problemático com body parts.
+// Templates com palavra usam aspas + contexto neutro de vocabulário.
 const MASTERY_PHRASES = (word: string) =>
   pick([
     `"${word}" gravado pra sempre`,
     `dominei! próxima!`,
-    `${word} — nunca mais esqueço`,
-    `${word} faz parte de mim agora`,
-    `gravei "${word}" no coração`,
+    `nunca mais esqueço "${word}"`,
+    `aprendi "${word}" de verdade`,
+    `"${word}" no banco de dados`,
   ])
 
 // ── Combos ─────────────────────────────────────────────────────────────────────
@@ -148,6 +163,19 @@ const EVOLUTION_PHRASES: Record<string, string[]> = {
   ],
 }
 
+// ── Easter egg bullet time ─────────────────────────────────────────────────────
+const BULLET_TIME = ['B · U · B · U · B · U...']
+
+// Frases para quando Bububu come exatamente o que estava com vontade
+const EAT_CRAVING = [
+  'Era isso! Exatamente o que eu queria! 🤤',
+  'Perfeito! Você sabe o que eu gosto 😍',
+  'Isso sim! Tô amando 🔥',
+  'Aaaah! Que satisfação! 💫',
+  'Sabia que você ia me dar isso! 🎯',
+  'Minha comida favorita do dia! 😋',
+]
+
 export type SpeechTrigger =
   | 'idle_normal'
   | 'idle_hungry'
@@ -155,28 +183,35 @@ export type SpeechTrigger =
   | 'eat_review'
   | 'eat_jackpot'
   | 'eat_context'
+  | 'eat_craving'
   | 'mastery'
   | 'combo_trio'
   | 'combo_vs'
   | 'combo_konami'
   | 'thought'
   | 'evolution'
+  | 'bullet_time'
 
 export function getBubPhrase(
   trigger: SpeechTrigger,
   word?: string,
   stage?: string,
+  category?: string,
 ): string {
   switch (trigger) {
     case 'idle_normal':  return pick(IDLE_NORMAL)
     case 'idle_hungry':  return pick(IDLE_HUNGRY)
-    case 'eat_normal':
-      // 35% de chance de incluir o nome da palavra
-      if (word && Math.random() < 0.35) return EAT_WITH_WORD(word)
+    case 'eat_normal': {
+      // 35% de chance de incluir o nome da palavra — SÓ em categorias seguras
+      const catSafe = !category || SAFE_WITH_WORD_CATS.has(category)
+      if (word && catSafe && Math.random() < 0.35) return EAT_WITH_WORD(word)
       return pick(EAT_NORMAL)
+    }
     case 'eat_review':   return pick(EAT_REVIEW)
     case 'eat_jackpot':  return pick(EAT_JACKPOT)
     case 'eat_context':  return pick(EAT_CONTEXT)
+    case 'eat_craving':  return pick(EAT_CRAVING)
+    case 'bullet_time':  return pick(BULLET_TIME)
     case 'mastery':      return word ? MASTERY_PHRASES(word) : pick(EAT_NORMAL)
     case 'combo_trio':   return pick(COMBO_TRIO)
     case 'combo_vs':     return pick(COMBO_VS)

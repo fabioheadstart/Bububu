@@ -38,23 +38,38 @@ export function ComboOverlay({ combo, onDone }: Props) {
           to   { opacity: 1; }
         }
         @keyframes combo-slam {
-          0%   { transform: scale(0.4) rotate(-8deg); opacity: 0; }
-          60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
-          80%  { transform: scale(0.96) rotate(-1deg); }
+          0%   { transform: scale(0.2) rotate(-18deg); opacity: 0; filter: blur(6px); }
+          55%  { transform: scale(1.22) rotate(4deg);  opacity: 1; filter: blur(0); }
+          72%  { transform: scale(0.93) rotate(-2deg); }
+          86%  { transform: scale(1.04) rotate(1deg); }
           100% { transform: scale(1) rotate(0deg); }
         }
         @keyframes vs-left {
-          from { transform: translateX(-120px); opacity: 0; }
-          to   { transform: translateX(0); opacity: 1; }
+          0%   { transform: translateX(-180px) scale(1.1); opacity: 0; }
+          65%  { transform: translateX(6px) scale(1.04); opacity: 1; }
+          82%  { transform: translateX(-3px) scale(0.98); }
+          100% { transform: translateX(0) scale(1); opacity: 1; }
         }
         @keyframes vs-right {
-          from { transform: translateX(120px); opacity: 0; }
-          to   { transform: translateX(0); opacity: 1; }
+          0%   { transform: translateX(180px) scale(1.1); opacity: 0; }
+          65%  { transform: translateX(-6px) scale(1.04); opacity: 1; }
+          82%  { transform: translateX(3px) scale(0.98); }
+          100% { transform: translateX(0) scale(1); opacity: 1; }
         }
         @keyframes vs-center {
-          0%   { transform: scale(0); opacity: 0; }
-          70%  { transform: scale(1.3); opacity: 1; }
-          100% { transform: scale(1); }
+          0%   { transform: scale(0) rotate(20deg); opacity: 0; }
+          55%  { transform: scale(1.5) rotate(-6deg); opacity: 1; }
+          75%  { transform: scale(0.88) rotate(3deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        @keyframes vs-clash-flash {
+          0%   { opacity: 0; }
+          30%  { opacity: 0.65; }
+          100% { opacity: 0; }
+        }
+        @keyframes vs-label {
+          from { opacity: 0; transform: translateY(-10px) letterSpacing 4px; }
+          to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes lightning {
           0%,100% { opacity: 0.3; }
@@ -79,12 +94,17 @@ export function ComboOverlay({ combo, onDone }: Props) {
         }
       `}</style>
 
+      {/* Backdrop sólido: cobre 100% do viewport antes de qualquer sub-view */}
       <div
         onClick={onDone}
         style={{
           position: 'fixed', inset: 0, zIndex: 2000,
+          background: 'rgba(8,3,24,0.97)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           animation: 'combo-bg-in 0.18s ease',
+          overflow: 'hidden',
         }}
       >
         {combo.type === 'trio'   && <TrioView   combo={combo} />}
@@ -108,7 +128,7 @@ function TrioView({ combo }: { combo: ComboData }) {
   return (
     <div style={{
       background: overlayBg,
-      position: 'fixed', inset: 0,
+      position: 'absolute', inset: 0,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 18,
     }}>
@@ -124,10 +144,10 @@ function TrioView({ combo }: { combo: ComboData }) {
 
       {/* COMBO! */}
       <div style={{
-        fontSize: 72, fontWeight: 900, color: color.ring,
-        letterSpacing: -2, lineHeight: 1,
-        textShadow: `0 0 40px ${color.glow}, 0 4px 0 rgba(0,0,0,0.6)`,
-        animation: 'combo-slam 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
+        fontSize: 84, fontWeight: 900, color: color.ring,
+        letterSpacing: -3, lineHeight: 1,
+        textShadow: `0 0 50px ${color.glow}, 0 0 100px ${color.glow}, 0 5px 0 rgba(0,0,0,0.7)`,
+        animation: 'combo-slam 0.42s cubic-bezier(0.34,1.56,0.64,1) both',
       }}>
         COMBO!
       </div>
@@ -166,61 +186,103 @@ function VersusView({ combo }: { combo: ComboData }) {
   const [w1, w2] = combo.words
   return (
     <div style={{
-      position: 'fixed', inset: 0,
-      display: 'flex', alignItems: 'stretch',
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
-      {/* Lado esquerdo */}
+      {/* Label OPOSTOS no topo */}
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'linear-gradient(135deg, rgba(124,58,237,0.85) 0%, rgba(10,4,30,0.92) 100%)',
-        animation: 'vs-left 0.25s cubic-bezier(0.34,1.56,0.64,1) both',
+        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+        display: 'flex', justifyContent: 'center', paddingTop: 28,
+        animation: 'konami-sub 0.2s 0.08s ease both',
       }}>
         <span style={{
-          fontSize: 44, fontWeight: 900, color: '#e9d5ff',
-          textShadow: '0 0 24px rgba(167,139,250,0.8)',
-          letterSpacing: -1,
+          fontSize: 11, fontWeight: 900, letterSpacing: 5,
+          textTransform: 'uppercase', color: 'rgba(196,181,253,0.65)',
         }}>
-          {w1}
+          ⚡ opostos ⚡
         </span>
       </div>
 
-      {/* Centro VS */}
+      {/* Clash flash — relâmpago branco no momento do impacto */}
       <div style={{
-        width: 100, flexShrink: 0,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(10,4,30,0.96)',
-        position: 'relative', zIndex: 1,
-        animation: 'vs-center 0.35s 0.15s cubic-bezier(0.34,1.56,0.64,1) both',
-      }}>
+        position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none',
+        background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.9) 0%, transparent 60%)',
+        animation: 'vs-clash-flash 0.35s ease-out 0.14s both',
+      }} />
+
+      {/* Main row */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'stretch', position: 'relative' }}>
+        {/* Lado esquerdo */}
         <div style={{
-          position: 'absolute', top: 0, bottom: 0, left: '50%',
-          width: 2, background: 'linear-gradient(to bottom, transparent, #a78bfa, transparent)',
-          animation: 'lightning 0.4s ease-in-out infinite',
-        }} />
-        <div style={{
-          fontSize: 32, fontWeight: 900, color: '#a78bfa',
-          textShadow: '0 0 20px rgba(167,139,250,0.9)',
-          position: 'relative', zIndex: 2,
-          lineHeight: 1,
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'linear-gradient(135deg, rgba(124,58,237,0.88) 0%, rgba(10,4,30,0.94) 100%)',
+          animation: 'vs-left 0.18s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          ⚡<br/>VS<br/>⚡
+          <span style={{
+            fontSize: 52, fontWeight: 900, color: '#e9d5ff',
+            textShadow: '0 0 32px rgba(167,139,250,0.9), 0 4px 0 rgba(76,29,149,0.8)',
+            letterSpacing: -2,
+          }}>
+            {w1}
+          </span>
+        </div>
+
+        {/* Centro VS */}
+        <div style={{
+          width: 84, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(6,2,20,0.98)',
+          position: 'relative', zIndex: 2,
+          animation: 'vs-center 0.3s 0.14s cubic-bezier(0.34,1.56,0.64,1) both',
+        }}>
+          {/* Linha relâmpago vertical */}
+          <div style={{
+            position: 'absolute', top: 0, bottom: 0, left: '50%',
+            width: 2, marginLeft: -1,
+            background: 'linear-gradient(to bottom, transparent 0%, #a78bfa 30%, #a78bfa 70%, transparent 100%)',
+            animation: 'lightning 0.3s ease-in-out infinite',
+          }} />
+          <div style={{
+            fontSize: 38, fontWeight: 900, color: '#c084fc',
+            textShadow: '0 0 28px rgba(192,132,252,1), 0 0 60px rgba(167,139,250,0.5)',
+            position: 'relative', zIndex: 3,
+            lineHeight: 1, textAlign: 'center',
+            letterSpacing: -1,
+          }}>
+            VS
+          </div>
+        </div>
+
+        {/* Lado direito */}
+        <div style={{
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'linear-gradient(225deg, rgba(236,72,153,0.88) 0%, rgba(10,4,30,0.94) 100%)',
+          animation: 'vs-right 0.18s cubic-bezier(0.22,1,0.36,1) both',
+        }}>
+          <span style={{
+            fontSize: 52, fontWeight: 900, color: '#fce7f3',
+            textShadow: '0 0 32px rgba(236,72,153,0.9), 0 4px 0 rgba(157,23,77,0.8)',
+            letterSpacing: -2,
+          }}>
+            {w2}
+          </span>
         </div>
       </div>
 
-      {/* Lado direito */}
+      {/* +XP embaixo */}
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'linear-gradient(225deg, rgba(236,72,153,0.85) 0%, rgba(10,4,30,0.92) 100%)',
-        animation: 'vs-right 0.25s cubic-bezier(0.34,1.56,0.64,1) both',
+        display: 'flex', justifyContent: 'center', paddingBottom: 32,
+        animation: 'konami-sub 0.3s 0.4s ease both',
       }}>
         <span style={{
-          fontSize: 44, fontWeight: 900, color: '#fce7f3',
-          textShadow: '0 0 24px rgba(236,72,153,0.8)',
-          letterSpacing: -1,
+          fontSize: 14, fontWeight: 800, color: '#c084fc',
+          background: 'rgba(192,132,252,0.12)',
+          border: '1px solid rgba(192,132,252,0.35)',
+          borderRadius: 99, padding: '6px 20px',
         }}>
-          {w2}
+          ⚡ +30 XP bônus
         </span>
       </div>
     </div>
@@ -241,7 +303,7 @@ function KonamiView({ combo: _ }: { combo: ComboData }) {
   return (
     <div style={{
       background: 'radial-gradient(circle at 50% 45%, rgba(124,58,237,0.35) 0%, rgba(10,4,30,0.96) 65%)',
-      position: 'fixed', inset: 0,
+      position: 'absolute', inset: 0,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 16,
       overflow: 'hidden',

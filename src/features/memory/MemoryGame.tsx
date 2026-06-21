@@ -3,8 +3,9 @@ import { ALL_WORDS } from '@/data/vocabulary'
 import type { AppMode, VocabEntry } from '@/types'
 import { playSnap, playCoinJackpot } from '@/lib/audio/sounds'
 
-// Número fixo de pares no Memory — independente do daily limit
-const MEMORY_PAIRS = 6
+// Pares por modo — Kids começa simples, Pro mantém desafiador
+const MEMORY_PAIRS_KIDS = 3
+const MEMORY_PAIRS_PRO  = 6
 
 // ─── Emoji map — palavra → emoji ─────────────────────────────────────────────
 const WORD_EMOJI: Record<string, string> = {
@@ -162,24 +163,27 @@ function Card({ card, flipped, isKids, onClick }: {
       }}
     >
       {!show && (
-        <span style={{ fontSize: 28, userSelect: 'none' }}>🫧</span>
+        <span style={{ fontSize: isKids ? 36 : 28, userSelect: 'none' }}>
+          {isKids ? '❓' : '🫧'}
+        </span>
       )}
       {show && isEmoji && (
-        // Carta de emoji — grande e sem label
-        <span style={{ fontSize: 38, lineHeight: 1, userSelect: 'none' }}>{card.text}</span>
+        // Carta de emoji — grande
+        <span style={{ fontSize: isKids ? 48 : 38, lineHeight: 1, userSelect: 'none' }}>{card.text}</span>
       )}
       {show && (isWord || isEn) && (
-        // Carta de palavra inglês
+        // Carta de palavra inglês — sem label EN no modo Kids
         <>
-          {!isWord && (
+          {!isWord && !isKids && (
             <span style={{
               fontSize: 8, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
-              color: isKids ? 'rgba(124,58,237,0.55)' : 'rgba(196,181,253,0.60)',
-              marginBottom: 2,
+              color: 'rgba(196,181,253,0.60)', marginBottom: 2,
             }}>EN</span>
           )}
           <span style={{
-            fontSize: card.text.length > 10 ? 11 : card.text.length > 7 ? 13 : 16,
+            fontSize: isKids
+              ? (card.text.length > 8 ? 14 : 18)
+              : (card.text.length > 10 ? 11 : card.text.length > 7 ? 13 : 16),
             fontWeight: 900,
             color: isKids ? '#2D1F6B' : '#e9d5ff',
             textAlign: 'center', lineHeight: 1.2,
@@ -197,13 +201,16 @@ function Card({ card, flipped, isKids, onClick }: {
       )}
       {show && card.type === 'pt' && (
         <>
+          {!isKids && (
+            <span style={{
+              fontSize: 8, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
+              color: 'rgba(52,211,153,0.65)', marginBottom: 2,
+            }}>PT</span>
+          )}
           <span style={{
-            fontSize: 8, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
-            color: isKids ? 'rgba(22,163,74,0.60)' : 'rgba(52,211,153,0.65)',
-            marginBottom: 2,
-          }}>PT</span>
-          <span style={{
-            fontSize: card.text.length > 10 ? 11 : card.text.length > 7 ? 13 : 16,
+            fontSize: isKids
+              ? (card.text.length > 8 ? 14 : 18)
+              : (card.text.length > 10 ? 11 : card.text.length > 7 ? 13 : 16),
             fontWeight: 700, fontStyle: 'italic',
             color: isKids ? '#065f46' : '#a7f3d0',
             textAlign: 'center', lineHeight: 1.2,
@@ -223,7 +230,7 @@ function Card({ card, flipped, isKids, onClick }: {
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function MemoryGame({ mode, wordsLearned, onDone }: Props) {
   const isKids    = mode === 'kids'
-  const pairCount = Math.min(MEMORY_PAIRS, wordsLearned.length)
+  const pairCount = Math.min(isKids ? MEMORY_PAIRS_KIDS : MEMORY_PAIRS_PRO, wordsLearned.length)
 
   const [cards,    setCards]    = useState(() => buildCards(wordsLearned, pairCount))
   const [flipped,  setFlipped]  = useState<string[]>([])
@@ -354,11 +361,13 @@ export function MemoryGame({ mode, wordsLearned, onDone }: Props) {
         Une o emoji com a palavra em inglês
       </div>
 
-      {/* Grid — 4 colunas, cartas com tamanho fixo (~80px em mobile, ~90px em desktop) */}
+      {/* Grid — 3 colunas (Kids) ou 4 colunas (Pro) */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, minmax(60px, 90px))',
-        gap: 10,
+        gridTemplateColumns: isKids
+          ? 'repeat(3, minmax(80px, 110px))'
+          : 'repeat(4, minmax(60px, 90px))',
+        gap: isKids ? 14 : 10,
         justifyContent: 'center',
         width: '100%',
       }}>

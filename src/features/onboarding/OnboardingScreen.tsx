@@ -136,6 +136,7 @@ export function OnboardingScreen({ onComplete }: Props) {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100dvh',
+        overflowY: 'auto',
         padding: '40px 24px',
         gap: 28,
         background: 'linear-gradient(160deg, #0a041e 0%, #130826 60%, #0d0520 100%)',

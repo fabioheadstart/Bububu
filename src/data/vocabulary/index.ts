@@ -5,12 +5,13 @@ import { B1_WORDS } from './b1'
 import { A1_EXTRA_WORDS } from './a1-extra'
 import { A2_EXTRA_WORDS } from './a2-extra'
 import { B1_EXTRA_WORDS } from './b1-extra'
+import { PHRASE_CARDS } from './phrases'
 
 const ALL_A1 = [...A1_WORDS, ...A1_EXTRA_WORDS]
 const ALL_A2 = [...A2_WORDS, ...A2_EXTRA_WORDS]
 const ALL_B1 = [...B1_WORDS, ...B1_EXTRA_WORDS]
 
-export const ALL_WORDS: VocabEntry[] = [...ALL_A1, ...ALL_A2, ...ALL_B1]
+export const ALL_WORDS: VocabEntry[] = [...ALL_A1, ...ALL_A2, ...ALL_B1, ...PHRASE_CARDS]
 
 export function getWordsByLevel(level: CEFRLevel): VocabEntry[] {
   return ALL_WORDS.filter(w => w.level === level)

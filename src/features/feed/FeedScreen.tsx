@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { ConfettiRain } from '@/components/ui/ConfettiRain'
+import { ParticleBurst } from '@/components/ui/ParticleBurst'
+import type { BurstData } from '@/components/ui/ParticleBurst'
 import { PoopReveal } from '@/components/ui/PoopReveal'
 import { MasteryToast } from '@/components/ui/MasteryToast'
 import { WordChips } from '@/components/ui/WordChips'
@@ -16,31 +19,78 @@ import {
   playSnap,
   playMunch,
   playFart,
+  playFartJackpot,
+  preloadJackpotFart,
   playCoinNormal,
   playCoinBonus,
   playCoinJackpot,
   playComboTrio,
   playComboVS,
   playKonami,
+  hapticBonus,
+  hapticJackpot,
+  hapticCombo,
+  hapticKonami,
 } from '@/lib/audio/sounds'
 import { OPPOSITE_PAIRS } from '@/data/vocabulary/opposites'
+import { getCategoryColor } from '@/data/vocabulary/categoryColors'
 import { useProgress } from '@/hooks/useProgress'
 import { useTheme } from '@/hooks/useTheme'
 import { usePetState } from '@/hooks/usePetState'
 import { SceneBackground } from '@/components/ui/SceneBackground'
+import { WorldSwitcher } from '@/components/ui/WorldSwitcher'
+import { WorldUnlockOverlay } from '@/components/ui/WorldUnlockOverlay'
+import { useKidsWorld } from '@/hooks/useKidsWorld'
 import { BububuSpeech } from '@/components/ui/BububuSpeech'
 import { getBubPhrase } from '@/data/bububuPhrases'
 import { FloatingIsland } from '@/components/ui/FloatingIsland'
 import { BububuLore } from '@/components/ui/BububuLore'
 import { SleepScreen } from '@/features/feed/SleepScreen'
+import { SuperPeidoOverlay } from '@/components/ui/SuperPeidoOverlay'
 import { SatiationScreen } from '@/features/feed/SatiationScreen'
 import { ShareCard } from '@/features/share/ShareCard'
 import { MemoryGame } from '@/features/memory/MemoryGame'
 import { getUnlockedPool, getNewlyUnlockedCategories, getTutorialChips } from '@/data/vocabulary/unlockSchedule'
+import { QuizOptions } from '@/components/ui/QuizOptions'
+import { ALL_WORDS } from '@/data/vocabulary/index'
 import type { BubState } from '@/components/bububu/BububuCharacter'
 import type { FeedResult, VocabEntry } from '@/types'
 
-interface XpPop { id: number; amount: number; x: number }
+// ─── Fome do dia — categoria que o Bububu quer comer hoje ────────────────────
+const CRAVING_CATS = ['food', 'actions', 'adjectives', 'time', 'transport', 'animals', 'home', 'phrases']
+
+function getDailyCraving(date: string): string {
+  const hash = date.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return CRAVING_CATS[hash % CRAVING_CATS.length]
+}
+
+// ─── Quiz pós-feed ────────────────────────────────────────────────────────────
+interface QuizState {
+  word:          string
+  correct:       string
+  options:       string[]   // 4 traduções embaralhadas
+  sourceEntry:   VocabEntry
+}
+
+function buildQuizOptions(entry: VocabEntry, seenIds: string[]): string[] {
+  const seenSet = new Set(seenIds)
+  // Prefere distratores da mesma categoria já vistos
+  const samecat = ALL_WORDS.filter(w =>
+    w.id !== entry.id && w.category === entry.category && seenSet.has(w.id)
+  )
+  const anySeen = ALL_WORDS.filter(w =>
+    w.id !== entry.id && seenSet.has(w.id)
+  )
+  const fallback = ALL_WORDS.filter(w => w.id !== entry.id)
+  const pool = samecat.length >= 3 ? samecat : anySeen.length >= 3 ? anySeen : fallback
+  const distractors = [...pool]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3)
+    .map(w => w.translation)
+  return [...distractors, entry.translation].sort(() => Math.random() - 0.5)
+}
+
+interface XpPop { id: number; amount: number; screenX: number; screenY: number; tier: 'normal' | 'bonus' | 'jackpot' }
 interface FlyingData { word: string; startX: number; startY: number; endX: number; endY: number }
 
 // Boca aberta: cx=60, cy=80 em viewBox 0 0 120 140, SVG 140×160px
@@ -76,8 +126,8 @@ function getSmartChipReplacement(
     if (opp) return opp
   }
 
-  // P3: mesma categoria (40% de chance) → facilita Trio
-  if (Math.random() < 0.40) {
+  // P3: mesma categoria (22% de chance) → possibilita Trio sem entregá-lo de graça
+  if (Math.random() < 0.22) {
     const sameCat = available.filter(w => w.category === lastFed.category)
     if (sameCat.length > 0) return sameCat[Math.floor(Math.random() * sameCat.length)]
   }
@@ -89,6 +139,8 @@ function getSmartChipReplacement(
 function delay(ms: number) { return new Promise<void>(r => setTimeout(r, ms)) }
 
 const KONAMI_SEQUENCE = ['sleep', 'morning', 'coffee', 'work', 'happy']
+
+const HOLD_DURATION = 3000          // ms para carregar o bullet time
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  SEQUÊNCIA SONORA (todos os delays são relativos ao tap = t0)
@@ -106,7 +158,7 @@ export function FeedScreen() {
   const { feedWord }                                           = useFeed()
   const { speakWord }                                          = useAudio()
   const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty } = useProgress()
-  const { speakBububu }                                        = useBububuVoice(getStage(computedLevel))
+  const { speakBububu, speakBububuBulletTime }                  = useBububuVoice(getStage(computedLevel))
   const [showSettings, setShowSettings] = useState(false)
   const [showShare, setShowShare]       = useState(false)
 
@@ -144,6 +196,10 @@ export function FeedScreen() {
   const [memoryFromSat,  setMemoryFromSat]  = useState(false)  // veio da SatiationScreen?
   const [forceAwake,     setForceAwake]     = useState(false)
   const [overLimit, setOverLimit]         = useState(false)
+  const [quizState,       setQuizState]       = useState<QuizState | null>(null)
+  const [quizResult,      setQuizResult]      = useState<'correct' | 'wrong' | null>(null)
+  const [quizSelectedIdx, setQuizSelectedIdx] = useState<number | null>(null)
+  const quizTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [showPoop, setShowPoop]         = useState(false)
   const [poopFixed, setPoopFixed]       = useState<{x:number,fromY:number,dropPx:number}|null>(null)
   const [poopSplat, setPoopSplat]         = useState(false)
@@ -160,20 +216,106 @@ export function FeedScreen() {
   const lastFedWords     = useRef<VocabEntry[]>([])
   const konamiProgress   = useRef(0)
   const chipsRef         = useRef<VocabEntry[]>([])
+  // Cooldown: impede Trio/VS de disparar de novo em menos de 10 feeds
+  const feedsSinceCombo  = useRef(0)
 
+  const [superPeido,    setSuperPeido]    = useState(false)
   const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
   const [hintIds,       setHintIds]       = useState<Set<string>>(new Set())
   const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
   const [masteryWord,   setMasteryWord]   = useState<string | null>(null)
   const [justMastered,  setJustMastered]  = useState(false)
   const [bubSpeech,     setBubSpeech]     = useState<string | null>(null)
+  const [bursts,        setBursts]        = useState<BurstData[]>([])
+  const [screenFlash,   setScreenFlash]   = useState<string | null>(null)
+  const [jackpotKey,    setJackpotKey]    = useState(0)
+  const [shakeKey,      setShakeKey]      = useState(0)
+  const [confettiActive, setConfettiActive] = useState(false)
+  const [shakeActive,   setShakeActive]   = useState(false)
+  const [newChipId,     setNewChipId]     = useState<string | null>(null)
+  const shakeTimerRef  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const newChipTimer   = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const burstId = useRef(0)
   const speechTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  // ── Easter egg: segura o Bububu ──────────────────────────────────────────────
+  const holdStartRef  = useRef<number | null>(null)
+  const holdRafRef    = useRef<number | null>(null)
+  const [bulletTimeWord,  setBulletTimeWord]  = useState<string | null>(null)
+  const [bulletTimePhase, setBulletTimePhase] = useState<'off' | 'fly' | 'impact'>('off')
 
   // Mostra uma fala do Bububu por `duration` ms, depois limpa
   const showSpeech = useCallback((text: string, duration = 2900) => {
     clearTimeout(speechTimerRef.current)
     setBubSpeech(text)
     speechTimerRef.current = setTimeout(() => setBubSpeech(null), duration)
+  }, [])
+
+  // ── Easter egg: refs de função — reatribuídas a cada render para capturar estado atual
+  const tickHoldRef         = useRef<() => void>(() => {})
+  const fireBulletTimeRef   = useRef<() => void>(() => {})
+  const suppressNextTapRef  = useRef(false)
+
+  fireBulletTimeRef.current = () => {
+    cancelAnimationFrame(holdRafRef.current ?? 0)
+    holdStartRef.current = null
+    // bloqueia o click que o browser vai gerar quando o dedo soltar
+    suppressNextTapRef.current = true
+    setTimeout(() => { suppressNextTapRef.current = false }, 600)
+    const word = result?.entry.word ?? lastFedWords.current.at(-1)?.word ?? 'bububu'
+    setBulletTimeWord(word.toUpperCase())
+    setBulletTimePhase('fly')
+    setScreenFlash('#ffffff')
+    setTimeout(() => setScreenFlash(null), 60)
+    setTimeout(() => showSpeech(getBubPhrase('bullet_time'), 3500), 2800)
+    setTimeout(() => {
+      const mouth = getMouthPos()
+      triggerXpPop(15, mouth.x, mouth.y - 60, 'bonus')
+    }, 3200)
+    setTimeout(() => { setBulletTimePhase('impact'); speakBububuBulletTime() }, 2600)
+    setTimeout(() => { setBulletTimePhase('off'); setBulletTimeWord(null) }, 4200)
+  }
+
+  tickHoldRef.current = () => {
+    if (!holdStartRef.current) return
+    const p = Math.min(1, (Date.now() - holdStartRef.current) / HOLD_DURATION)
+    if (p >= 1) { fireBulletTimeRef.current(); return }
+    holdRafRef.current = requestAnimationFrame(tickHoldRef.current)
+  }
+
+  function handleBubHoldStart() {
+    if (feeding.current || holdStartRef.current !== null || bulletTimePhase !== 'off') return
+    holdStartRef.current = Date.now()
+    holdRafRef.current = requestAnimationFrame(tickHoldRef.current)
+  }
+
+  function handleBubHoldEnd() {
+    if (holdStartRef.current === null) return
+    cancelAnimationFrame(holdRafRef.current ?? 0)
+    holdStartRef.current = null
+  }
+
+  // Shake: ativa por 420ms cada vez que shakeKey sobe
+  useEffect(() => {
+    if (shakeKey === 0) return
+    clearTimeout(shakeTimerRef.current)
+    setShakeActive(true)
+    shakeTimerRef.current = setTimeout(() => setShakeActive(false), 420)
+    return () => clearTimeout(shakeTimerRef.current)
+  }, [shakeKey])
+
+  // Preload do peido jackpot via ElevenLabs (faz uma só vez no mount)
+  useEffect(() => { void preloadJackpotFart() }, [])
+
+  // Fome na abertura — se não alimentou nada hoje, Bububu pede logo
+  useEffect(() => {
+    if ((progress.wordsToday ?? 0) === 0) {
+      const t = setTimeout(() => {
+        if (!feeding.current) showSpeech(getBubPhrase('idle_hungry'), 3500)
+      }, 1400)
+      return () => clearTimeout(t)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Sets derivados do progresso — para indicadores nos chips
@@ -309,10 +451,11 @@ export function FeedScreen() {
     }
   }
 
-  function triggerXpPop(amount: number) {
+  function triggerXpPop(amount: number, screenX: number, screenY: number, tier: 'normal' | 'bonus' | 'jackpot' = 'normal') {
     const id = ++popId.current
-    setXpPops(prev => [...prev, { id, amount, x: Math.random() * 40 - 20 }])
-    setTimeout(() => setXpPops(prev => prev.filter(p => p.id !== id)), 950)
+    setXpPops(prev => [...prev, { id, amount, screenX, screenY, tier }])
+    const dur = tier === 'jackpot' ? 1300 : 1050
+    setTimeout(() => setXpPops(prev => prev.filter(p => p.id !== id)), dur)
   }
 
   const handleChipSelect = useCallback(async (entry: VocabEntry, rect: DOMRect) => {
@@ -326,7 +469,16 @@ export function FeedScreen() {
 
     const mouth = getMouthPos()
 
-    // ── t0: tap ──────────────────────────────────────────────────────────────
+    // ── t0: tap — burst de partículas na posição do chip ────────────────────
+    const chipCx = rect.left + rect.width  / 2
+    const chipCy = rect.top  + rect.height / 2
+    // Guarda posição para o XP pop aparecer no mesmo lugar
+    const chipPopX = chipCx
+    const chipPopY = rect.top - 8
+    const chipCol = getCategoryColor(entry.category)
+    const newBurstId = ++burstId.current
+    setBursts(prev => [...prev, { id: newBurstId, x: chipCx, y: chipCy, color: chipCol.bg, ring: chipCol.ring }])
+
     playWhoosh()                       // som do voo
     setFlyingId(entry.id)
     setResult(null)
@@ -339,7 +491,7 @@ export function FeedScreen() {
     })
 
     // Busca o resultado em paralelo com a animação
-    const { isNew, justSatiated, overLimit: isOver, justMastered: isMastered } = recordWord(entry)
+    const { isNew, wordsToday: todayCount, justSatiated, overLimit: isOver, justMastered: isMastered } = recordWord(entry)
     setIsReview(!isNew)
     setOverLimit(isOver)
     setJustMastered(isMastered)
@@ -358,18 +510,48 @@ export function FeedScreen() {
     setMunchText(false)
     const feedResult = await feedResultPromise
     setResult(feedResult)
-    const soundType = playFart()
-    setIsBurp(soundType === 'burp')
 
-    // Ciclo do 💩: aparece → some em 2.5s → resultado some em 5.5s
+    if (feedResult.rewardTier === 'jackpot') {
+      playFartJackpot()      // ElevenLabs ou mega synth
+      setSuperPeido(true)    // overlay SUPER PEIDO
+      setIsBurp(false)
+    } else {
+      const soundType = playFart()
+      setIsBurp(soundType === 'burp')
+    }
+
+    // Ciclo do 💩: aparece → some em ~950ms → resultado some depois
     clearTimeout(poopTimerRef.current)
     clearTimeout(clearTimerRef.current)
+    clearTimeout(quizTimerRef.current)
     setShowPoop(true)
-    poopTimerRef.current  = setTimeout(() => setShowPoop(false), 2500)
-    clearTimerRef.current = setTimeout(() => {
-      setResult(null)
-      setIsBurp(false)
-    }, 5500)
+    poopTimerRef.current = setTimeout(() => setShowPoop(false), 950)
+
+    // ── Quiz pós-feed: só para palavras novas e não-frases ────────────────────
+    const shouldQuiz = isNew && !entry.word.includes(' ') && !isOver
+    if (shouldQuiz) {
+      setQuizState({
+        word:        entry.word,
+        correct:     entry.translation,
+        options:     buildQuizOptions(entry, progress.wordsLearned),
+        sourceEntry: entry,
+      })
+      setQuizResult(null)
+      setQuizSelectedIdx(null)
+      // Resultado some após quiz (quiz tem 1.3s pós-resposta, mais 4s de janela)
+      clearTimerRef.current = setTimeout(() => {
+        setResult(null)
+        setIsBurp(false)
+        setQuizState(null)
+        setQuizResult(null)
+        setQuizSelectedIdx(null)
+      }, 7500)
+    } else {
+      clearTimerRef.current = setTimeout(() => {
+        setResult(null)
+        setIsBurp(false)
+      }, 5500)
+    }
 
     // Hint one-time
     if (!localStorage.getItem('bub_poop_hint')) {
@@ -387,7 +569,7 @@ export function FeedScreen() {
       } else if (feedResult.rewardTier === 'context_bonus') {
         showSpeech(getBubPhrase('eat_context'))
       } else {
-        showSpeech(getBubPhrase('eat_normal', entry.word))
+        showSpeech(getBubPhrase('eat_normal', entry.word, undefined, entry.category))
       }
     }, 220)
 
@@ -399,17 +581,39 @@ export function FeedScreen() {
     // ── recompensa ────────────────────────────────────────────────────────────
     await delay(300)
     if (isNew) {
-      triggerXpPop(isOver ? Math.ceil(feedResult.xpGained / 2) : feedResult.xpGained)
-      if      (feedResult.rewardTier === 'jackpot')       playCoinJackpot()
-      else if (feedResult.rewardTier === 'context_bonus') playCoinBonus()
-      else                                                 playCoinNormal()
+      if (feedResult.rewardTier === 'jackpot') {
+        playCoinJackpot()
+        hapticJackpot()
+        setScreenFlash('#fbbf24')
+        setJackpotKey(k => k + 1)
+        setShakeKey(k => k + 1)
+        setConfettiActive(true)
+        setTimeout(() => setScreenFlash(null), 500)
+        setTimeout(() => setConfettiActive(false), 2600)
+        triggerXpPop(isOver ? Math.ceil(feedResult.xpGained / 2) : feedResult.xpGained, chipPopX, chipPopY, 'jackpot')
+      } else if (feedResult.rewardTier === 'context_bonus') {
+        playCoinBonus()
+        hapticBonus()
+        setScreenFlash(getCategoryColor(entry.category).ring)
+        setTimeout(() => setScreenFlash(null), 380)
+        triggerXpPop(isOver ? Math.ceil(feedResult.xpGained / 2) : feedResult.xpGained, chipPopX, chipPopY, 'bonus')
+      } else {
+        playCoinNormal()
+        triggerXpPop(isOver ? Math.ceil(feedResult.xpGained / 2) : feedResult.xpGained, chipPopX, chipPopY, 'normal')
+      }
+    }
+
+    // ── Fome do dia: reação especial + XP bônus extra ────────────────────────
+    if (entry.category === cravingCategory && !isOver) {
+      setTimeout(() => showSpeech(getBubPhrase('eat_craving'), 2800), 300)
+      setTimeout(() => triggerXpPop(3, chipPopX, chipPopY, 'bonus'), 2400)
     }
 
     // Mastery toast — aparece 400ms após o reveal para não colidir com o 💩
     if (isMastered) {
       setTimeout(() => {
         setMasteryWord(entry.word)
-        showSpeech(getBubPhrase('mastery', entry.word), 3200)
+        showSpeech(getBubPhrase('mastery', entry.word, undefined, entry.category), 3200)
       }, 400)
     }
 
@@ -434,6 +638,11 @@ export function FeedScreen() {
       const remaining = prev.filter(c => c.id !== entry.id)
       const exclude   = [...remaining.map(c => c.id), entry.id]
       const smart = getSmartChipReplacement(poolRef.current, exclude, entry, nextKonamiStep)
+      if (smart) {
+        clearTimeout(newChipTimer.current)
+        setNewChipId(smart.id)
+        newChipTimer.current = setTimeout(() => setNewChipId(null), 650)
+      }
       return smart ? [...remaining, smart] : remaining
     })
     setBubState('idle')
@@ -441,16 +650,20 @@ export function FeedScreen() {
 
     // ── Combo detection ───────────────────────────────────────────────────────
     lastFedWords.current = [...lastFedWords.current, entry].slice(-5)
+    feedsSinceCombo.current++
 
+    const COMBO_COOLDOWN = 10   // feeds mínimos entre dois combos Trio/VS
     let comboFired = false
 
-    // 1. Konami (highest priority) — sequence: sleep→morning→coffee→work→happy
+    // 1. Konami (highest priority, sem cooldown — é raro por design)
     if (w === KONAMI_SEQUENCE[konamiProgress.current]) {
       konamiProgress.current++
       if (konamiProgress.current === KONAMI_SEQUENCE.length) {
         konamiProgress.current = 0
         lastFedWords.current = []
+        feedsSinceCombo.current = 0
         playKonami()
+        hapticKonami()
         showSpeech(getBubPhrase('combo_konami'), 4000)
         setActiveCombo({ type: 'konami', words: [...KONAMI_SEQUENCE] })
         comboFired = true
@@ -459,30 +672,46 @@ export function FeedScreen() {
       konamiProgress.current = w === KONAMI_SEQUENCE[0] ? 1 : 0
     }
 
-    // 2. Opposites VS — hot→cold, big→small, morning→night, etc.
-    if (!comboFired && lastFedWords.current.length >= 2) {
+    // 2. Opposites VS — cooldown garante que não spame
+    if (!comboFired && feedsSinceCombo.current >= COMBO_COOLDOWN && lastFedWords.current.length >= 2) {
       const prevEntry = lastFedWords.current[lastFedWords.current.length - 2]
       if (OPPOSITE_PAIRS[w] === prevEntry.word.toLowerCase()) {
         lastFedWords.current = []
+        feedsSinceCombo.current = 0
         playComboVS()
+        hapticCombo()
         showSpeech(getBubPhrase('combo_vs'), 3000)
         setActiveCombo({ type: 'versus', words: [prevEntry.word, entry.word] })
+        setShakeKey(k => k + 1)
         comboFired = true
       }
     }
 
-    // 3. Semantic Trio — 3 consecutive words from the same category
-    if (!comboFired && lastFedWords.current.length >= 3) {
+    // 3. Semantic Trio — 3 seguidas da mesma categoria + cooldown
+    if (!comboFired && feedsSinceCombo.current >= COMBO_COOLDOWN && lastFedWords.current.length >= 3) {
       const last3 = lastFedWords.current.slice(-3)
       if (last3.every(e2 => e2.category === last3[0].category)) {
         lastFedWords.current = []
+        feedsSinceCombo.current = 0
         playComboTrio()
+        hapticCombo()
         showSpeech(getBubPhrase('combo_trio'), 3000)
         setActiveCombo({
           type: 'trio',
           words: last3.map(e2 => e2.word),
           category: last3[0].category,
         })
+        setShakeKey(k => k + 1)
+      }
+    }
+
+    // ── Escassez: Bububu avisa quando o estoque do dia está acabando ────────
+    if (!justSatiated && !isOver) {
+      const remaining = dailyLimit - todayCount
+      if (remaining === 3) {
+        setTimeout(() => showSpeech('Ainda estou com fome! Só mais 3... 🍱', 2500), 600)
+      } else if (remaining === 1) {
+        setTimeout(() => showSpeech('Última mordida do dia! Faz valer! 🎯', 2500), 600)
       }
     }
 
@@ -494,8 +723,35 @@ export function FeedScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedWord, speakBububu, speakWord, recordWord, dailyLimit, showSpeech])
 
+  const handleQuizAnswer = useCallback((correct: boolean, idx: number) => {
+    setQuizSelectedIdx(idx)
+    setQuizResult(correct ? 'correct' : 'wrong')
+    if (correct) {
+      showSpeech(getBubPhrase('eat_normal'), 2000)
+    } else {
+      showSpeech(`É "${quizState?.correct}" 😅`, 2200)
+    }
+    // Auto-avança após 1.3s
+    clearTimeout(quizTimerRef.current)
+    quizTimerRef.current = setTimeout(() => {
+      setQuizState(null)
+      setQuizResult(null)
+      setQuizSelectedIdx(null)
+      setResult(null)
+      setIsBurp(false)
+    }, 1300)
+  }, [quizState, showSpeech])
+
   const theme     = useTheme()
   const isKids    = theme.isKids
+
+  const {
+    activeWorld,
+    unlockedWorlds,
+    setWorld,
+    newlyUnlocked,
+    dismissNewlyUnlocked,
+  } = useKidsWorld(computedLevel, isKids)
   const wordCount = progress.wordsLearned.length
   const streak    = progress.streak
   const isFeeding = flyingId !== null
@@ -508,7 +764,7 @@ export function FeedScreen() {
   }
 
   const activeBubState: BubState = bubState !== 'idle' ? bubState : idleMood()
-  const isHungryIdle = hoursHungry >= 2 && bubState === 'idle'
+  const isHungryIdle = (progress.wordsToday === 0 || hoursHungry >= 2) && bubState === 'idle'
 
   if (isSleeping && !forceAwake) {
     return (
@@ -548,9 +804,16 @@ export function FeedScreen() {
     )
   }
 
-  // Indicador de apetite — dots no header
-  const wordsToday  = progress.wordsToday ?? 0
-  const appetiteDots = Array.from({ length: dailyLimit }, (_, i) => i < wordsToday)
+  // Fome do dia — determinística pela data
+  const todayStr        = new Date().toISOString().slice(0, 10)
+  const cravingCategory = getDailyCraving(todayStr)
+  const cravingColor    = getCategoryColor(cravingCategory)
+
+  // Indicador de apetite — contador de escassez
+  const wordsToday     = progress.wordsToday ?? 0
+  const remainingToday = Math.max(0, dailyLimit - wordsToday)
+  const appetiteIsLow  = remainingToday <= 3 && remainingToday > 0 && !overLimit
+  const appetiteCrit   = remainingToday <= 1 && remainingToday > 0 && !overLimit
 
   return (
     <div style={{
@@ -559,34 +822,73 @@ export function FeedScreen() {
       position: 'relative',
       overflow: 'hidden',
       background: theme.bgGradient,
+      animation: shakeActive ? 'screen-shake 0.42s ease-out' : 'none',
     }}>
-      <SceneBackground isKids={isKids} />
+      <SceneBackground isKids={isKids} worldId={activeWorld} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <XpBar level={computedLevel} progress={levelProgress} />
       </div>
 
-      {/* Dots de apetite diário */}
+      {/* Fome do dia + contador de apetite */}
       <div style={{
-        display: 'flex', gap: 5, justifyContent: 'center', alignItems: 'center',
-        padding: '4px 0 0', position: 'relative', zIndex: 1,
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        gap: 8, padding: '2px 0 0', position: 'relative', zIndex: 1,
       }}>
-        {appetiteDots.map((filled, i) => (
-          <div key={i} style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: filled
-              ? (isKids ? '#f59e0b' : '#a78bfa')
-              : (isKids ? 'rgba(45,31,107,0.18)' : 'rgba(255,255,255,0.15)'),
-            transition: 'background 0.4s ease',
-            boxShadow: filled
-              ? `0 0 6px ${isKids ? 'rgba(245,158,11,0.6)' : 'rgba(167,139,250,0.6)'}`
-              : 'none',
-          }} />
-        ))}
-        {overLimit && (
-          <span style={{ fontSize: 10, marginLeft: 4, color: isKids ? '#b45309' : 'rgba(196,181,253,0.55)' }}>
+        {/* Badge de fome do dia */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          background: `${cravingColor.bg}22`,
+          border: `1px solid ${cravingColor.ring}55`,
+          borderRadius: 99, padding: '2px 9px 2px 7px',
+        }}>
+          <span style={{ fontSize: 13 }}>🔥</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: cravingColor.ring, letterSpacing: 0.2 }}>
+            {cravingColor.label || cravingCategory}
+          </span>
+        </div>
+        {overLimit ? (
+          <span style={{
+            fontSize: 10, fontWeight: 700,
+            color: isKids ? '#b45309' : 'rgba(196,181,253,0.55)',
+            background: isKids ? 'rgba(180,83,9,0.10)' : 'rgba(196,181,253,0.08)',
+            padding: '2px 8px', borderRadius: 99,
+          }}>
             ½ XP
           </span>
+        ) : remainingToday === 0 ? null : (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            background: appetiteCrit
+              ? 'rgba(239,68,68,0.15)'
+              : appetiteIsLow
+                ? (isKids ? 'rgba(245,158,11,0.18)' : 'rgba(245,158,11,0.15)')
+                : (isKids ? 'rgba(45,31,107,0.10)' : 'rgba(255,255,255,0.07)'),
+            border: `1px solid ${
+              appetiteCrit
+                ? 'rgba(239,68,68,0.40)'
+                : appetiteIsLow
+                  ? 'rgba(245,158,11,0.35)'
+                  : (isKids ? 'rgba(45,31,107,0.15)' : 'rgba(255,255,255,0.12)')
+            }`,
+            borderRadius: 99,
+            padding: '2px 10px 2px 7px',
+            animation: appetiteCrit ? 'hint-ring 1.3s ease-in-out infinite' : undefined,
+            ['--chip-ring' as string]: 'rgba(239,68,68,0.6)',
+            ['--chip-shadow' as string]: 'none',
+          } as React.CSSProperties}>
+            <span style={{ fontSize: 13, lineHeight: 1 }}>🍱</span>
+            <span style={{
+              fontSize: 11, fontWeight: 800, letterSpacing: 0.2,
+              color: appetiteCrit
+                ? '#ef4444'
+                : appetiteIsLow
+                  ? '#f59e0b'
+                  : (isKids ? 'rgba(45,31,107,0.55)' : 'rgba(255,255,255,0.55)'),
+            }}>
+              {remainingToday} {remainingToday === 1 ? 'restante' : 'restantes'}
+            </span>
+          </div>
         )}
       </div>
 
@@ -605,6 +907,15 @@ export function FeedScreen() {
           title="Revisar palavras"
         >📚 {wordCount} word{wordCount !== 1 ? 's' : ''}</span>
         {streak > 0 && <span>🔥 {streak} day{streak !== 1 ? 's' : ''}</span>}
+
+        {/* Alavanca de mundos — só Kids, só se tiver ≥1 mundo desbloqueado além do 1 */}
+        {isKids && unlockedWorlds.length > 1 && (
+          <WorldSwitcher
+            activeWorld={activeWorld}
+            unlockedWorlds={unlockedWorlds}
+            onSwitch={setWorld}
+          />
+        )}
 
         {/* Botão compartilhar */}
         <button
@@ -728,41 +1039,97 @@ export function FeedScreen() {
       >
         <BububuSpeech text={bubSpeech} isKids={isKids} />
 
-        <BububuCharacter
-          state={activeBubState}
-          rewardTier={result?.rewardTier}
-          level={computedLevel}
-          onTap={speakBububu}
-          onMegaFart={() => {
-            playFart()
-            setTimeout(() => playFart(), 400)
-            setTimeout(() => playFart(), 900)
-          }}
-          hungry={isHungryIdle}
-        />
-        {xpPops.map(pop => (
+        {/* Botão 🔊 — toca a pronúncia da palavra que o Bububu acabou de comer */}
+        {result && !isFeeding && (
+          <button
+            onClick={() => speakWord(result.entry.word)}
+            aria-label={`Ouvir pronúncia de ${result.entry.word}`}
+            style={{
+              position: 'absolute',
+              top: '12%',
+              right: 'calc(50% - 90px)',
+              fontSize: 22,
+              background: 'none',
+              border: 'none',
+              padding: 6,
+              cursor: 'pointer',
+              zIndex: 6,
+              animation: 'speech-bounce 1.6s ease-in-out infinite',
+              filter: 'drop-shadow(0 2px 6px rgba(124,58,237,0.5))',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            🔊
+          </button>
+        )}
+
+        <div
+          onPointerDown={handleBubHoldStart}
+          onPointerUp={handleBubHoldEnd}
+          onPointerLeave={handleBubHoldEnd}
+          onPointerCancel={handleBubHoldEnd}
+          style={{ position: 'relative', display: 'inline-block', touchAction: 'none' }}
+        >
+          <BububuCharacter
+            state={activeBubState}
+            rewardTier={result?.rewardTier}
+            level={computedLevel}
+            jackpotKey={jackpotKey}
+            onTap={() => {
+              if (suppressNextTapRef.current) return
+              speakBububu()
+              if (result) speakWord(result.entry.word)
+            }}
+            onMegaFart={() => {
+              playFart()
+              setTimeout(() => playFart(), 400)
+              setTimeout(() => playFart(), 900)
+            }}
+            hungry={isHungryIdle}
+          />
+        </div>
+        {xpPops.map(pop => createPortal(
           <div key={pop.id} style={{
-            position: 'absolute',
-            top: 8,
-            left: `calc(50% + ${pop.x}px)`,
-            fontWeight: 800,
-            fontSize: 18,
-            color: '#7c3aed',
+            position: 'fixed',
+            left: pop.screenX,
+            top:  pop.screenY,
+            transform: 'translateX(-50%)',
+            fontWeight: 900,
+            fontSize: pop.tier === 'jackpot' ? 36 : pop.tier === 'bonus' ? 28 : 22,
             pointerEvents: 'none',
-            animation: 'xp-pop 0.95s ease-out forwards',
+            animation: pop.tier === 'jackpot'
+              ? 'xp-pop-jackpot 1.3s ease-out forwards'
+              : 'xp-pop 1.05s ease-out forwards',
             whiteSpace: 'nowrap',
+            zIndex: 9997,
+            color: pop.tier === 'jackpot' ? '#fbbf24'
+                 : pop.tier === 'bonus'   ? '#a78bfa'
+                 :                          '#e9d5ff',
+            textShadow: pop.tier === 'jackpot'
+              ? '0 0 20px #f59e0b, 0 2px 0 rgba(0,0,0,0.5)'
+              : '0 2px 8px rgba(0,0,0,0.6), 0 1px 0 rgba(0,0,0,0.4)',
+            letterSpacing: pop.tier === 'jackpot' ? 1 : 0.5,
           }}>
+            {pop.tier === 'jackpot' ? '🎆 ' : pop.tier === 'bonus' ? '✨ ' : ''}
             +{pop.amount} XP
-          </div>
+            {pop.tier === 'jackpot' ? ' 🎆' : ''}
+          </div>,
+          document.body
         ))}
         <FloatingIsland />
 
-        {/* Yum text flutua do lado da boca do Bububu */}
-        {munchText && (
+        {/* Yum text — via portal para nunca ser cortado pelo overflow do container */}
+        {munchText && createPortal(
           <div style={{
-            position: 'absolute',
-            top: '48%',
-            left: 'calc(50% + 58px)',
+            position: 'fixed',
+            top: (() => {
+              const r = bubContainerRef.current?.getBoundingClientRect()
+              return r ? r.top + r.height * 0.48 : '45vh'
+            })(),
+            left: (() => {
+              const r = bubContainerRef.current?.getBoundingClientRect()
+              return r ? Math.min(r.left + r.width / 2 + 58, window.innerWidth - 160) : '60%'
+            })(),
             transform: 'translateY(-50%)',
             background: 'rgba(255,255,255,0.92)',
             color: '#7c3aed',
@@ -775,7 +1142,7 @@ export function FeedScreen() {
             boxShadow: '0 3px 12px rgba(124,58,237,0.25)',
             animation: 'yum-pop 0.25s cubic-bezier(0.34,1.56,0.64,1)',
             letterSpacing: -0.3,
-            zIndex: 5,
+            zIndex: 1200,
           }}>
             😋 yum yum yum...
             {/* triangulo apontando para a boca */}
@@ -789,7 +1156,8 @@ export function FeedScreen() {
               borderBottom: '6px solid transparent',
               borderRight: '8px solid rgba(255,255,255,0.92)',
             }} />
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 
@@ -851,17 +1219,16 @@ export function FeedScreen() {
         </div>
       )}
 
-      {/* Zona de resultado — altura fixa, nunca cresce */}
+      {/* Zona de resultado — cresce com o conteúdo, empurra o Bububu para cima */}
       <div ref={resultZoneRef} style={{
         flexShrink: 0,
-        height: 136,
+        minHeight: 130,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 16px',
+        padding: '6px 16px',
         position: 'relative',
         zIndex: 1,
-        overflow: 'hidden',
       }}>
         {result && !munchText && (
           <div style={{
@@ -898,7 +1265,7 @@ export function FeedScreen() {
 
       <div style={{
         flexShrink: 0,
-        padding: '12px 20px 28px',
+        padding: '8px 16px 20px',
         background: isKids ? 'rgba(255,255,255,0.70)' : 'rgba(15,5,40,0.75)',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
@@ -907,26 +1274,44 @@ export function FeedScreen() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 12,
+        gap: 8,
       }}>
-        <p style={{
-          fontSize: 11, margin: 0,
-          letterSpacing: 1, textTransform: 'uppercase', fontWeight: 800,
-          color: isKids ? 'rgba(45,31,107,0.55)' : 'rgba(233,213,255,0.70)',
-        }}>
-          {isKids ? '🍭 Escolha uma palavra' : 'Escolha uma palavra'}
-        </p>
-        <WordChips
-          chips={chips}
-          onSelect={handleChipSelect}
-          disabled={isFeeding}
-          flyingId={flyingId}
-          isKids={isKids}
-          hintIds={hintIds}
-          konamiHintId={konamiHintId}
-          reviewIds={reviewIds}
-          masteredIds={masteredIds}
-        />
+        {/* ── Quiz pós-feed ── */}
+        {quizState ? (
+          <QuizOptions
+            word={quizState.word}
+            options={quizState.options}
+            correctAnswer={quizState.correct}
+            selectedIdx={quizSelectedIdx}
+            result={quizResult}
+            onAnswer={handleQuizAnswer}
+            isKids={isKids}
+          />
+        ) : (
+          <>
+            <p style={{
+              fontSize: 11, margin: 0,
+              letterSpacing: 1, textTransform: 'uppercase', fontWeight: 800,
+              color: isKids ? 'rgba(45,31,107,0.55)' : 'rgba(233,213,255,0.70)',
+            }}>
+              {isKids ? '🍭 Escolha uma palavra' : 'Escolha uma palavra'}
+            </p>
+
+            <WordChips
+              chips={chips}
+              onSelect={handleChipSelect}
+              disabled={isFeeding}
+              flyingId={flyingId}
+              isKids={isKids}
+              hintIds={hintIds}
+              konamiHintId={konamiHintId}
+              reviewIds={reviewIds}
+              masteredIds={masteredIds}
+              newChipId={newChipId}
+              cravingCategory={cravingCategory}
+            />
+          </>
+        )}
       </div>
 
       {flying && (
@@ -990,7 +1375,71 @@ export function FeedScreen() {
         />
       )}
 
+      <SuperPeidoOverlay active={superPeido} onDone={() => setSuperPeido(false)} />
+      <WorldUnlockOverlay worldId={newlyUnlocked} onDone={dismissNewlyUnlocked} />
+
       <ComboOverlay combo={activeCombo} onDone={() => setActiveCombo(null)} />
+
+      {/* ── Confetti jackpot ───────────────────────────────────────── */}
+      <ConfettiRain active={confettiActive} />
+
+      {/* ── Particle bursts (via portal, fora do DOM) ──────────────── */}
+      {bursts.map(b => (
+        <ParticleBurst
+          key={b.id}
+          burst={b}
+          onDone={id => setBursts(prev => prev.filter(x => x.id !== id))}
+        />
+      ))}
+
+      {/* ── Screen flash jackpot / bonus ───────────────────────────── */}
+      {screenFlash && createPortal(
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9998,
+          background: screenFlash,
+          pointerEvents: 'none',
+          animation: 'screen-flash 0.48s ease-out forwards',
+        }} />,
+        document.body
+      )}
+
+      {/* ── Easter egg: bullet time ─────────────────────────────────── */}
+      {bulletTimePhase !== 'off' && createPortal(
+        <>
+          <style>{`
+            @keyframes bt-zoom {
+              from { opacity:0; transform:scale(0.05) rotate(-8deg); filter:blur(6px); }
+              to   { opacity:1; transform:scale(1)    rotate(0deg);  filter:blur(0);  }
+            }
+            @keyframes bt-impact {
+              0%   { transform:scale(1);   opacity:1; filter:brightness(1); }
+              35%  { transform:scale(1.5); opacity:1; filter:brightness(2.5); }
+              100% { transform:scale(2.5); opacity:0; filter:brightness(1); }
+            }
+          `}</style>
+          <div style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9990,
+            pointerEvents: 'none',
+          }}>
+            <div style={{
+              fontSize: 52, fontWeight: 900,
+              color: '#ffffff',
+              letterSpacing: 6,
+              textShadow: '0 0 40px rgba(251,191,36,0.9), 0 0 80px rgba(251,191,36,0.4)',
+              willChange: 'transform, opacity, filter',
+              animation: bulletTimePhase === 'fly'
+                ? 'bt-zoom 2.5s cubic-bezier(0.12,0,0.04,1) forwards'
+                : 'bt-impact 0.55s ease-out forwards',
+            }}>
+              {bulletTimeWord}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   )
 }

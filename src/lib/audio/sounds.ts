@@ -527,6 +527,115 @@ export function playGroggyBububu(): void {
   } catch { /* silencioso */ }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// SUPER PEIDO — ElevenLabs SFX (primário) + mega synth (fallback)
+// Dispara apenas no jackpot (10% de chance). Cinematográfico, alto, memorável.
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _jackpotFartUrl: string | null = null
+let _jackpotFartLoading = false
+
+/** Chama ElevenLabs Sound Generation API e cacheia como blob URL.
+ *  Deve ser chamado no mount do app; silencioso se não houver chave. */
+export async function preloadJackpotFart(): Promise<void> {
+  const apiKey = (import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined)
+  if (!apiKey || _jackpotFartUrl || _jackpotFartLoading) return
+  _jackpotFartLoading = true
+  try {
+    const res = await fetch('https://api.elevenlabs.io/v1/sound-generation', {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg',
+      },
+      body: JSON.stringify({
+        text: 'an extremely loud, long, wet, resonant fart sound effect — comically disgusting, almost cinematic',
+        duration_seconds: 2.5,
+        prompt_influence: 0.3,
+      }),
+    })
+    if (res.ok) {
+      _jackpotFartUrl = URL.createObjectURL(await res.blob())
+      const preload = new Audio(_jackpotFartUrl)
+      preload.preload = 'auto'
+      preload.load()
+    }
+  } catch { /* silencioso — fallback para synth */ }
+  _jackpotFartLoading = false
+}
+
+// Mega synth: todas as 5 camadas simultâneas, gain alto, 1.8s
+function _fartMegaSynth(): void {
+  try {
+    const ac = actx(); const now = ac.currentTime; const dur = 1.8
+
+    const d1 = _fartLayer(ac, dur,        95,  35, 11, 1.2, now)
+    const d2 = _fartLayer(ac, dur - 0.2, 180,  75,  9, 1.0, now + 0.08)
+    const d3 = _fartLayer(ac, dur - 0.4, 360, 150,  5, 0.7, now + 0.05)
+    const d4 = _fartLayer(ac, 0.55,      200,  88, 13, 0.9, now + 0.65)
+    const d5 = _fartLayer(ac, 0.35,      480, 200, 14, 0.7, now + 1.40)
+
+    const mix = ac.createGain(); mix.gain.value = 1
+    d1.connect(mix); d2.connect(mix); d3.connect(mix); d4.connect(mix); d5.connect(mix)
+
+    const fl = _flutter(ac, mix, 18, 0.40, now, dur)
+
+    const env = ac.createGain()
+    env.gain.setValueAtTime(0, now)
+    env.gain.linearRampToValueAtTime(1.4, now + 0.04)
+    env.gain.setValueAtTime(1.4, now + 1.2)
+    env.gain.exponentialRampToValueAtTime(0.001, now + dur)
+    fl.connect(env); env.connect(ac.destination)
+
+    setTimeout(() => ac.close(), Math.ceil(dur * 1000) + 500)
+  } catch {}
+}
+
+/** Toca o peido do jackpot — ElevenLabs se disponível, synth mega caso contrário. */
+export function playFartJackpot(): void {
+  if (_jackpotFartUrl) {
+    try {
+      const a = new Audio(_jackpotFartUrl)
+      a.volume = 1.0
+      a.play().catch(() => _fartMegaSynth())
+      return
+    } catch { /* fallthrough */ }
+  }
+  _fartMegaSynth()
+}
+
+// ─── Haptic feedback (Android Chrome; silent on iOS) ─────────────────────────
+const vibe = (pattern: number | number[]) => {
+  try { navigator.vibrate?.(pattern) } catch {}
+}
+
+export const hapticTap     = () => vibe(14)                        // toque suave
+export const hapticBonus   = () => vibe([20, 10, 35])              // duplo
+export const hapticJackpot = () => vibe([30, 12, 55, 12, 100])    // crescente
+export const hapticCombo   = () => vibe([25, 8, 40, 8, 65])       // VS / Trio
+export const hapticKonami  = () => vibe([20,8,30,8,50,8,80,8,120]) // ultra
+
+// ─── Chip tap pop — feedback imediato ao tocar o chip (Candy Crush feel) ────
+// Sine descendo: 780→380Hz em 48ms — "bubble pop" satisfatório
+export function playChipTap(): void {
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+    const o   = ac.createOscillator()
+    const g   = ac.createGain()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(780, now)
+    o.frequency.exponentialRampToValueAtTime(380, now + 0.048)
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(0.22, now + 0.006)
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.052)
+    o.connect(g); g.connect(ac.destination)
+    o.start(now); o.stop(now + 0.06)
+    setTimeout(() => ac.close(), 200)
+  } catch {}
+}
+
 // ─── Menu hover blip (desktop only) ──────────────────────────────────────────
 // Short sine blip, ~55ms — game menu feel (Hollow Knight / Celeste style)
 export function playMenuHover(): void {
