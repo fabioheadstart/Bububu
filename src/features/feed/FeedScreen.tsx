@@ -235,6 +235,8 @@ export function FeedScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const { isSleeping, hoursHungry } = usePetState(progress.mode, progress.lastFedAt)
+
   // Fala de fome — dispara quando muda para estado faminto
   const prevHungryRef = useRef(false)
   useEffect(() => {
@@ -497,8 +499,6 @@ export function FeedScreen() {
   const wordCount = progress.wordsLearned.length
   const streak    = progress.streak
   const isFeeding = flyingId !== null
-
-  const { isSleeping, hoursHungry } = usePetState(progress.mode, progress.lastFedAt)
 
   // Mapeia fome → visual do Bububu quando idle
   const idleMood = (): BubState => {
