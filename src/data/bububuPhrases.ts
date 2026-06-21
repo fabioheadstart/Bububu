@@ -127,6 +127,27 @@ const THOUGHTS = [
 
 // ── API pública ────────────────────────────────────────────────────────────────
 
+// ── Evolução de estágio ────────────────────────────────────────────────────────
+const EVOLUTION_PHRASES: Record<string, string[]> = {
+  growing: [
+    'uai, cresci!',
+    'olha o tamanho de mim agora',
+    'tô ficando grande!',
+  ],
+  teen: [
+    'uma estrela! merecida',
+    'adolescente e bilíngue',
+    'nível teen: desbloqueado',
+    'tô quase lá, Jennifer',
+  ],
+  adult: [
+    'A COROA! meu Deus',
+    'jovem adulto com coroa. isso é vida',
+    'Hollywood, aqui vou eu mesmo',
+    'se o Jennifer Aniston me vir assim...',
+  ],
+}
+
 export type SpeechTrigger =
   | 'idle_normal'
   | 'idle_hungry'
@@ -139,10 +160,12 @@ export type SpeechTrigger =
   | 'combo_vs'
   | 'combo_konami'
   | 'thought'
+  | 'evolution'
 
 export function getBubPhrase(
   trigger: SpeechTrigger,
   word?: string,
+  stage?: string,
 ): string {
   switch (trigger) {
     case 'idle_normal':  return pick(IDLE_NORMAL)
@@ -159,5 +182,6 @@ export function getBubPhrase(
     case 'combo_vs':     return pick(COMBO_VS)
     case 'combo_konami': return pick(COMBO_KONAMI)
     case 'thought':      return pick(THOUGHTS)
+    case 'evolution':    return stage ? pick(EVOLUTION_PHRASES[stage] ?? EVOLUTION_PHRASES.growing) : 'cresci!'
   }
 }

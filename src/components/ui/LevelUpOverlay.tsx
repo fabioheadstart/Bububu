@@ -1,6 +1,15 @@
 import { useEffect } from 'react'
 import { playLevelUp } from '@/lib/audio/sounds'
 import { getCategoryBadges } from '@/data/vocabulary/unlockSchedule'
+import { BububuCharacter, getStage } from '@/components/bububu/BububuCharacter'
+
+const EVOLUTION_LEVELS = new Set([5, 10, 15])
+
+const STAGE_NAMES: Record<string, string> = {
+  growing: 'Crescendo! 🌱',
+  teen:    'Adolescente! ⭐',
+  adult:   'Jovem adulto! 👑',
+}
 
 interface Props {
   level: number
@@ -9,11 +18,16 @@ interface Props {
 }
 
 export function LevelUpOverlay({ level, newCategories = [], onDone }: Props) {
+  const isEvolution = EVOLUTION_LEVELS.has(level)
+  const stage       = getStage(level)
+  const stageName   = STAGE_NAMES[stage] ?? ''
+  const baseDuration = isEvolution ? 4200 : newCategories.length > 0 ? 3200 : 2300
+
   useEffect(() => {
     playLevelUp()
-    const t = setTimeout(onDone, newCategories.length > 0 ? 3200 : 2300)
+    const t = setTimeout(onDone, baseDuration)
     return () => clearTimeout(t)
-  }, [onDone, newCategories.length])
+  }, [onDone, baseDuration])
 
   const badges = getCategoryBadges(newCategories)
 
@@ -31,32 +45,80 @@ export function LevelUpOverlay({ level, newCategories = [], onDone }: Props) {
       backdropFilter: 'blur(6px)',
       animation: 'levelup-in 0.38s cubic-bezier(0.34, 1.56, 0.64, 1)',
     }}>
-      <div style={{
-        fontSize: 80,
-        lineHeight: 1,
-        animation: 'levelup-star 0.55s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-      }}>
-        ⭐
-      </div>
+      {/* Momento de evolução: mostra o Bububu no novo visual */}
+      {isEvolution ? (
+        <>
+          <div style={{
+            animation: 'levelup-star 0.65s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+            opacity: 0,
+            filter: 'drop-shadow(0 0 32px rgba(251,191,36,0.7))',
+          }}>
+            <BububuCharacter state="celebrating" level={level} />
+          </div>
 
-      <div style={{
-        fontWeight: 900,
-        fontSize: 42,
-        color: '#ffffff',
-        letterSpacing: -1,
-        animation: 'fadeSlideUp 0.4s 0.25s ease both',
-      }}>
-        LEVEL {level}!
-      </div>
+          <div style={{
+            fontWeight: 900,
+            fontSize: 36,
+            color: '#fbbf24',
+            letterSpacing: -0.5,
+            textAlign: 'center',
+            textShadow: '0 0 30px rgba(251,191,36,0.55)',
+            animation: 'fadeSlideUp 0.4s 0.35s ease both',
+            opacity: 0,
+          }}>
+            EVOLUIU! ✨
+          </div>
 
-      <div style={{
-        fontWeight: 600,
-        fontSize: 16,
-        color: '#ddd6fe',
-        animation: 'fadeSlideUp 0.4s 0.45s ease both',
-      }}>
-        Bububu está mais forte 💪
-      </div>
+          <div style={{
+            fontWeight: 700,
+            fontSize: 18,
+            color: '#ddd6fe',
+            animation: 'fadeSlideUp 0.4s 0.55s ease both',
+            opacity: 0,
+          }}>
+            {stageName}
+          </div>
+
+          <div style={{
+            fontWeight: 500,
+            fontSize: 13,
+            color: 'rgba(221,214,254,0.55)',
+            animation: 'fadeSlideUp 0.4s 0.70s ease both',
+            opacity: 0,
+          }}>
+            LEVEL {level}
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={{
+            fontSize: 80,
+            lineHeight: 1,
+            animation: 'levelup-star 0.55s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+          }}>
+            ⭐
+          </div>
+
+          <div style={{
+            fontWeight: 900,
+            fontSize: 42,
+            color: '#ffffff',
+            letterSpacing: -1,
+            animation: 'fadeSlideUp 0.4s 0.25s ease both',
+          }}>
+            LEVEL {level}!
+          </div>
+
+          <div style={{
+            fontWeight: 600,
+            fontSize: 16,
+            color: '#ddd6fe',
+            animation: 'fadeSlideUp 0.4s 0.45s ease both',
+          }}>
+            Bububu está mais forte 💪
+          </div>
+        </>
+      )}
 
       {/* Novas categorias desbloqueadas */}
       {badges.length > 0 && (

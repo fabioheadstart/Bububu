@@ -19,6 +19,28 @@ interface Props {
   onTap?: () => void
   onMegaFart?: () => void   // callback para tocar sons na FeedScreen
   hungry?: boolean
+  level?: number            // nível atual — define estágio de evolução
+}
+
+// ── Estágios de evolução ───────────────────────────────────────────────────────
+export type EvolutionStage = 'baby' | 'growing' | 'teen' | 'adult'
+
+export function getStage(level: number): EvolutionStage {
+  if (level >= 15) return 'adult'
+  if (level >= 10) return 'teen'
+  if (level >= 5)  return 'growing'
+  return 'baby'
+}
+
+const STAGE_CONFIG: Record<EvolutionStage, {
+  scale: number
+  baseColor: string
+  eyeScale: number
+}> = {
+  baby:    { scale: 0.88, baseColor: '#ddd6fe', eyeScale: 0.85 },
+  growing: { scale: 0.94, baseColor: '#c4b5fd', eyeScale: 0.93 },
+  teen:    { scale: 1.00, baseColor: '#a78bfa', eyeScale: 1.00 },
+  adult:   { scale: 1.00, baseColor: '#8b5cf6', eyeScale: 1.00 },
 }
 
 function Mouth({ state, squeezed }: { state: BubState; squeezed: boolean }) {
@@ -149,7 +171,9 @@ function Eyes({ state, squeezed, hungry }: { state: BubState; squeezed: boolean;
   )
 }
 
-export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry }: Props) {
+export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, level = 1 }: Props) {
+  const stage  = getStage(level)
+  const stageCfg = STAGE_CONFIG[stage]
   const [tapReaction, setTapReaction]   = useState<TapReaction | null>(null)
   const [particles, setParticles]       = useState<Particle[]>([])
   const [megaFart, setMegaFart]         = useState(false)
@@ -168,7 +192,7 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry }
     if (state === 'sad')      return '#a5b4fc'
     if (rewardTier === 'jackpot')       return '#ddd6fe'
     if (rewardTier === 'context_bonus') return '#fde68a'
-    return '#c4b5fd'
+    return stageCfg.baseColor           // cor do estágio de evolução
   })()
 
   const shadowColor = tapReaction
@@ -327,7 +351,13 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry }
           transition: 'filter 0.3s ease',
         }}
       >
-        <svg width="140" height="160" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width={140 * stageCfg.scale}
+          height={160 * stageCfg.scale}
+          viewBox="0 0 120 140"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ transition: 'width 0.6s ease, height 0.6s ease' }}
+        >
           <ellipse cx="60" cy="135" rx="38" ry="6" fill="rgba(0,0,0,0.08)" />
 
           <path
@@ -349,6 +379,34 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry }
             fill={squeezed ? 'rgba(255,100,140,0.50)' : 'rgba(255,150,170,0.30)'}
             style={{ transition: 'fill 0.1s' }}
           />
+
+          {/* ── Acessórios de evolução ── */}
+          {stage === 'teen' && (
+            // Estrela brilhante no topo da cabeça
+            <g style={{ animation: 'bub-spark 2s ease-in-out infinite' }}>
+              <polygon
+                points="60,2 62.4,8.5 69,8.5 63.8,12.5 65.8,19 60,15 54.2,19 56.2,12.5 51,8.5 57.6,8.5"
+                fill="#fbbf24"
+                opacity="0.92"
+              />
+            </g>
+          )}
+          {stage === 'adult' && (
+            // Coroa SVG discreta no topo
+            <g>
+              <path
+                d="M44,10 L44,18 L52,13 L60,20 L68,13 L76,18 L76,10 Z"
+                fill="#fbbf24"
+                opacity="0.95"
+              />
+              {/* Pontas da coroa */}
+              <circle cx="44" cy="10" r="2.5" fill="#fde68a" />
+              <circle cx="60" cy="7"  r="2.5" fill="#fde68a" />
+              <circle cx="76" cy="10" r="2.5" fill="#fde68a" />
+              {/* Detalhes internos */}
+              <rect x="47" y="14" width="26" height="5" rx="1" fill="#f59e0b" opacity="0.6" />
+            </g>
+          )}
 
           <Eyes state={state} squeezed={squeezed} hungry={hungry && state === 'idle'} />
           <Mouth state={state} squeezed={squeezed} />

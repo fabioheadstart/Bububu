@@ -8,7 +8,7 @@ import { XpBar } from '@/components/ui/XpBar'
 import { LevelUpOverlay } from '@/components/ui/LevelUpOverlay'
 import { ComboOverlay } from '@/components/ui/ComboOverlay'
 import type { ComboData } from '@/components/ui/ComboOverlay'
-import { BububuCharacter } from '@/components/bububu/BububuCharacter'
+import { BububuCharacter, getStage } from '@/components/bububu/BububuCharacter'
 import { useFeed } from '@/features/feed/useFeed'
 import { useBububuVoice, useAudio } from '@/lib/audio/useAudio'
 import {
@@ -207,10 +207,16 @@ export function FeedScreen() {
   useEffect(() => {
     if (computedLevel > prevLevel.current) {
       const newCats = getNewlyUnlockedCategories(prevLevel.current, computedLevel)
+      const prevStage = getStage(prevLevel.current)
+      const newStage  = getStage(computedLevel)
       prevLevel.current = computedLevel
       setLevelUpData({ level: computedLevel, newCats })
+      // Fala especial de evolução (500ms de delay para o overlay aparecer primeiro)
+      if (newStage !== prevStage) {
+        setTimeout(() => showSpeech(getBubPhrase('evolution', undefined, newStage), 3500), 500)
+      }
     }
-  }, [computedLevel])
+  }, [computedLevel, showSpeech])
 
   // Mantém ref de chips sempre atualizada
   useEffect(() => { chipsRef.current = chips }, [chips])
@@ -725,6 +731,7 @@ export function FeedScreen() {
         <BububuCharacter
           state={activeBubState}
           rewardTier={result?.rewardTier}
+          level={computedLevel}
           onTap={speakBububu}
           onMegaFart={() => {
             playFart()
