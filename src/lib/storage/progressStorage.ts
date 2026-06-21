@@ -15,6 +15,8 @@ function defaultProgress(mode: AppMode = 'pro'): UserProgress {
     difficulty: 'easy',
     bububuLevel: 1,
     wordsLearned: [],
+    wordReviewCounts: {},
+    masteredWords: [],
     streak: 0,
     lastSessionDate: '',
     lastFedAt: 0,
@@ -28,9 +30,11 @@ export function migrateProgress(p: Partial<UserProgress>): UserProgress {
   return {
     ...defaultProgress(p.mode),
     ...p,
-    difficulty:   p.difficulty   ?? 'easy',
-    wordsToday:   p.wordsToday   ?? 0,
-    lastFeedDate: p.lastFeedDate ?? '',
+    difficulty:        p.difficulty        ?? 'easy',
+    wordsToday:        p.wordsToday        ?? 0,
+    lastFeedDate:      p.lastFeedDate      ?? '',
+    wordReviewCounts:  p.wordReviewCounts  ?? {},
+    masteredWords:     p.masteredWords     ?? [],
   }
 }
 

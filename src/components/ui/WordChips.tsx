@@ -9,11 +9,14 @@ interface Props {
   isKids?: boolean
   hintIds?: Set<string>
   konamiHintId?: string | null
+  reviewIds?: Set<string>    // palavras já vistas mas não dominadas
+  masteredIds?: Set<string>  // palavras já dominadas
 }
 
 export function WordChips({
   chips, onSelect, disabled, flyingId,
   isKids = false, hintIds, konamiHintId,
+  reviewIds, masteredIds,
 }: Props) {
   return (
     <>
@@ -33,6 +36,8 @@ export function WordChips({
           const isFlying   = entry.id === flyingId
           const isHinted   = hintIds?.has(entry.id) ?? false
           const isKonami   = konamiHintId === entry.id
+          const isReview   = reviewIds?.has(entry.id) ?? false
+          const isMastered = masteredIds?.has(entry.id) ?? false
           const color      = getCategoryColor(entry.category)
 
           const baseShadow = `0 4px 14px ${color.glow}, 0 2px 0 rgba(0,0,0,0.14)`
@@ -92,6 +97,25 @@ export function WordChips({
                   }}
                 >
                   ✨
+                </span>
+              )}
+
+              {/* Indicador de review/mastery — estrela no canto superior esquerdo */}
+              {!isFlying && (isReview || isMastered) && (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    top: -5,
+                    left: 2,
+                    fontSize: 10,
+                    lineHeight: 1,
+                    pointerEvents: 'none',
+                    opacity: isMastered ? 1 : 0.65,
+                    filter: isMastered ? 'none' : 'grayscale(0.3)',
+                  }}
+                >
+                  {isMastered ? '⭐' : '☆'}
                 </span>
               )}
             </button>

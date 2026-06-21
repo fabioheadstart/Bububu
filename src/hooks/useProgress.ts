@@ -3,7 +3,7 @@ import { getProgress, setProgress, subscribeProgress } from '@/lib/storage/progr
 import { loadProgress } from '@/lib/storage/progressStorage'
 import { ALL_WORDS, getWordsByLevel } from '@/data/vocabulary/index'
 import type { UserProgress, AppMode, DifficultyLevel, VocabEntry } from '@/types'
-import { DAILY_LIMIT } from '@/types'
+import { DAILY_LIMIT, MASTERY_THRESHOLD } from '@/types'
 
 // ─── Lookup map O(1) ──────────────────────────────────────────────────────────
 const ALL_WORDS_BY_ID = new Map<string, VocabEntry>(ALL_WORDS.map(w => [w.id, w]))
@@ -73,6 +73,8 @@ export interface RecordWordResult {
   wordsToday:   number   // após este feed
   justSatiated: boolean  // acabou de atingir o limite agora
   overLimit:    boolean  // já estava acima do limite antes deste feed
+  justMastered: boolean  // atingiu MASTERY_THRESHOLD de reviews agora
+  reviewCount:  number   // total de reviews desta palavra (0 se nova)
 }
 
 export interface UseProgressReturn {
@@ -109,10 +111,25 @@ export function useProgress(): UseProgressReturn {
     const isNew = !prev.wordsLearned.includes(entry.id)
     const wordsLearned = isNew ? [...prev.wordsLearned, entry.id] : prev.wordsLearned
 
-    // XP reduzido 50% se acima do limite
+    // Mastery tracking — só conta reviews (não o 1º encontro)
+    const prevReviewCount   = prev.wordReviewCounts[entry.id] ?? 0
+    const alreadyMastered   = prev.masteredWords.includes(entry.id)
+    const newReviewCount    = isNew ? 0 : prevReviewCount + 1
+    const justMastered      = !isNew && !alreadyMastered && newReviewCount >= MASTERY_THRESHOLD
+
+    const wordReviewCounts = isNew
+      ? prev.wordReviewCounts
+      : { ...prev.wordReviewCounts, [entry.id]: newReviewCount }
+
+    const masteredWords = justMastered
+      ? [...prev.masteredWords, entry.id]
+      : prev.masteredWords
+
     const updated: UserProgress = {
       ...prev,
       wordsLearned,
+      wordReviewCounts,
+      masteredWords,
       bububuLevel:  computeLevel(wordsLearned),
       lastFedAt:    Date.now(),
       wordsToday:   wordsTodayAfter,
@@ -121,7 +138,7 @@ export function useProgress(): UseProgressReturn {
     }
     setProgress(updated)
 
-    return { isNew, wordsToday: wordsTodayAfter, justSatiated, overLimit }
+    return { isNew, wordsToday: wordsTodayAfter, justSatiated, overLimit, justMastered, reviewCount: newReviewCount }
   }, [])
 
   const setMode = useCallback((mode: AppMode) => {

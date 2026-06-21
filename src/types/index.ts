@@ -29,12 +29,16 @@ export interface FeedResult {
 }
 
 // ─── Usuário ──────────────────────────────────────────────────────────────────
+export const MASTERY_THRESHOLD = 3  // reviews necessários para dominar uma palavra
+
 export interface UserProgress {
   userId: string
   mode: AppMode
   difficulty: DifficultyLevel  // conteúdo: easy=A1 | medium=A1+A2 | hard=tudo
   bububuLevel: number          // = competência real, nunca XP inflado
-  wordsLearned: string[]       // VocabEntry ids
+  wordsLearned: string[]       // VocabEntry ids — vistos ao menos 1x
+  wordReviewCounts: Record<string, number>  // id → nº de reviews após o 1º encontro
+  masteredWords: string[]      // ids com reviewCount >= MASTERY_THRESHOLD
   streak: number               // dias consecutivos (Pro: real | Kids: nunca punitivo)
   lastSessionDate: string      // ISO date
   lastFedAt: number            // timestamp ms — quando última palavra foi alimentada

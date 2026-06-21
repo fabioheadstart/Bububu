@@ -5,9 +5,10 @@ interface Props {
   isReview: boolean
   isBurp?: boolean
   isKids?: boolean
+  justMastered?: boolean
 }
 
-export function PoopReveal({ result, isReview, isBurp, isKids = false }: Props) {
+export function PoopReveal({ result, isReview, isBurp, isKids = false, justMastered = false }: Props) {
   const { entry, rewardTier, xpGained } = result
 
   const isJackpot = rewardTier === 'jackpot'
@@ -88,11 +89,14 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false }: Props) 
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: 0.6,
-        color: isKids ? 'rgba(45,31,107,0.28)' : 'rgba(255,255,255,0.22)',
+        color: justMastered
+          ? (isKids ? '#b45309' : '#fbbf24')
+          : (isKids ? 'rgba(45,31,107,0.28)' : 'rgba(255,255,255,0.22)'),
         marginTop: 6,
         textAlign: 'center',
+        animation: justMastered ? 'fadeSlideUp 0.4s ease' : undefined,
       }}>
-        digerido ✓
+        {justMastered ? 'dominada ⭐' : 'digerido ✓'}
       </div>
       <div style={{
         fontSize: isKids ? 28 : 30,

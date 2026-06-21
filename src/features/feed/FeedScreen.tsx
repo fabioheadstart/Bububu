@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { PoopReveal } from '@/components/ui/PoopReveal'
+import { MasteryToast } from '@/components/ui/MasteryToast'
 import { WordChips } from '@/components/ui/WordChips'
 import { FlyingChip } from '@/components/ui/FlyingChip'
 import { XpBar } from '@/components/ui/XpBar'
@@ -123,6 +124,15 @@ export function FeedScreen() {
   const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
   const [hintIds,       setHintIds]       = useState<Set<string>>(new Set())
   const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
+  const [masteryWord,   setMasteryWord]   = useState<string | null>(null)
+  const [justMastered,  setJustMastered]  = useState(false)
+
+  // Sets derivados do progresso — para indicadores nos chips
+  const reviewIds   = useMemo(() => new Set(
+    progress.wordsLearned.filter(id => !progress.masteredWords.includes(id))
+  ), [progress.wordsLearned, progress.masteredWords])
+
+  const masteredIds = useMemo(() => new Set(progress.masteredWords), [progress.masteredWords])
 
   // Calculate fixed-position poop drop when showPoop triggers
   useEffect(() => {
@@ -245,9 +255,10 @@ export function FeedScreen() {
     })
 
     // Busca o resultado em paralelo com a animação
-    const { isNew, justSatiated, overLimit: isOver } = recordWord(entry)
+    const { isNew, justSatiated, overLimit: isOver, justMastered: isMastered } = recordWord(entry)
     setIsReview(!isNew)
     setOverLimit(isOver)
+    setJustMastered(isMastered)
     const feedResultPromise = feedWord(entry)
 
     // ── t0 + 380ms: chip na boca ─────────────────────────────────────────────
@@ -295,6 +306,13 @@ export function FeedScreen() {
       if      (feedResult.rewardTier === 'jackpot')       playCoinJackpot()
       else if (feedResult.rewardTier === 'context_bonus') playCoinBonus()
       else                                                 playCoinNormal()
+    }
+
+    // Mastery toast — aparece 400ms após o reveal para não colidir com o 💩
+    if (isMastered) {
+      setTimeout(() => {
+        setMasteryWord(entry.word)
+      }, 400)
     }
 
     setBubState(
@@ -741,7 +759,7 @@ export function FeedScreen() {
             borderRadius: theme.resultZoneRadius,
             boxShadow: isKids && result ? '0 4px 20px rgba(255,217,61,0.20)' : 'none',
           }}>
-            <PoopReveal result={result} isReview={isReview} isBurp={isBurp} isKids={isKids} />
+            <PoopReveal result={result} isReview={isReview} isBurp={isBurp} isKids={isKids} justMastered={justMastered} />
           </div>
         )}
         {!result && !munchText && !isFeeding && (
@@ -794,6 +812,8 @@ export function FeedScreen() {
           isKids={isKids}
           hintIds={hintIds}
           konamiHintId={konamiHintId}
+          reviewIds={reviewIds}
+          masteredIds={masteredIds}
         />
       </div>
 
@@ -826,8 +846,16 @@ export function FeedScreen() {
           whiteSpace: 'nowrap',
           boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
         }}>
-          💩 He poops the translation!
+          💩 ele digere e entrega em português
         </div>
+      )}
+
+      {masteryWord && (
+        <MasteryToast
+          word={masteryWord}
+          isKids={isKids}
+          onDone={() => { setMasteryWord(null); setJustMastered(false) }}
+        />
       )}
 
       {levelUpData !== null && (
