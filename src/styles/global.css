@@ -424,6 +424,17 @@ body {
   100% { transform: scaleX(-1) translateX(-80px); }
 }
 
+/* ── Botão de pronúncia ──────────────────────────────────────────────────────── */
+@keyframes play-btn-bounce {
+  0%, 100% { transform: scale(1)    translateY(0);   }
+  45%       { transform: scale(1.12) translateY(-4px); }
+  70%       { transform: scale(0.95) translateY(2px);  }
+}
+@keyframes play-ring-expand {
+  0%   { transform: scale(0.85); opacity: 0.85; }
+  100% { transform: scale(1.65); opacity: 0;    }
+}
+
 /* 💩 cai do bumbum do Bububu com bounce */
 @keyframes poop-drop-from-bub {
   0%   { transform: translateY(-150px) scale(0.08) rotate(25deg); opacity: 0; }

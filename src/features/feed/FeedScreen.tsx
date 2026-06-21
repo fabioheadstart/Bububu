@@ -550,7 +550,7 @@ export function FeedScreen() {
       clearTimerRef.current = setTimeout(() => {
         setResult(null)
         setIsBurp(false)
-      }, 5500)
+      }, 8000)
     }
 
     // Hint one-time
@@ -1039,28 +1039,64 @@ export function FeedScreen() {
       >
         <BububuSpeech text={bubSpeech} isKids={isKids} />
 
-        {/* Botão 🔊 — toca a pronúncia da palavra que o Bububu acabou de comer */}
+        {/* Botão de pronúncia — cartoon, grande, animado */}
         {result && !isFeeding && (
-          <button
-            onClick={() => speakWord(result.entry.word)}
-            aria-label={`Ouvir pronúncia de ${result.entry.word}`}
-            style={{
+          <div style={{
+            position: 'absolute',
+            top: '6%',
+            left: 'calc(50% - 108px)',
+            zIndex: 6,
+          }}>
+            {/* Anel pulsante */}
+            <div style={{
               position: 'absolute',
-              top: '12%',
-              right: 'calc(50% - 90px)',
-              fontSize: 22,
-              background: 'none',
-              border: 'none',
-              padding: 6,
-              cursor: 'pointer',
-              zIndex: 6,
-              animation: 'speech-bounce 1.6s ease-in-out infinite',
-              filter: 'drop-shadow(0 2px 6px rgba(124,58,237,0.5))',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            🔊
-          </button>
+              inset: -6,
+              borderRadius: '50%',
+              border: `3px solid ${isKids ? 'rgba(255,180,0,0.60)' : 'rgba(167,139,250,0.55)'}`,
+              animation: 'play-ring-expand 1.6s ease-out infinite',
+              pointerEvents: 'none',
+            }} />
+            <div style={{
+              position: 'absolute',
+              inset: -6,
+              borderRadius: '50%',
+              border: `3px solid ${isKids ? 'rgba(255,180,0,0.35)' : 'rgba(167,139,250,0.30)'}`,
+              animation: 'play-ring-expand 1.6s ease-out 0.55s infinite',
+              pointerEvents: 'none',
+            }} />
+
+            <button
+              onClick={() => speakWord(result.entry.word)}
+              aria-label={`Ouvir pronúncia de ${result.entry.word}`}
+              style={{
+                width: 58, height: 58,
+                borderRadius: '50%',
+                border: 'none',
+                background: isKids
+                  ? 'linear-gradient(135deg, #FFE135 0%, #FF9F43 100%)'
+                  : 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+                boxShadow: isKids
+                  ? '0 4px 18px rgba(255,160,0,0.60), 0 2px 0 rgba(180,90,0,0.25)'
+                  : '0 4px 18px rgba(124,58,237,0.60)',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: 'play-btn-bounce 1.6s ease-in-out infinite',
+                WebkitTapHighlightColor: 'transparent',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+                {/* Corpo do speaker */}
+                <path d="M5 11 L5 19 L10 19 L18 25 L18 5 L10 11 Z" fill="white" />
+                {/* Onda 1 */}
+                <path d="M21 10.5 Q24.5 15 21 19.5" stroke="white" strokeWidth="2.4"
+                  strokeLinecap="round" fill="none" />
+                {/* Onda 2 */}
+                <path d="M23.5 7.5 Q28.5 15 23.5 22.5" stroke="white" strokeWidth="2"
+                  strokeLinecap="round" fill="none" opacity="0.65" />
+              </svg>
+            </button>
+          </div>
         )}
 
         <div
