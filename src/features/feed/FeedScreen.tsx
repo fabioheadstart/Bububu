@@ -28,6 +28,8 @@ import { useProgress } from '@/hooks/useProgress'
 import { useTheme } from '@/hooks/useTheme'
 import { usePetState } from '@/hooks/usePetState'
 import { SceneBackground } from '@/components/ui/SceneBackground'
+import { BububuSpeech } from '@/components/ui/BububuSpeech'
+import { getBubPhrase } from '@/data/bububuPhrases'
 import { FloatingIsland } from '@/components/ui/FloatingIsland'
 import { BububuLore } from '@/components/ui/BububuLore'
 import { SleepScreen } from '@/features/feed/SleepScreen'
@@ -164,6 +166,15 @@ export function FeedScreen() {
   const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
   const [masteryWord,   setMasteryWord]   = useState<string | null>(null)
   const [justMastered,  setJustMastered]  = useState(false)
+  const [bubSpeech,     setBubSpeech]     = useState<string | null>(null)
+  const speechTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  // Mostra uma fala do Bububu por `duration` ms, depois limpa
+  const showSpeech = useCallback((text: string, duration = 2900) => {
+    clearTimeout(speechTimerRef.current)
+    setBubSpeech(text)
+    speechTimerRef.current = setTimeout(() => setBubSpeech(null), duration)
+  }, [])
 
   // Sets derivados do progresso — para indicadores nos chips
   const reviewIds   = useMemo(() => new Set(
@@ -203,6 +214,33 @@ export function FeedScreen() {
 
   // Mantém ref de chips sempre atualizada
   useEffect(() => { chipsRef.current = chips }, [chips])
+
+  // Pensamentos espontâneos — primeiro em 12s, depois a cada 75-120s
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>
+    function scheduleThou(delay: number) {
+      t = setTimeout(() => {
+        if (!feeding.current) showSpeech(getBubPhrase('thought'), 3200)
+        scheduleThou(Math.round((75 + Math.random() * 45) * 1000))
+      }, delay)
+    }
+    scheduleThou(12_000)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Fala de fome — dispara quando muda para estado faminto
+  const prevHungryRef = useRef(false)
+  useEffect(() => {
+    const isHungry = hoursHungry >= 12
+    if (isHungry && !prevHungryRef.current && !feeding.current) {
+      setTimeout(() => showSpeech(getBubPhrase('idle_hungry'), 3200), 1500)
+    } else if (hoursHungry >= 2 && !prevHungryRef.current && !feeding.current) {
+      setTimeout(() => showSpeech(getBubPhrase('idle_normal'), 2800), 2000)
+    }
+    prevHungryRef.current = isHungry
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoursHungry])
 
   // Hint system — 4s idle → pulsa chips com combo potencial
   useEffect(() => {
@@ -332,6 +370,19 @@ export function FeedScreen() {
       setTimeout(() => setPoopHint(false), 2800)
     }
 
+    // ── Fala do Bububu — aparece logo após o reveal ──────────────────────────
+    setTimeout(() => {
+      if (!isNew) {
+        showSpeech(getBubPhrase('eat_review'))
+      } else if (feedResult.rewardTier === 'jackpot') {
+        showSpeech(getBubPhrase('eat_jackpot'))
+      } else if (feedResult.rewardTier === 'context_bonus') {
+        showSpeech(getBubPhrase('eat_context'))
+      } else {
+        showSpeech(getBubPhrase('eat_normal', entry.word))
+      }
+    }, 220)
+
     // ── Rachel fala a palavra → Bububu reage depois ───────────────────────────
     await delay(300)                        // pausa: usuário lê o card
     await speakWord(feedResult.entry.word)  // ElevenLabs — awaited, sem sobreposição
@@ -350,6 +401,7 @@ export function FeedScreen() {
     if (isMastered) {
       setTimeout(() => {
         setMasteryWord(entry.word)
+        showSpeech(getBubPhrase('mastery', entry.word), 3200)
       }, 400)
     }
 
@@ -391,6 +443,7 @@ export function FeedScreen() {
         konamiProgress.current = 0
         lastFedWords.current = []
         playKonami()
+        showSpeech(getBubPhrase('combo_konami'), 4000)
         setActiveCombo({ type: 'konami', words: [...KONAMI_SEQUENCE] })
         comboFired = true
       }
@@ -404,6 +457,7 @@ export function FeedScreen() {
       if (OPPOSITE_PAIRS[w] === prevEntry.word.toLowerCase()) {
         lastFedWords.current = []
         playComboVS()
+        showSpeech(getBubPhrase('combo_vs'), 3000)
         setActiveCombo({ type: 'versus', words: [prevEntry.word, entry.word] })
         comboFired = true
       }
@@ -415,6 +469,7 @@ export function FeedScreen() {
       if (last3.every(e2 => e2.category === last3[0].category)) {
         lastFedWords.current = []
         playComboTrio()
+        showSpeech(getBubPhrase('combo_trio'), 3000)
         setActiveCombo({
           type: 'trio',
           words: last3.map(e2 => e2.word),
@@ -429,7 +484,7 @@ export function FeedScreen() {
       setShowSatiation(true)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feedWord, speakBububu, speakWord, recordWord, dailyLimit])
+  }, [feedWord, speakBububu, speakWord, recordWord, dailyLimit, showSpeech])
 
   const theme     = useTheme()
   const isKids    = theme.isKids
@@ -665,6 +720,8 @@ export function FeedScreen() {
           minHeight: 0,
         }}
       >
+        <BububuSpeech text={bubSpeech} isKids={isKids} />
+
         <BububuCharacter
           state={activeBubState}
           rewardTier={result?.rewardTier}
