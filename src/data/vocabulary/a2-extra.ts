@@ -1,0 +1,73 @@
+import type { VocabEntry } from '@/types'
+
+export const A2_EXTRA_WORDS: VocabEntry[] = [
+
+  // ── feelings (+8) ──────────────────────────────────────────────────────────
+  { id: 'a2x-feelings-001', word: 'sad',        translation: 'triste',         phonetic: '/sæd/',          level: 'A2', category: 'feelings', exampleSentence: 'She felt sad after the news.',         exampleTranslation: 'Ela ficou triste com a notícia.' },
+  { id: 'a2x-feelings-002', word: 'scared',     translation: 'com medo',       phonetic: '/skerd/',        level: 'A2', category: 'feelings', exampleSentence: 'Are you scared of the dark?',          exampleTranslation: 'Você tem medo do escuro?' },
+  { id: 'a2x-feelings-003', word: 'confused',   translation: 'confuso',        phonetic: '/kənˈfjuːzd/',   level: 'A2', category: 'feelings', exampleSentence: 'I\'m confused by the instructions.',   exampleTranslation: 'Estou confuso com as instruções.' },
+  { id: 'a2x-feelings-004', word: 'surprised',  translation: 'surpreso',       phonetic: '/sərˈpraɪzd/',   level: 'A2', category: 'feelings', exampleSentence: 'She was surprised by the party.',      exampleTranslation: 'Ela ficou surpresa com a festa.' },
+  { id: 'a2x-feelings-005', word: 'lonely',     translation: 'solitário',      phonetic: '/ˈloʊn.li/',     level: 'A2', category: 'feelings', exampleSentence: 'He feels lonely in the new city.',     exampleTranslation: 'Ele se sente solitário na cidade nova.' },
+  { id: 'a2x-feelings-006', word: 'embarrassed',translation: 'envergonhado',   phonetic: '/ɪmˈbær.əst/',   level: 'A2', category: 'feelings', exampleSentence: 'I was embarrassed by my mistake.',     exampleTranslation: 'Fiquei envergonhado com meu erro.' },
+  { id: 'a2x-feelings-007', word: 'calm',       translation: 'calmo',          phonetic: '/kɑːm/',         level: 'A2', category: 'feelings', exampleSentence: 'Stay calm during the interview.',       exampleTranslation: 'Fique calmo durante a entrevista.' },
+  { id: 'a2x-feelings-008', word: 'jealous',    translation: 'ciumento',       phonetic: '/ˈdʒel.əs/',     level: 'A2', category: 'feelings', exampleSentence: 'Don\'t be jealous of others.',         exampleTranslation: 'Não seja ciumento dos outros.' },
+
+  // ── health (+7) ────────────────────────────────────────────────────────────
+  { id: 'a2x-health-001', word: 'hospital',  translation: 'hospital',       phonetic: '/ˈhɒs.pɪ.təl/',  level: 'A2', category: 'health', exampleSentence: 'He was in the hospital for a week.',    exampleTranslation: 'Ele ficou no hospital por uma semana.' },
+  { id: 'a2x-health-002', word: 'fever',     translation: 'febre',          phonetic: '/ˈfiː.vər/',      level: 'A2', category: 'health', exampleSentence: 'She has a high fever.',                  exampleTranslation: 'Ela está com febre alta.' },
+  { id: 'a2x-health-003', word: 'headache',  translation: 'dor de cabeça',  phonetic: '/ˈhed.eɪk/',      level: 'A2', category: 'health', exampleSentence: 'I have a terrible headache.',            exampleTranslation: 'Estou com uma dor de cabeça terrível.' },
+  { id: 'a2x-health-004', word: 'rest',      translation: 'descansar',      phonetic: '/rest/',           level: 'A2', category: 'health', exampleSentence: 'You need to rest after surgery.',        exampleTranslation: 'Você precisa descansar depois da cirurgia.' },
+  { id: 'a2x-health-005', word: 'exercise',  translation: 'exercício',      phonetic: '/ˈek.sər.saɪz/',  level: 'A2', category: 'health', exampleSentence: 'Regular exercise keeps you healthy.',    exampleTranslation: 'Exercício regular te mantém saudável.' },
+  { id: 'a2x-health-006', word: 'allergic',  translation: 'alérgico',       phonetic: '/əˈlɜːr.dʒɪk/',  level: 'A2', category: 'health', exampleSentence: 'I\'m allergic to cats.',                 exampleTranslation: 'Sou alérgico a gatos.' },
+  { id: 'a2x-health-007', word: 'vitamin',   translation: 'vitamina',       phonetic: '/ˈvaɪ.tə.mɪn/',  level: 'A2', category: 'health', exampleSentence: 'Take your vitamins every morning.',      exampleTranslation: 'Tome suas vitaminas toda manhã.' },
+
+  // ── nature (+8) ────────────────────────────────────────────────────────────
+  { id: 'a2x-nature-001', word: 'beach',     translation: 'praia',          phonetic: '/biːtʃ/',          level: 'A2', category: 'nature', exampleSentence: 'We go to the beach every summer.',      exampleTranslation: 'A gente vai à praia todo verão.' },
+  { id: 'a2x-nature-002', word: 'mountain',  translation: 'montanha',       phonetic: '/ˈmaʊn.tən/',      level: 'A2', category: 'nature', exampleSentence: 'The mountain is covered in snow.',      exampleTranslation: 'A montanha está coberta de neve.' },
+  { id: 'a2x-nature-003', word: 'forest',    translation: 'floresta',       phonetic: '/ˈfɒr.ɪst/',       level: 'A2', category: 'nature', exampleSentence: 'The Amazon forest is huge.',            exampleTranslation: 'A floresta Amazônica é enorme.' },
+  { id: 'a2x-nature-004', word: 'wind',      translation: 'vento',          phonetic: '/wɪnd/',           level: 'A2', category: 'nature', exampleSentence: 'The wind is very strong today.',         exampleTranslation: 'O vento está muito forte hoje.' },
+  { id: 'a2x-nature-005', word: 'storm',     translation: 'tempestade',     phonetic: '/stɔːrm/',         level: 'A2', category: 'nature', exampleSentence: 'Stay inside during the storm.',          exampleTranslation: 'Fique dentro de casa durante a tempestade.' },
+  { id: 'a2x-nature-006', word: 'lake',      translation: 'lago',           phonetic: '/leɪk/',           level: 'A2', category: 'nature', exampleSentence: 'We swam in the lake.',                   exampleTranslation: 'A gente nadou no lago.' },
+  { id: 'a2x-nature-007', word: 'animal',    translation: 'animal',         phonetic: '/ˈæn.ɪ.məl/',      level: 'A2', category: 'nature', exampleSentence: 'What\'s your favorite animal?',          exampleTranslation: 'Qual é o seu animal favorito?' },
+  { id: 'a2x-nature-008', word: 'cloud',     translation: 'nuvem',          phonetic: '/klaʊd/',          level: 'A2', category: 'nature', exampleSentence: 'There are dark clouds in the sky.',      exampleTranslation: 'Tem nuvens escuras no céu.' },
+
+  // ── shopping (+7) ──────────────────────────────────────────────────────────
+  { id: 'a2x-shopping-001', word: 'discount', translation: 'desconto',      phonetic: '/ˈdɪs.kaʊnt/',     level: 'A2', category: 'shopping', exampleSentence: 'There\'s a 50% discount today.',      exampleTranslation: 'Tem 50% de desconto hoje.' },
+  { id: 'a2x-shopping-002', word: 'receipt',  translation: 'recibo',        phonetic: '/rɪˈsiːt/',        level: 'A2', category: 'shopping', exampleSentence: 'Keep your receipt for returns.',       exampleTranslation: 'Guarda o recibo para trocas.' },
+  { id: 'a2x-shopping-003', word: 'brand',    translation: 'marca',         phonetic: '/brænd/',           level: 'A2', category: 'shopping', exampleSentence: 'What brand is your phone?',            exampleTranslation: 'Qual é a marca do seu celular?' },
+  { id: 'a2x-shopping-004', word: 'size',     translation: 'tamanho',       phonetic: '/saɪz/',            level: 'A2', category: 'shopping', exampleSentence: 'What size do you wear?',               exampleTranslation: 'Qual tamanho você usa?' },
+  { id: 'a2x-shopping-005', word: 'cash',     translation: 'dinheiro / à vista', phonetic: '/kæʃ/',        level: 'A2', category: 'shopping', exampleSentence: 'Do you pay with cash or card?',       exampleTranslation: 'Você paga com dinheiro ou cartão?' },
+  { id: 'a2x-shopping-006', word: 'online',   translation: 'on-line',       phonetic: '/ˈɒn.laɪn/',       level: 'A2', category: 'shopping', exampleSentence: 'I prefer to shop online.',             exampleTranslation: 'Prefiro comprar on-line.' },
+  { id: 'a2x-shopping-007', word: 'product',  translation: 'produto',       phonetic: '/ˈprɒd.ʌkt/',      level: 'A2', category: 'shopping', exampleSentence: 'This product is very popular.',        exampleTranslation: 'Este produto é muito popular.' },
+
+  // ── work (+9) ──────────────────────────────────────────────────────────────
+  { id: 'a2x-work-001', word: 'boss',       translation: 'chefe',           phonetic: '/bɒs/',             level: 'A2', category: 'work', exampleSentence: 'My boss approved the project.',          exampleTranslation: 'Meu chefe aprovou o projeto.' },
+  { id: 'a2x-work-002', word: 'salary',     translation: 'salário',         phonetic: '/ˈsæl.ər.i/',       level: 'A2', category: 'work', exampleSentence: 'She got a salary raise.',                 exampleTranslation: 'Ela conseguiu um aumento de salário.' },
+  { id: 'a2x-work-003', word: 'interview',  translation: 'entrevista',      phonetic: '/ˈɪn.tər.vjuː/',    level: 'A2', category: 'work', exampleSentence: 'I have a job interview tomorrow.',        exampleTranslation: 'Tenho uma entrevista de emprego amanhã.' },
+  { id: 'a2x-work-004', word: 'task',       translation: 'tarefa',          phonetic: '/tæsk/',             level: 'A2', category: 'work', exampleSentence: 'I have three tasks for today.',           exampleTranslation: 'Tenho três tarefas para hoje.' },
+  { id: 'a2x-work-005', word: 'colleague',  translation: 'colega de trabalho', phonetic: '/ˈkɒl.iːɡ/',     level: 'A2', category: 'work', exampleSentence: 'My colleague helped me with the report.', exampleTranslation: 'Meu colega me ajudou com o relatório.' },
+  { id: 'a2x-work-006', word: 'schedule',   translation: 'agenda / horário', phonetic: '/ˈsked.juːl/',      level: 'A2', category: 'work', exampleSentence: 'Check the schedule for the meeting.',     exampleTranslation: 'Veja a agenda para a reunião.' },
+  { id: 'a2x-work-007', word: 'project',    translation: 'projeto',          phonetic: '/ˈprɒdʒ.ekt/',      level: 'A2', category: 'work', exampleSentence: 'We finished the project on time.',        exampleTranslation: 'Terminamos o projeto no prazo.' },
+  { id: 'a2x-work-008', word: 'promote',    translation: 'promover',         phonetic: '/prəˈmoʊt/',        level: 'A2', category: 'work', exampleSentence: 'She was promoted to manager.',            exampleTranslation: 'Ela foi promovida a gerente.' },
+  { id: 'a2x-work-009', word: 'resign',     translation: 'pedir demissão',   phonetic: '/rɪˈzaɪn/',        level: 'A2', category: 'work', exampleSentence: 'He resigned from his job.',               exampleTranslation: 'Ele pediu demissão.' },
+
+  // ── technology (new category, 8 words) ────────────────────────────────────
+  { id: 'a2x-tech-001', word: 'app',        translation: 'aplicativo',      phonetic: '/æp/',              level: 'A2', category: 'technology', exampleSentence: 'Download the app on your phone.',     exampleTranslation: 'Baixe o aplicativo no seu celular.' },
+  { id: 'a2x-tech-002', word: 'password',   translation: 'senha',           phonetic: '/ˈpæs.wɜːrd/',      level: 'A2', category: 'technology', exampleSentence: 'Don\'t share your password.',         exampleTranslation: 'Não compartilhe sua senha.' },
+  { id: 'a2x-tech-003', word: 'screen',     translation: 'tela',            phonetic: '/skriːn/',           level: 'A2', category: 'technology', exampleSentence: 'The phone screen is cracked.',         exampleTranslation: 'A tela do celular está rachada.' },
+  { id: 'a2x-tech-004', word: 'internet',   translation: 'internet',        phonetic: '/ˈɪn.tər.net/',      level: 'A2', category: 'technology', exampleSentence: 'The internet is slow here.',           exampleTranslation: 'A internet está lenta aqui.' },
+  { id: 'a2x-tech-005', word: 'message',    translation: 'mensagem',        phonetic: '/ˈmes.ɪdʒ/',         level: 'A2', category: 'technology', exampleSentence: 'Send me a message later.',             exampleTranslation: 'Me manda uma mensagem depois.' },
+  { id: 'a2x-tech-006', word: 'charge',     translation: 'carregar',        phonetic: '/tʃɑːrdʒ/',          level: 'A2', category: 'technology', exampleSentence: 'My phone needs to charge.',            exampleTranslation: 'Meu celular precisa carregar.' },
+  { id: 'a2x-tech-007', word: 'update',     translation: 'atualizar',       phonetic: '/ˈʌp.deɪt/',         level: 'A2', category: 'technology', exampleSentence: 'Update the app for new features.',     exampleTranslation: 'Atualize o aplicativo para novos recursos.' },
+  { id: 'a2x-tech-008', word: 'video',      translation: 'vídeo',           phonetic: '/ˈvɪd.i.oʊ/',        level: 'A2', category: 'technology', exampleSentence: 'Watch the video before the class.',    exampleTranslation: 'Assista o vídeo antes da aula.' },
+
+  // ── travel (new category, 8 words) ────────────────────────────────────────
+  { id: 'a2x-travel-001', word: 'passport', translation: 'passaporte',     phonetic: '/ˈpæs.pɔːrt/',       level: 'A2', category: 'travel', exampleSentence: 'Don\'t forget your passport.',         exampleTranslation: 'Não esqueça o passaporte.' },
+  { id: 'a2x-travel-002', word: 'hotel',    translation: 'hotel',          phonetic: '/hoʊˈtel/',           level: 'A2', category: 'travel', exampleSentence: 'We stayed in a nice hotel.',           exampleTranslation: 'A gente ficou em um hotel legal.' },
+  { id: 'a2x-travel-003', word: 'flight',   translation: 'voo',            phonetic: '/flaɪt/',             level: 'A2', category: 'travel', exampleSentence: 'The flight takes three hours.',         exampleTranslation: 'O voo dura três horas.' },
+  { id: 'a2x-travel-004', word: 'luggage',  translation: 'bagagem',        phonetic: '/ˈlʌɡ.ɪdʒ/',          level: 'A2', category: 'travel', exampleSentence: 'My luggage is too heavy.',              exampleTranslation: 'Minha bagagem está pesada demais.' },
+  { id: 'a2x-travel-005', word: 'tourist',  translation: 'turista',        phonetic: '/ˈtʊər.ɪst/',          level: 'A2', category: 'travel', exampleSentence: 'The city has many tourists in summer.', exampleTranslation: 'A cidade tem muitos turistas no verão.' },
+  { id: 'a2x-travel-006', word: 'map',      translation: 'mapa',           phonetic: '/mæp/',               level: 'A2', category: 'travel', exampleSentence: 'Use the map to find the hotel.',        exampleTranslation: 'Use o mapa para encontrar o hotel.' },
+  { id: 'a2x-travel-007', word: 'abroad',   translation: 'no exterior',    phonetic: '/əˈbrɔːd/',            level: 'A2', category: 'travel', exampleSentence: 'She studied abroad for one year.',      exampleTranslation: 'Ela estudou no exterior por um ano.' },
+  { id: 'a2x-travel-008', word: 'currency', translation: 'moeda',          phonetic: '/ˈkɜːr.ən.si/',        level: 'A2', category: 'travel', exampleSentence: 'Exchange your currency at the airport.', exampleTranslation: 'Troque sua moeda no aeroporto.' },
+]
