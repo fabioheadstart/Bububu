@@ -51,6 +51,39 @@ function getRandomChips(count: number, pool: VocabEntry[], excludeIds: string[] 
   return [...from].sort(() => Math.random() - 0.5).slice(0, count)
 }
 
+// Chip orquestrado: tenta sempre entregar algo com potencial de combo
+function getSmartChipReplacement(
+  pool: VocabEntry[],
+  excludeIds: string[],
+  lastFed: VocabEntry,
+  nextKonamiStep: number,
+): VocabEntry | null {
+  const available = pool.filter(w => !excludeIds.includes(w.id))
+  if (!available.length) return null
+
+  // P1: próxima palavra da sequência Konami (aparece sempre que o jogador está no meio dela)
+  if (nextKonamiStep > 0 && nextKonamiStep < KONAMI_SEQUENCE.length) {
+    const match = available.find(w => w.word.toLowerCase() === KONAMI_SEQUENCE[nextKonamiStep])
+    if (match) return match
+  }
+
+  // P2: oposto da última palavra → facilita VS
+  const oppositeWord = OPPOSITE_PAIRS[lastFed.word.toLowerCase()]
+  if (oppositeWord) {
+    const opp = available.find(w => w.word.toLowerCase() === oppositeWord)
+    if (opp) return opp
+  }
+
+  // P3: mesma categoria (40% de chance) → facilita Trio
+  if (Math.random() < 0.40) {
+    const sameCat = available.filter(w => w.category === lastFed.category)
+    if (sameCat.length > 0) return sameCat[Math.floor(Math.random() * sameCat.length)]
+  }
+
+  // Fallback: aleatório
+  return available[Math.floor(Math.random() * available.length)]
+}
+
 function delay(ms: number) { return new Promise<void>(r => setTimeout(r, ms)) }
 
 const KONAMI_SEQUENCE = ['sleep', 'morning', 'coffee', 'work', 'happy']
@@ -82,12 +115,17 @@ export function FeedScreen() {
 
   const [chips, setChips] = useState<VocabEntry[]>(() => {
     const initPool = getUnlockedPool(computedLevel, progress.difficulty)
-    // Tutorial: primeira sessão → banana, juice, milk para garantir Trio
+    // Tutorial: primeira sessão → banana, juice, milk (Trio garantido) + sleep (semente do Konami)
     if (progress.wordsLearned.length === 0) {
       const tutorial = getTutorialChips(initPool)
-      if (tutorial) return tutorial
+      if (tutorial) {
+        const tutorialIds = tutorial.map(t => t.id)
+        const sleepChip = initPool.find(w => w.word.toLowerCase() === 'sleep' && !tutorialIds.includes(w.id))
+        const fourth = sleepChip ?? getRandomChips(1, initPool, tutorialIds)[0]
+        return fourth ? [...tutorial, fourth] : tutorial
+      }
     }
-    return getRandomChips(3, initPool)
+    return getRandomChips(4, initPool)
   })
   const [flying, setFlying]       = useState<FlyingData | null>(null)
   const [flyingId, setFlyingId]   = useState<string | null>(null)
@@ -319,19 +357,29 @@ export function FeedScreen() {
       !isNew || feedResult.rewardTier === 'normal' ? 'idle' : 'celebrating'
     )
 
-    // ── t0 + 2880ms: reabastece chip ─────────────────────────────────────────
+    // ── Pre-calcula próximo passo do Konami para orquestração do chip ────────
+    const w = entry.word.toLowerCase()
+    let nextKonamiStep: number
+    if (w === KONAMI_SEQUENCE[konamiProgress.current]) {
+      const adv = konamiProgress.current + 1
+      nextKonamiStep = adv >= KONAMI_SEQUENCE.length ? 0 : adv
+    } else {
+      nextKonamiStep = w === KONAMI_SEQUENCE[0] ? 1 : 0
+    }
+
+    // ── t0 + 2880ms: reabastece chip (seleção inteligente) ───────────────────
     await delay(600)
     setFlyingId(null)
     setChips(prev => {
       const remaining = prev.filter(c => c.id !== entry.id)
       const exclude   = [...remaining.map(c => c.id), entry.id]
-      return [...remaining, ...getRandomChips(1, poolRef.current, exclude)]
+      const smart = getSmartChipReplacement(poolRef.current, exclude, entry, nextKonamiStep)
+      return smart ? [...remaining, smart] : remaining
     })
     setBubState('idle')
     feeding.current = false
 
     // ── Combo detection ───────────────────────────────────────────────────────
-    const w = entry.word.toLowerCase()
     lastFedWords.current = [...lastFedWords.current, entry].slice(-5)
 
     let comboFired = false
@@ -582,7 +630,7 @@ export function FeedScreen() {
                     key={d}
                     onClick={() => {
                       setDifficulty(d)
-                      setChips(getRandomChips(3, getUnlockedPool(computedLevel, d)))
+                      setChips(getRandomChips(4, getUnlockedPool(computedLevel, d)))
                       setShowSettings(false)
                     }}
                     style={{
