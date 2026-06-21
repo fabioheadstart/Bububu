@@ -44,7 +44,7 @@ import { useKidsWorld } from '@/hooks/useKidsWorld'
 import { BububuSpeech } from '@/components/ui/BububuSpeech'
 import { getBubPhrase } from '@/data/bububuPhrases'
 import { FloatingIsland } from '@/components/ui/FloatingIsland'
-import { BububuLore } from '@/components/ui/BububuLore'
+import { BububuPhone } from '@/components/ui/BububuPhone'
 import { SleepScreen } from '@/features/feed/SleepScreen'
 import { SuperPeidoOverlay } from '@/components/ui/SuperPeidoOverlay'
 import { EvolutionOverlay } from '@/components/ui/EvolutionOverlay'
@@ -1412,7 +1412,12 @@ export function FeedScreen() {
         />
       )}
 
-      <BububuLore />
+      <BububuPhone
+        level={computedLevel}
+        wordsLearned={progress.wordsLearned}
+        streak={progress.streak ?? 0}
+        isKids={isKids}
+      />
 
       {showShare && (
         <ShareCard
