@@ -489,7 +489,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   useEffect(() => {
     if ((progress.wordsToday ?? 0) === 0) {
       const t = setTimeout(() => {
-        if (!feeding.current) showSpeech(getBubPhrase('idle_hungry'), 3500)
+        if (!feeding.current) showSpeech(getBubPhrase('idle_hungry', undefined, undefined, undefined, progress.userName), 3500)
       }, 1400)
       return () => clearTimeout(t)
     }
@@ -644,9 +644,9 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   useEffect(() => {
     const isHungry = hoursHungry >= 12
     if (isHungry && !prevHungryRef.current && !feeding.current) {
-      setTimeout(() => showSpeech(getBubPhrase('idle_hungry'), 3200), 1500)
+      setTimeout(() => showSpeech(getBubPhrase('idle_hungry', undefined, undefined, undefined, progress.userName), 3200), 1500)
     } else if (hoursHungry >= 2 && !prevHungryRef.current && !feeding.current) {
-      setTimeout(() => showSpeech(getBubPhrase('idle_normal'), 2800), 2000)
+      setTimeout(() => showSpeech(getBubPhrase('idle_normal', undefined, undefined, undefined, progress.userName), 2800), 2000)
     }
     prevHungryRef.current = isHungry
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -838,7 +838,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       if (!isNew) {
         showSpeech(getBubPhrase('eat_review'))
       } else if (feedResult.rewardTier === 'jackpot') {
-        showSpeech(getBubPhrase('eat_jackpot'))
+        showSpeech(getBubPhrase('eat_jackpot', undefined, undefined, undefined, progress.userName))
       } else if (feedResult.rewardTier === 'context_bonus') {
         showSpeech(getBubPhrase('eat_context'))
       } else {

@@ -23,6 +23,14 @@ const IDLE_NORMAL = [
   'tô com o estômago vazio',
 ]
 
+const IDLE_NORMAL_NAMED = (name: string) => [
+  `ei, ${name}, tô aqui, ó`,
+  `${name}, vai me dar uma palavrinha?`,
+  `uai, sumiu, ${name}?`,
+  `${name}... tô esperando`,
+  `hmm, ${name}? e aí?`,
+]
+
 const IDLE_HUNGRY = [
   'socorro',
   'TO MORRENDO DE FOME',
@@ -30,6 +38,14 @@ const IDLE_HUNGRY = [
   'uma palavrinha só, juro',
   'nem biscoito de polvilho tem aqui',
   'o Vini não deixaria eu passar fome, não',
+]
+
+const IDLE_HUNGRY_NAMED = (name: string) => [
+  `${name}, socorro`,
+  `${name}!! TO MORRENDO DE FOME`,
+  `ei, ${name}, esqueceu de mim??`,
+  `${name}! nem biscoito de polvilho tem aqui`,
+  `${name}, uma palavrinha só, juro`,
 ]
 
 // ── Comendo ────────────────────────────────────────────────────────────────────
@@ -80,6 +96,11 @@ const EAT_JACKPOT = [
   'essa é de primeira qualidade',
   'palavra gourmet. gosto muito',
   'o Vini Jr. usaria essa em entrevista',
+]
+
+const EAT_JACKPOT_NAMED = (name: string) => [
+  `JACKPOT, ${name}?! isso é lenda`,
+  `${name}!! palavra gourmet! tô feliz demais`,
 ]
 
 // ── Context bonus ──────────────────────────────────────────────────────────────
@@ -226,8 +247,12 @@ export function getBubPhrase(
   userName?: string,
 ): string {
   switch (trigger) {
-    case 'idle_normal':  return pick(IDLE_NORMAL)
-    case 'idle_hungry':  return pick(IDLE_HUNGRY)
+    case 'idle_normal':
+      if (userName && Math.random() < 0.50) return pick(IDLE_NORMAL_NAMED(userName))
+      return pick(IDLE_NORMAL)
+    case 'idle_hungry':
+      if (userName && Math.random() < 0.55) return pick(IDLE_HUNGRY_NAMED(userName))
+      return pick(IDLE_HUNGRY)
     case 'eat_normal': {
       // 35% de chance de incluir o nome da palavra — SÓ em categorias seguras
       const catSafe = !category || SAFE_WITH_WORD_CATS.has(category)
@@ -235,7 +260,9 @@ export function getBubPhrase(
       return pick(EAT_NORMAL)
     }
     case 'eat_review':   return pick(EAT_REVIEW)
-    case 'eat_jackpot':  return pick(EAT_JACKPOT)
+    case 'eat_jackpot':
+      if (userName && Math.random() < 0.30) return pick(EAT_JACKPOT_NAMED(userName))
+      return pick(EAT_JACKPOT)
     case 'eat_context':  return pick(EAT_CONTEXT)
     case 'eat_craving':  return pick(EAT_CRAVING)
     case 'bullet_time':  return pick(BULLET_TIME)
