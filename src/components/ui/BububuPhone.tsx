@@ -1,8 +1,9 @@
-import { useState } from 'react'
 import { getStage } from '@/components/bububu/BububuCharacter'
 import { ALL_WORDS } from '@/data/vocabulary'
 
 interface Props {
+  open: boolean
+  onClose: () => void
   level: number
   wordsLearned: string[]
   streak: number
@@ -76,57 +77,16 @@ function getMessages(level: number, wordsLearned: string[], streak: number) {
   return msgs
 }
 
-export function BububuPhone({ level, wordsLearned, streak, isKids = false }: Props) {
-  const [open, setOpen] = useState(false)
+export function BububuPhone({ open, onClose, level, wordsLearned, streak, isKids = false }: Props) {
   const messages = getMessages(level, wordsLearned, streak)
 
   const accentColor = isKids ? '#22c55e' : '#7c3aed'
   const headerBg    = isKids ? 'linear-gradient(135deg, #16a34a, #15803d)' : 'linear-gradient(135deg, #5b21b6, #4c1d95)'
 
+  if (!open) return null
+
   return (
     <>
-      {/* ── Ícone do celular ── */}
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: 76, left: 16,
-          width: 38, height: 38,
-          borderRadius: 10,
-          border: '1px solid rgba(255,255,255,0.18)',
-          background: 'rgba(255,255,255,0.07)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          cursor: 'pointer',
-          zIndex: 50,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 0,
-          WebkitTapHighlightColor: 'transparent',
-          transition: 'transform 0.15s ease, opacity 0.15s ease',
-        }}
-        onPointerEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
-        onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-        aria-label="Celular do Bububu"
-      >
-        {/* Mini-phone SVG */}
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <rect x="4" y="1" width="12" height="18" rx="2.5" fill="rgba(255,255,255,0.75)" />
-          <rect x="5.5" y="3" width="9" height="12" rx="1" fill={accentColor} opacity="0.85" />
-          <circle cx="10" cy="17" r="1.2" fill="rgba(255,255,255,0.5)" />
-          <rect x="8" y="1.8" width="4" height="0.8" rx="0.4" fill="rgba(0,0,0,0.15)" />
-        </svg>
-
-        {/* Bolinha de notificação */}
-        <div style={{
-          position: 'absolute', top: -3, right: -3,
-          width: 10, height: 10,
-          borderRadius: '50%',
-          background: '#ef4444',
-          border: '1.5px solid rgba(10,0,30,0.8)',
-          animation: 'notif-pulse 2s ease-in-out infinite',
-        }} />
-      </button>
-
       <style>{`
         @keyframes notif-pulse {
           0%, 100% { transform: scale(1); }
@@ -143,9 +103,8 @@ export function BububuPhone({ level, wordsLearned, streak, isKids = false }: Pro
       `}</style>
 
       {/* ── Modal do chat ── */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
+      <div
+          onClick={() => onClose()}
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(10,0,30,0.72)',
@@ -198,7 +157,7 @@ export function BububuPhone({ level, wordsLearned, streak, isKids = false }: Pro
                 </div>
               </div>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => onClose()}
                 style={{
                   marginLeft: 'auto', background: 'none', border: 'none',
                   color: 'rgba(255,255,255,0.6)', fontSize: 20, cursor: 'pointer',
@@ -259,7 +218,6 @@ export function BububuPhone({ level, wordsLearned, streak, isKids = false }: Pro
             </div>
           </div>
         </div>
-      )}
     </>
   )
 }

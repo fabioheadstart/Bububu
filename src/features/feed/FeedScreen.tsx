@@ -19,7 +19,9 @@ import {
   playSnap,
   playMunch,
   playFart,
+  playFartBonus,
   playFartJackpot,
+  playBububuSuper,
   preloadJackpotFart,
   playCoinNormal,
   playCoinBonus,
@@ -166,6 +168,7 @@ export function FeedScreen() {
   const [showSettings, setShowSettings] = useState(false)
   const [showShare, setShowShare]         = useState(false)
   const [showProgress, setShowProgress]   = useState(false)
+  const [showPhone, setShowPhone]         = useState(false)
 
   // Pool de vocabulário desbloqueado para o nível atual
   const pool    = useMemo(() => getUnlockedPool(computedLevel, progress.difficulty), [computedLevel, progress.difficulty])
@@ -528,8 +531,12 @@ export function FeedScreen() {
     setResult(feedResult)
 
     if (feedResult.rewardTier === 'jackpot') {
-      playFartJackpot()      // ElevenLabs ou mega synth
+      playFartJackpot()      // reward-jackpot.wav → ElevenLabs → mega synth
+      playBububuSuper()      // bububu-super.wav (triplicado)
       setSuperPeido(true)    // overlay SUPER PEIDO
+      setIsBurp(false)
+    } else if (feedResult.rewardTier === 'context_bonus') {
+      playFartBonus()        // reward-bonus.wav com variação de pitch
       setIsBurp(false)
     } else {
       const soundType = playFart()
@@ -1346,6 +1353,8 @@ export function FeedScreen() {
       )}
 
       <BububuPhone
+        open={showPhone}
+        onClose={() => setShowPhone(false)}
         level={computedLevel}
         wordsLearned={progress.wordsLearned}
         streak={progress.streak ?? 0}

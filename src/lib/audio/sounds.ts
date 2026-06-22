@@ -38,7 +38,9 @@ async function _sfxPlay(name: string): Promise<boolean> {
   }
 }
 
-;['bub_chomp.mp3','bub_fart4.mp3','bub_fart1.mp3','bub_fart2.mp3','bub_fart3.mp3','bub_burp.mp3']
+;['bub_chomp.mp3','bub_fart4.mp3','bub_fart1.mp3','bub_fart2.mp3','bub_fart3.mp3','bub_burp.mp3',
+  'sounds/reward-normal.wav','sounds/reward-bonus.wav','sounds/reward-jackpot.wav',
+  'sounds/bububu-normal.wav','sounds/bububu-tired.wav','sounds/bububu-super.wav']
   .forEach(n => _sfxLoad(n))
 
 // ── FM LFO helper (modulates AudioParam frequency — no gain automation conflict) ──
@@ -307,7 +309,13 @@ function _burpSynth() {
 }
 
 const _FART_SYNTHS = [_fartClassic, _fartSqueaker, _fartDeep, _fartMachineGun, _fartWet]
-const _FART_FILES  = ['bub_fart1.mp3', 'bub_fart2.mp3', 'bub_fart3.mp3']
+const _FART_FILES  = ['sounds/reward-normal.wav', 'bub_fart1.mp3', 'bub_fart2.mp3', 'bub_fart3.mp3']
+
+export function playFartBonus(): void {
+  _sfxPlay('sounds/reward-bonus.wav').then(ok => {
+    if (!ok) _fartClassic(actx())
+  }).catch(() => _fartClassic(actx()))
+}
 
 export function playFart(): 'fart' | 'burp' {
   _fartCount++
@@ -519,12 +527,26 @@ export function playKonami() {
 }
 
 export function playGroggyBububu(): void {
-  try {
-    const audio = new Audio('/audio/bububu.mp3')
-    audio.playbackRate = 0.62
-    audio.volume = 0.9
-    audio.play().catch(() => {})
-  } catch { /* silencioso */ }
+  _sfxPlay('sounds/bububu-tired.wav').then(ok => {
+    if (ok) return
+    try {
+      const audio = new Audio('/audio/bububu.mp3')
+      audio.playbackRate = 0.62
+      audio.volume = 0.9
+      audio.play().catch(() => {})
+    } catch { /* silencioso */ }
+  }).catch(() => {})
+}
+
+export function playBububuSuper(): void {
+  _sfxPlay('sounds/bububu-super.wav').catch(() => {
+    try {
+      const audio = new Audio('/audio/bububu.mp3')
+      audio.playbackRate = 1.3
+      audio.volume = 1.0
+      audio.play().catch(() => {})
+    } catch { /* silencioso */ }
+  })
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -592,17 +614,20 @@ function _fartMegaSynth(): void {
   } catch {}
 }
 
-/** Toca o peido do jackpot — ElevenLabs se disponível, synth mega caso contrário. */
+/** Toca o peido do jackpot — arquivo local → ElevenLabs cached → mega synth. */
 export function playFartJackpot(): void {
-  if (_jackpotFartUrl) {
-    try {
-      const a = new Audio(_jackpotFartUrl)
-      a.volume = 1.0
-      a.play().catch(() => _fartMegaSynth())
-      return
-    } catch { /* fallthrough */ }
-  }
-  _fartMegaSynth()
+  _sfxPlay('sounds/reward-jackpot.wav').then(ok => {
+    if (ok) return
+    if (_jackpotFartUrl) {
+      try {
+        const a = new Audio(_jackpotFartUrl)
+        a.volume = 1.0
+        a.play().catch(() => _fartMegaSynth())
+        return
+      } catch { /* fallthrough */ }
+    }
+    _fartMegaSynth()
+  }).catch(() => _fartMegaSynth())
 }
 
 // ─── Haptic feedback (Android Chrome; silent on iOS) ─────────────────────────
