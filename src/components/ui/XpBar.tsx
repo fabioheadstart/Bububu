@@ -1,9 +1,10 @@
 interface Props {
   level: number
   progress: number // 0–1
+  wordsUntilNextStage?: number
 }
 
-export function XpBar({ level, progress }: Props) {
+export function XpBar({ level, progress, wordsUntilNextStage }: Props) {
   const isMax = level >= 15
   const fill  = Math.min(Math.max(progress, 0), 1) * 100
 
@@ -52,9 +53,4 @@ export function XpBar({ level, progress }: Props) {
             boxShadow: fill > 0
               ? '0 0 6px rgba(124,58,237,0.45)'
               : 'none',
-          }} />
-        </div>
-      </div>
-    </div>
-  )
-}
+         

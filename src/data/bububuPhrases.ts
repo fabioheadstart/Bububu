@@ -29,7 +29,7 @@ const IDLE_HUNGRY = [
   'esqueceu de mim??',
   'uma palavrinha só, juro',
   'nem biscoito de polvilho tem aqui',
-  'Jennifer Aniston não deixaria eu passar fome',
+  'o Vini não deixaria eu passar fome, não',
 ]
 
 // ── Comendo ────────────────────────────────────────────────────────────────────
@@ -77,9 +77,9 @@ const EAT_JACKPOT = [
   'ISSO SIM É COMIDA BOA',
   'palavra nativa! melhor que linguiça',
   'QUE COISA BOA ESSA',
-  'Jennifer Aniston usaria essa',
   'essa é de primeira qualidade',
   'palavra gourmet. gosto muito',
+  'o Vini Jr. usaria essa em entrevista',
 ]
 
 // ── Context bonus ──────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ const COMBO_VS = [
 ]
 
 const COMBO_KONAMI = [
-  'JENNIFER ANISTON AQUI VOU EU!!',
+  'VINI JR. AQUI VOU EU!!',
   'ULTRA COMBO! tô voando',
   'isso foi secreto e eu adorei DEMAIS',
   'nunca pensei que ia acontecer isso',
@@ -126,18 +126,18 @@ const COMBO_KONAMI = [
 
 // ── Pensamentos aleatórios (idle timer) ───────────────────────────────────────
 const THOUGHTS = [
-  'será que o Vini Jr. começou assim também?',
-  'cada palavra é um passo mais perto do mundo',
+  'o Vini Jr. também começou sem saber inglês. olha onde ele tá',
+  'cada palavra é um passo pra fora daqui — no bom sentido',
   'inglês é difícil mas comigo fica gostoso',
   'no inglês tem palavra pra tudo, sabia?',
-  'tô crescendo, você tá vendo?',
+  'cidade pequena não significa sonho pequeno',
   'pensa: bichinho que come inglês. que ideia boa',
   'continua me alimentando, porfa',
-  'lá em São Sebastião quem ouve inglês nas séries já tá na frente',
-  'quem aprende assim aprende de verdade',
-  'palavra por palavra, um dia chego lá',
-  'tô aqui guardando o que você me dá',
-  'que lugar bom pra aprender esse é',
+  'quem ouve inglês nas séries já tá na frente — e nem sabe',
+  'cada palavra que você me dá é uma palavra que o mundo entende',
+  'palavra por palavra, a gente chega lá',
+  'tô guardando tudo que você me dá. não desperdiça',
+  'São Sebastião pra mundo — esse é o plano',
 ]
 
 // ── Sino da Igreja — dispara às :00 e :30 de cada hora ───────────────────────
@@ -158,18 +158,19 @@ const EVOLUTION_PHRASES: Record<string, string[]> = {
     'uai, cresci!',
     'olha o tamanho de mim agora',
     'tô ficando grande!',
+    'São Sebastião tá orgulhosa',
   ],
   teen: [
     'uma estrela! merecida',
     'adolescente e bilíngue',
     'nível teen: desbloqueado',
-    'tô quase lá, Jennifer',
+    'tô indo, tô indo!',
   ],
   adult: [
     'A COROA! meu Deus',
     'jovem adulto com coroa. isso é vida',
-    'Hollywood, aqui vou eu mesmo',
-    'se o Jennifer Aniston me vir assim...',
+    'mundo, aqui vou eu',
+    'passaporte carimbado. vamos!',
   ],
 }
 
@@ -219,16 +220,4 @@ export function getBubPhrase(
       return pick(EAT_NORMAL)
     }
     case 'eat_review':   return pick(EAT_REVIEW)
-    case 'eat_jackpot':  return pick(EAT_JACKPOT)
-    case 'eat_context':  return pick(EAT_CONTEXT)
-    case 'eat_craving':  return pick(EAT_CRAVING)
-    case 'bullet_time':  return pick(BULLET_TIME)
-    case 'mastery':      return word ? MASTERY_PHRASES(word) : pick(EAT_NORMAL)
-    case 'combo_trio':   return pick(COMBO_TRIO)
-    case 'combo_vs':     return pick(COMBO_VS)
-    case 'combo_konami': return pick(COMBO_KONAMI)
-    case 'thought':      return pick(THOUGHTS)
-    case 'evolution':    return stage ? pick(EVOLUTION_PHRASES[stage] ?? EVOLUTION_PHRASES.growing) : 'cresci!'
-    case 'sino':         return pick(SINO_PHRASES)
-  }
-}
+    case 'eat_

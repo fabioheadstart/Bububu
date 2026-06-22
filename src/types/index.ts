@@ -75,8 +75,3 @@ export interface Problem {
 
 export interface ChallengeResult {
   problem: Problem
-  chosen: 'A' | 'B'
-  usedHint: boolean
-  xpGained: number
-
-}

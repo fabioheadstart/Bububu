@@ -169,7 +169,7 @@ interface FeedScreenProps {
 export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const { feedWord }                                           = useFeed()
   const { speakWord }                                          = useAudio()
-  const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, resetProgress } = useProgress()
+  const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, resetProgress, wordsUntilNextStage } = useProgress()
   const { speakBububu, speakBububuBulletTime }                  = useBububuVoice(getStage(computedLevel))
   const [showSettings, setShowSettings] = useState(false)
   const [showShare, setShowShare]         = useState(false)
@@ -907,7 +907,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       <SceneBackground isKids={isKids} worldId={activeWorld} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <XpBar level={computedLevel} progress={levelProgress} />
+        <XpBar level={computedLevel} progress={levelProgress} wordsUntilNextStage={wordsUntilNextStage} />
       </div>
 
       {/* Fome do dia + contador de apetite */}
@@ -1566,30 +1566,4 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
               35%  { transform:scale(1.5); opacity:1; filter:brightness(2.5); }
               100% { transform:scale(2.5); opacity:0; filter:brightness(1); }
             }
-          `}</style>
-          <div style={{
-            position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 9990,
-            pointerEvents: 'none',
-          }}>
-            <div style={{
-              fontSize: 52, fontWeight: 900,
-              color: '#ffffff',
-              letterSpacing: 6,
-              textShadow: '0 0 40px rgba(251,191,36,0.9), 0 0 80px rgba(251,191,36,0.4)',
-              willChange: 'transform, opacity, filter',
-              animation: bulletTimePhase === 'fly'
-                ? 'bt-zoom 2.5s cubic-bezier(0.12,0,0.04,1) forwards'
-                : 'bt-impact 0.55s ease-out forwards',
-            }}>
-              {bulletTimeWord}
-            </div>
-          </div>
-        </>,
-        document.body
-      )}
-    </div>
-  )
-}
+ 
