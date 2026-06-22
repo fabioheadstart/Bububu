@@ -69,7 +69,7 @@ export function ChallengeScreen() {
   const popId = { current: 0 }
 
   const problem = session[sessionIdx]
-  const isHigh  = result?.chosen === 'B' && !result?.usedHint
+  const isHigh  = result != null && result.chosen === result.problem.options.find(o => o.score === 'high')?.key && !result.usedHint
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ export function ChallengeScreen() {
     const score          = problem.options.find(o => o.key === key)!.score
     const effectiveScore = usedHint ? 'medium' : score
     const xp             = XP[effectiveScore as keyof typeof XP]
-    const isCorrect      = key === 'B' && !usedHint
+    const isCorrect      = score === 'high' && !usedHint
 
     const challengeResult: ChallengeResult = { problem, chosen: key, usedHint, xpGained: xp }
 
@@ -547,12 +547,11 @@ function OptionsView({ problem, hintVisible, usedHint, choosing, pressedOpt, onH
 // ─── Fase 3: Resultado ────────────────────────────────────────────────────────
 function ResultView({ result, onNext, isKids = false }: { result: ChallengeResult; onNext: () => void; isKids?: boolean }) {
   const { chosen, usedHint, xpGained, problem } = result
-  const choseB       = chosen === 'B'
-  const isHigh       = choseB && !usedHint
-  const isBwithHint  = choseB && usedHint
-  const choseA       = chosen === 'A'
   const chosenOption = problem.options.find(o => o.key === chosen)!
   const otherOption  = problem.options.find(o => o.key !== chosen)!
+  const choseWrong   = chosenOption.score === 'medium'
+  const isHigh       = !choseWrong && !usedHint
+  const isBwithHint  = !choseWrong && usedHint
 
   // Emoji, título e subtítulo variam por caso
   const feedbackEmoji = isHigh ? (isKids ? '🎉' : '🔥') : isBwithHint ? '✅' : (isKids ? '💪' : '👍')
@@ -561,7 +560,7 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
     ? (isKids ? 'Essa é a resposta mais legal! 🌟' : 'É exatamente o que um nativo diria.')
     : isBwithHint
       ? (isKids ? 'Você acertou! Mas tente sem dica da próxima vez 😊' : 'Você acertou, mas precisou da dica desta vez.')
-      : (isKids ? 'Funciona! Mas a outra opção seria mais natural 👇' : 'Funciona, mas B seria mais natural.')
+      : (isKids ? 'Funciona! Mas a outra opção seria mais natural 👇' : `Funciona, mas ${otherOption.key} seria mais natural.`)
 
   // Cores do card de feedback
   const fbBgKids   = isHigh ? 'linear-gradient(135deg, #D6F5D6, #B8F0C8)' : isBwithHint ? 'linear-gradient(135deg, #DBEAFE, #BFDBFE)' : '#FFF9E6'
@@ -608,14 +607,14 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
         ...(isKids ? {} : GLASS_CARD),
         background: isKids ? '#fff' : undefined,
         border: isKids
-          ? `2px solid ${choseB ? '#6BCB77' : '#FFD93D'}`
-          : `1px solid ${choseB ? 'rgba(167,139,250,0.4)' : 'rgba(255,255,255,0.1)'}`,
+          ? `2px solid ${!choseWrong ? '#6BCB77' : '#FFD93D'}`
+          : `1px solid ${!choseWrong ? 'rgba(167,139,250,0.4)' : 'rgba(255,255,255,0.1)'}`,
         borderRadius: 16,
         padding: '14px 16px',
       }}>
         <div style={{
           fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6,
-          color: isKids ? (choseB ? '#166534' : '#7C5200') : 'rgba(196,181,253,0.6)',
+          color: isKids ? (!choseWrong ? '#166534' : '#7C5200') : 'rgba(196,181,253,0.6)',
         }}>
           Você escolheu {chosen}
         </div>
@@ -624,8 +623,8 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
         </p>
       </div>
 
-      {/* Se escolheu A, mostra B */}
-      {choseA && (
+      {/* Se escolheu a opção menos natural, mostra a melhor */}
+      {choseWrong && (
         <div style={{
           background: isKids ? 'rgba(107,203,119,0.10)' : 'rgba(167,139,250,0.10)',
           border: isKids ? '2px solid rgba(107,203,119,0.35)' : '1px solid rgba(167,139,250,0.25)',
@@ -634,7 +633,7 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
           WebkitBackdropFilter: isKids ? 'none' : 'blur(10px)',
         }}>
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6, color: isKids ? '#166534' : '#c4b5fd' }}>
-            B seria mais natural
+            {otherOption.key} seria mais natural
           </div>
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, fontStyle: 'italic', color: isKids ? '#2D1F6B' : 'rgba(255,255,255,0.88)' }}>
             "{otherOption.text}"
