@@ -421,6 +421,25 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Sino da Igreja — reage às :00 e :30 de cada hora
+  useEffect(() => {
+    function scheduleNextSino() {
+      const now = new Date()
+      const min = now.getMinutes()
+      const sec = now.getSeconds()
+      const msUntilNext = min < 30
+        ? ((30 - min) * 60 - sec) * 1000
+        : ((60 - min) * 60 - sec) * 1000
+      return setTimeout(() => {
+        if (!feeding.current) showSpeech(getBubPhrase('sino'), 3800)
+        timerRef.current = scheduleNextSino()
+      }, msUntilNext)
+    }
+    const timerRef = { current: scheduleNextSino() }
+    return () => clearTimeout(timerRef.current)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const { isSleeping, hoursHungry } = usePetState(progress.mode, progress.lastFedAt)
 
   // Fala de fome — dispara quando muda para estado faminto

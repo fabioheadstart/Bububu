@@ -126,18 +126,28 @@ const COMBO_KONAMI = [
 
 // ── Pensamentos aleatórios (idle timer) ───────────────────────────────────────
 const THOUGHTS = [
-  'será que Jennifer Aniston usa essa palavra?',
-  'cada palavra é um passo mais perto de Hollywood',
+  'será que o Vini Jr. começou assim também?',
+  'cada palavra é um passo mais perto do mundo',
   'inglês é difícil mas comigo fica gostoso',
   'no inglês tem palavra pra tudo, sabia?',
   'tô crescendo, você tá vendo?',
   'pensa: bichinho que come inglês. que ideia boa',
   'continua me alimentando, porfa',
-  'lá em São Sebastião, aprende inglês pela tevê',
-  'a Rachel Green também tinha esse brilho nos olhos',
+  'lá em São Sebastião quem ouve inglês nas séries já tá na frente',
+  'quem aprende assim aprende de verdade',
   'palavra por palavra, um dia chego lá',
   'tô aqui guardando o que você me dá',
   'que lugar bom pra aprender esse é',
+]
+
+// ── Sino da Igreja — dispara às :00 e :30 de cada hora ───────────────────────
+const SINO_PHRASES = [
+  'bong! o sino tocou. hora de aprender mais uma 🔔',
+  'ouviu? é o sino. vamos aproveitar ⛪',
+  'meia hora se foi. o que você aprendeu? me alimenta!',
+  'o sino chamou. ele tá do nosso lado 🔔',
+  'bong bong! São Sebastião acordou. e você?',
+  'o sino é pontual. seja como o sino 🔔',
 ]
 
 // ── API pública ────────────────────────────────────────────────────────────────
@@ -191,6 +201,7 @@ export type SpeechTrigger =
   | 'thought'
   | 'evolution'
   | 'bullet_time'
+  | 'sino'
 
 export function getBubPhrase(
   trigger: SpeechTrigger,
@@ -218,5 +229,6 @@ export function getBubPhrase(
     case 'combo_konami': return pick(COMBO_KONAMI)
     case 'thought':      return pick(THOUGHTS)
     case 'evolution':    return stage ? pick(EVOLUTION_PHRASES[stage] ?? EVOLUTION_PHRASES.growing) : 'cresci!'
+    case 'sino':         return pick(SINO_PHRASES)
   }
 }
