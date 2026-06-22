@@ -193,6 +193,7 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false, justMaste
         marginTop: 10,
         width: '100%',
         maxWidth: 310,
+        position: 'relative',
         background: isBonus
           ? (isKids ? 'rgba(255,255,255,0.60)' : `${catColor.bg}20`)
           : (isKids ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.06)'),
@@ -200,52 +201,46 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false, justMaste
           ? (isKids ? catColor.ring + '66' : catColor.ring + '55')
           : (isKids ? 'rgba(45,31,107,0.14)' : 'rgba(255,255,255,0.10)')}`,
         borderRadius: 14,
-        padding: '10px 14px 9px',
+        padding: '11px 14px 10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 4,
+        gap: 5,
         animation: 'fadeSlideUp 0.42s ease 0.45s both',
         boxShadow: isBonus
           ? (isKids ? '0 2px 10px rgba(0,0,0,0.07)' : `0 2px 12px ${catColor.bg}30`)
           : 'none',
       }}>
-        {/* Header */}
+        {/* Badge ✨ bônus — canto superior direito, só quando bonus */}
+        {isBonus && (
+          <span style={{
+            position: 'absolute', top: 8, right: 10,
+            fontSize: 9, fontWeight: 900,
+            color: catColor.ring, letterSpacing: 0.5,
+            textTransform: 'uppercase',
+          }}>✨ bônus</span>
+        )}
+
+        {/* Frase em inglês — protagonista */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          fontSize: 10, fontWeight: 800, letterSpacing: 1,
-          color: isBonus
-            ? catColor.ring
-            : (isKids ? 'rgba(45,31,107,0.40)' : 'rgba(255,255,255,0.30)'),
-          textTransform: 'uppercase',
-        }}>
-          <span style={{ fontSize: 12 }}>❓</span>
-          como usar
-          {isBonus && (
-            <span style={{
-              marginLeft: 'auto', fontSize: 9, fontWeight: 900,
-              color: catColor.ring, letterSpacing: 0.5,
-            }}>✨ bônus</span>
-          )}
-        </div>
-        {/* Frase em inglês */}
-        <div style={{
-          fontSize: isKids ? 13 : 14,
+          fontSize: isKids ? 15 : 16,
           color: isBonus
             ? (isKids ? '#2D1F6B' : '#e9d5ff')
             : exampleColor,
-          fontWeight: isBonus ? 600 : 500,
-          lineHeight: 1.4,
-          fontStyle: 'italic',
+          fontWeight: isBonus ? 700 : 600,
+          lineHeight: 1.45,
+          paddingRight: isBonus ? 52 : 0,   // espaço pro badge
         }}>
-          "{entry.exampleSentence}"
+          {entry.exampleSentence}
         </div>
-        {/* Tradução */}
+
+        {/* Tradução — 14px, contraste real */}
         <div style={{
-          fontSize: isKids ? 11 : 12,
+          fontSize: isKids ? 13 : 14,
           color: isBonus
-            ? (isKids ? 'rgba(45,31,107,0.55)' : 'rgba(196,181,253,0.60)')
-            : exampleTransColor,
-          lineHeight: 1.35,
+            ? (isKids ? 'rgba(45,31,107,0.65)' : 'rgba(196,181,253,0.75)')
+            : (isKids ? 'rgba(45,31,107,0.55)' : 'rgba(255,255,255,0.58)'),
+          lineHeight: 1.45,
+          fontWeight: 500,
         }}>
           {entry.exampleTranslation}
         </div>
