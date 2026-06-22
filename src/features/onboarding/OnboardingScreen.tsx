@@ -5,13 +5,18 @@ import { BububuCharacter } from '@/components/bububu/BububuCharacter'
 import type { AppMode, DifficultyLevel } from '@/types'
 
 const STORY: { id: number; text: string; delay: number }[] = [
-  { id: 1, text: 'Oi! Eu sou o Bububu 👋',                                                        delay: 300  },
-  { id: 2, text: 'Nasci em São Sebastião do Rio Verde, Minas Gerais 🌄',                           delay: 900  },
-  { id: 3, text: 'Cidade pequena. Mas mundo grande 🌎',                                            delay: 1600 },
-  { id: 4, text: 'O Vini Jr. era de Madureira. O Neymar era de Mogi das Cruzes. Eu sou de São Sebastião. ⚽', delay: 2300 },
-  { id: 5, text: 'A gente não nasceu pra ficar. Me alimenta com inglês — e a gente vai junto 🌟', delay: 3400 },
+  { id: 1,  text: 'Eu vim de um lugar muito distante. 🌠',                                                              delay: 300  },
+  { id: 2,  text: 'Um lugar onde ninguém fala, ninguém escreve, ninguém tem nome para nada.',                           delay: 1100 },
+  { id: 3,  text: 'Cheguei aqui sem querer.',                                                                           delay: 2100 },
+  { id: 4,  text: 'Caí bem no meio de São Sebastião do Rio Verde, Minas Gerais. 🌄',                                    delay: 3100 },
+  { id: 5,  text: 'Uma cidadezinha onde todo mundo se conhece — e ninguém sabia o que era eu.',                         delay: 4000 },
+  { id: 6,  text: 'Mas ficaram amigos assim mesmo. 💜',                                                                  delay: 4900 },
+  { id: 7,  text: 'Aqui, tudo tem nome. Cachorro. Dog. Sol. Sun.',                                                      delay: 5900 },
+  { id: 8,  text: 'Descobri que palavras em inglês são alimento. Cada uma que eu como vira parte de mim — e eu cresço.', delay: 6900 },
+  { id: 9,  text: 'Mas eu não consigo buscar palavras sozinho.',                                                        delay: 8100 },
+  { id: 10, text: 'Dá uma palavra em inglês pra mim. Eu te devolvo a tradução em português. 💜',                        delay: 8900 },
 ]
-const CTA_DELAY = 4700
+const CTA_DELAY = 10400
 
 interface Props {
   onComplete: () => void

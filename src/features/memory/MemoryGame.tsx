@@ -13,10 +13,16 @@ const WORD_EMOJI: Record<string, string> = {
   apple:'🍎', water:'💧', bread:'🍞', milk:'🥛', egg:'🥚', rice:'🍚',
   coffee:'☕', banana:'🍌', orange:'🍊', cake:'🎂', soup:'🍲', salad:'🥗',
   meat:'🥩', fish:'🐟', juice:'🧃', beer:'🍺', wine:'🍷', tea:'🍵',
+  breakfast:'🍳', lunch:'🥪', dinner:'🍽️', snack:'🍿', chocolate:'🍫',
+  cheese:'🧀', butter:'🧈', yogurt:'🥛', cookie:'🍪', pizza:'🍕',
+  pasta:'🍝', burger:'🍔', sandwich:'🥙', fruit:'🍓', vegetable:'🥦',
   // A1 — Home & Objects
   house:'🏠', door:'🚪', window:'🪟', chair:'🪑', table:'🍽️', bed:'🛏️',
   book:'📚', pen:'✏️', paper:'📄', phone:'📱', computer:'💻', key:'🔑',
   bag:'👜', hat:'🎩', shoe:'👟', shirt:'👕', clock:'🕐', lamp:'💡',
+  glasses:'👓', umbrella:'☂️', bottle:'🍶', cup:'☕', plate:'🍽️', spoon:'🥄',
+  fork:'🍴', knife:'🔪', mirror:'🪞', sofa:'🛋️', pillow:'🛏️', blanket:'🛌',
+  toothbrush:'🪥', soap:'🧼', towel:'🧻', trash:'🗑️', television:'📺',
   // A1 — Transport
   car:'🚗', bus:'🚌', train:'🚂', plane:'✈️', bike:'🚲', boat:'⛵',
   taxi:'🚕', truck:'🚛', motorcycle:'🏍️', helicopter:'🚁',
@@ -30,10 +36,15 @@ const WORD_EMOJI: Record<string, string> = {
   doctor:'👨‍⚕️', school:'🏫', hospital:'🏥', shop:'🛍️', bank:'🏦',
   hotel:'🏨', park:'🌿', city:'🌆', village:'🏘️', beach:'🏖️',
   family:'👨‍👩‍👧', friend:'🤝', baby:'👶', boy:'👦', girl:'👧',
+  man:'👨', woman:'👩', teacher:'👩‍🏫', student:'🧑‍🎓', nurse:'👩‍⚕️',
+  police:'👮', firefighter:'👩‍🚒', cook:'👨‍🍳', farmer:'👨‍🌾', driver:'🧑‍✈️',
   // A1 — Feelings & States
   happy:'😊', sad:'😢', angry:'😠', tired:'😴', hungry:'😋', scared:'😨',
+  sick:'🤒', healthy:'💪', cold:'🥶', hot:'🥵', busy:'⚡', free:'🕊️',
   // A1 — Numbers & Common
   money:'💰', time:'⏰', day:'📅', year:'📆', food:'🍔', work:'💼',
+  morning:'🌅', afternoon:'🌇', evening:'🌆', night:'🌙', today:'📅', tomorrow:'🗓️',
+  yesterday:'◀️', week:'📅', month:'🗓️', hour:'🕐', minute:'⏱️',
   // A2 — Feelings
   excited:'🤩', worried:'😟', bored:'😑', proud:'🥇', nervous:'😰',
   surprised:'😲', confused:'😕', embarrassed:'😳', relaxed:'😌',
