@@ -1,10 +1,39 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { ALL_WORDS } from '@/data/vocabulary'
 import type { AppMode, VocabEntry } from '@/types'
 import { playSnap, playCoinJackpot, playNavTap, playQuizWrong } from '@/lib/audio/sounds'
 
 const MEMORY_PAIRS_KIDS = 3
 const MEMORY_PAIRS_PRO  = 6
+
+// ─── Twemoji — converte emoji → PNG consistente em qualquer dispositivo ───────
+// Usa o CDN do Twitter (open-source, CC-BY 4.0). Remove variation selector (FE0F)
+// para compatibilidade com os filenames do CDN.
+function toTwemojiUrl(emoji: string): string {
+  const points: string[] = []
+  for (const char of emoji) {
+    const cp = char.codePointAt(0)
+    if (cp && cp !== 0xFE0F) points.push(cp.toString(16).toLowerCase())
+  }
+  return `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/${points.join('-')}.png`
+}
+
+// Tenta Twemoji; fallback para emoji de texto se a imagem não carregar
+const EmojiImg = memo(function EmojiImg({ emoji, size }: { emoji: string; size: number }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return <span style={{ fontSize: size * 0.88, lineHeight: 1, userSelect: 'none' }}>{emoji}</span>
+  }
+  return (
+    <img
+      src={toTwemojiUrl(emoji)}
+      alt={emoji}
+      onError={() => setFailed(true)}
+      draggable={false}
+      style={{ width: size, height: size, objectFit: 'contain', userSelect: 'none', display: 'block' }}
+    />
+  )
+})
 
 // ─── Emoji map ────────────────────────────────────────────────────────────────
 const WORD_EMOJI: Record<string, string> = {
@@ -14,6 +43,13 @@ const WORD_EMOJI: Record<string, string> = {
   breakfast:'🍳', lunch:'🥪', dinner:'🍽️', snack:'🍿', chocolate:'🍫',
   cheese:'🧀', butter:'🧈', yogurt:'🥛', cookie:'🍪', pizza:'🍕',
   pasta:'🍝', burger:'🍔', sandwich:'🥙', fruit:'🍓', vegetable:'🥦',
+  // extras food
+  potato:'🥔', fries:'🍟', hotdog:'🌭', taco:'🌮', sushi:'🍣',
+  ramen:'🍜', popcorn:'🍿', icecream:'🍦', honey:'🍯', avocado:'🥑',
+  carrot:'🥕', corn:'🌽', tomato:'🍅', grape:'🍇', strawberry:'🍓',
+  pineapple:'🍍', mango:'🥭', coconut:'🥥', peanut:'🥜', onion:'🧅',
+  mushroom:'🍄', pepper:'🫑', garlic:'🧄', watermelon:'🍉', cherry:'🍒',
+  pear:'🍐', peach:'🍑', lemon:'🍋', kiwi:'🥝', blueberry:'🫐',
   house:'🏠', door:'🚪', window:'🪟', chair:'🪑', table:'🍽️', bed:'🛏️',
   book:'📚', pen:'✏️', paper:'📄', phone:'📱', computer:'💻', key:'🔑',
   bag:'👜', hat:'🎩', shoe:'👟', shirt:'👕', clock:'🕐', lamp:'💡',
@@ -260,9 +296,7 @@ function Card({ card, flipped, isKids, onClick, isWrong, isNewMatch }: {
           padding: 4, overflow: 'hidden',
         }}>
           {card.type === 'emoji' && (
-            <span style={{ fontSize: isKids ? 48 : 38, lineHeight: 1, userSelect: 'none' }}>
-              {card.text}
-            </span>
+            <EmojiImg emoji={card.text} size={isKids ? 52 : 42} />
           )}
 
           {(card.type === 'word' || card.type === 'en') && (
