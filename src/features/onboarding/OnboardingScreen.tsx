@@ -120,7 +120,7 @@ export function OnboardingScreen({ onComplete }: Props) {
   const [visibleMsgs, setVisibleMsgs] = useState<number[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Revela mensagens uma a uma conforme o delay, sem deixar balões invisíveis no DOM
+  // Revela mensagens uma a uma conforme o delay
   useEffect(() => {
     if (step !== 0) return
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -128,7 +128,6 @@ export function OnboardingScreen({ onComplete }: Props) {
       timers.push(setTimeout(() => {
         setVisibleMsgs(prev => [...prev, msg.id])
         if (BUB_SOUND_ON.has(msg.id)) speakBububu()
-        // Auto-scroll para o último balão
         requestAnimationFrame(() => {
           scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
         })
@@ -186,268 +185,304 @@ export function OnboardingScreen({ onComplete }: Props) {
           from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        /* Oculta scrollbar em todos os browsers */
+        .onb-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+        .onb-scroll::-webkit-scrollbar { display: none; }
       `}</style>
 
+      {/* ── Root: altura fixa, 3 zonas — header / conteúdo / rodapé ── */}
       <div style={{
+        height: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100dvh',
-        overflowY: 'auto',
-        padding: '40px 24px',
-        gap: 28,
+        overflow: 'hidden',
         background: 'linear-gradient(160deg, #0a041e 0%, #130826 60%, #0d0520 100%)',
       }}>
 
-        {/* ── Mascote (step 0: maior + sem texto abaixo; steps 1/2: menor) ── */}
-        <div style={{ textAlign: 'center' }}>
+        {/* ── Zona 1: Header fixo — mascote + título + steps ── */}
+        <div style={{
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: 28,
+          paddingBottom: 8,
+          gap: 4,
+        }}>
           <div className="bub-mascot" style={{
-            width: step === 0 ? 160 : 140,
-            height: step === 0 ? 180 : 160,
+            width: step === 0 ? 120 : 100,
+            height: step === 0 ? 136 : 116,
             margin: '0 auto',
             transition: 'all 0.4s ease',
           }}>
             <BububuCharacter state="idle" />
           </div>
-          {step === 0 ? (
-            <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '10px 0 0', color: '#f0e6ff' }}>
-              Bububu
-            </h1>
-          ) : (
-            <>
-              <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, margin: '10px 0 4px', color: '#f0e6ff' }}>
-                Bububu
-              </h1>
-              <p style={{ color: 'rgba(196,132,252,0.7)', fontSize: 14, margin: 0 }}>
-                Me dê palavras em inglês e eu vou crescer com você.
-              </p>
-            </>
+
+          <h1 style={{
+            fontSize: step === 0 ? 30 : 26,
+            fontWeight: 900,
+            letterSpacing: -1,
+            margin: '8px 0 0',
+            color: '#f0e6ff',
+            transition: 'font-size 0.3s ease',
+          }}>
+            Bububu
+          </h1>
+
+          {step > 0 && (
+            <p style={{ color: 'rgba(196,132,252,0.7)', fontSize: 13, margin: '2px 0 0', textAlign: 'center', padding: '0 24px' }}>
+              Me dê palavras em inglês e eu vou crescer com você.
+            </p>
+          )}
+
+          {step > 0 && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10 }}>
+              {[1, 2, 3].map(s => (
+                <div key={s} style={{
+                  height: 6, borderRadius: 99,
+                  width: step === s ? 24 : 8,
+                  background: step >= s ? '#c084fc' : 'rgba(255,255,255,0.15)',
+                  transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+                }} />
+              ))}
+            </div>
           )}
         </div>
 
-        {/* ── Step indicators (steps 1, 2, 3) ── */}
-        {step > 0 && (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {[1, 2, 3].map(s => (
-              <div key={s} style={{
-                height: 6, borderRadius: 99,
-                width: step === s ? 24 : 8,
-                background: step >= s ? '#c084fc' : 'rgba(255,255,255,0.15)',
-                transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-              }} />
-            ))}
-          </div>
-        )}
-
-        {/* ── Step 0: História do Bububu ── */}
-        {step === 0 && (
-          <div ref={scrollRef} style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: '55dvh', paddingBottom: 4 }}>
-            {STORY.filter(msg => visibleMsgs.includes(msg.id)).map(msg => (
-              <div key={msg.id} style={{
-                display: 'flex', alignItems: 'flex-end', gap: 10,
-                animation: 'msg-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) both',
+        {/* ── Zona 2: Conteúdo scrollável (sem scrollbar visível) ── */}
+        <div
+          ref={scrollRef}
+          className="onb-scroll"
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '12px 24px 8px',
+            gap: step === 0 ? 10 : 16,
+          }}
+        >
+          {/* Step 0: Balões da história */}
+          {step === 0 && STORY.filter(msg => visibleMsgs.includes(msg.id)).map(msg => (
+            <div key={msg.id} style={{
+              display: 'flex', alignItems: 'flex-end', gap: 10,
+              width: '100%', maxWidth: 400,
+              animation: 'msg-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) both',
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                background: 'rgba(124,58,237,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16,
+              }}>🫧</div>
+              <div style={{
+                background: 'rgba(124,58,237,0.18)',
+                border: '1px solid rgba(167,139,250,0.18)',
+                borderRadius: '16px 16px 16px 4px',
+                padding: '10px 14px',
+                fontSize: 14,
+                color: 'rgba(255,255,255,0.88)',
+                lineHeight: 1.5,
+                maxWidth: '85%',
               }}>
-                <div style={{
-                  width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(124,58,237,0.25)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16,
-                }}>🫧</div>
-                <div style={{
-                  background: 'rgba(124,58,237,0.18)',
-                  border: '1px solid rgba(167,139,250,0.18)',
-                  borderRadius: '16px 16px 16px 4px',
-                  padding: '10px 14px',
-                  fontSize: 14,
-                  color: 'rgba(255,255,255,0.88)',
-                  lineHeight: 1.5,
-                  maxWidth: '85%',
-                }}>
-                  {msg.text}
-                </div>
+                {msg.text}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
 
-        {/* CTA — fora do scroll, sempre visível abaixo dos balões */}
-        {step === 0 && ctaVisible && (
-          <button
-                onClick={() => setStep(1)}
+          {/* Step 1: Nome */}
+          {step === 1 && (
+            <div className="slide-in" style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+              <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0, textAlign: 'center' }}>
+                Qual é o seu nome?
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '-6px 0 4px', textAlign: 'center' }}>
+                O Bububu vai te chamar pelo nome 🫧
+              </p>
+              <input
+                autoFocus
+                type="text"
+                value={nameInput}
+                onChange={e => setNameInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
+                placeholder="Digite seu nome..."
+                maxLength={24}
                 style={{
-                  marginTop: 4,
-                  alignSelf: 'center',
-                  padding: '14px 36px',
+                  width: '100%',
+                  padding: '14px 18px',
+                  borderRadius: 16,
+                  border: '2px solid rgba(192,132,252,0.35)',
+                  background: 'rgba(124,58,237,0.12)',
+                  color: '#f0e6ff',
+                  fontSize: 18,
+                  fontWeight: 700,
+                  outline: 'none',
+                  textAlign: 'center',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <button
+                onClick={handleNameSubmit}
+                disabled={!nameInput.trim()}
+                style={{
+                  padding: '14px 40px',
                   borderRadius: 99,
                   border: 'none',
-                  background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
-                  color: 'white',
+                  background: nameInput.trim()
+                    ? 'linear-gradient(135deg, #7c3aed, #5b21b6)'
+                    : 'rgba(255,255,255,0.08)',
+                  color: nameInput.trim() ? 'white' : 'rgba(255,255,255,0.3)',
                   fontSize: 16,
                   fontWeight: 800,
-                  cursor: 'pointer',
-                  boxShadow: '0 8px 32px rgba(124,58,237,0.45)',
-                  animation: 'cta-in 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+                  cursor: nameInput.trim() ? 'pointer' : 'default',
+                  boxShadow: nameInput.trim() ? '0 8px 32px rgba(124,58,237,0.45)' : 'none',
+                  transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                Vamos começar! 🚀
+                Continuar →
               </button>
-        )}
+            </div>
+          )}
 
-        {/* ── Step 1: Qual é o seu nome? ── */}
-        {step === 1 && (
-          <div className="slide-in" style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-            <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0, textAlign: 'center' }}>
-              Qual é o seu nome?
-            </p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '-6px 0 4px', textAlign: 'center' }}>
-              O Bububu vai te chamar pelo nome 🫧
-            </p>
-            <input
-              autoFocus
-              type="text"
-              value={nameInput}
-              onChange={e => setNameInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
-              placeholder="Digite seu nome..."
-              maxLength={24}
+          {/* Step 2: Modo */}
+          {step === 2 && (
+            <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
+              <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
+                Quem vai jogar?
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: '-4px 0 2px', textAlign: 'center' }}>
+                Você pode mudar isso depois nas configurações.
+              </p>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
+                {MODES.map(card => (
+                  <button
+                    key={card.mode}
+                    className="onb-card"
+                    onMouseEnter={playMenuHover}
+                    onClick={() => handleModeChoose(card.mode)}
+                    style={{
+                      flex: '1 1 200px',
+                      background: card.glow,
+                      border: `2px solid ${card.border}`,
+                      borderRadius: 20,
+                      padding: '24px 18px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      boxShadow: `0 4px 24px ${card.glow}`,
+                    }}
+                  >
+                    <div style={{ fontSize: 40, marginBottom: 8, lineHeight: 1 }}>{card.icon}</div>
+                    <div style={{ fontWeight: 800, fontSize: 20, color: card.accent }}>{card.title}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>{card.age}</div>
+                    <ul style={{ margin: 0, padding: '0 0 0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {card.bullets.map(b => (
+                        <li key={b} style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>{b}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Dificuldade */}
+          {step === 3 && (
+            <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
+              <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
+                Qual é o seu nível?
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '-4px 0 2px', textAlign: 'center' }}>
+                Você pode mudar isso a qualquer hora durante o jogo.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+                {DIFFICULTIES.map(card => (
+                  <button
+                    key={card.difficulty}
+                    className="onb-card"
+                    onMouseEnter={playMenuHover}
+                    onClick={() => handleDifficultyChoose(card.difficulty)}
+                    style={{
+                      width: '100%',
+                      background: card.glow,
+                      border: `2px solid ${card.border}`,
+                      borderRadius: 18,
+                      padding: '18px 20px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 16,
+                      boxShadow: `0 4px 16px ${card.glow}`,
+                    }}
+                  >
+                    <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>{card.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 800, fontSize: 18, color: card.accent }}>{card.title}</div>
+                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>{card.sub}</div>
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 18 }}>›</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Zona 3: Rodapé fixo — CTA e botão voltar ── */}
+        <div style={{
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '12px 24px 40px',
+          gap: 10,
+          minHeight: 100,
+          justifyContent: 'flex-end',
+        }}>
+          {step === 0 && ctaVisible && (
+            <button
+              onClick={() => setStep(1)}
               style={{
                 width: '100%',
-                padding: '14px 18px',
-                borderRadius: 16,
-                border: '2px solid rgba(192,132,252,0.35)',
-                background: 'rgba(124,58,237,0.12)',
-                color: '#f0e6ff',
-                fontSize: 18,
-                fontWeight: 700,
-                outline: 'none',
-                textAlign: 'center',
-                boxSizing: 'border-box',
-              }}
-            />
-            <button
-              onClick={handleNameSubmit}
-              disabled={!nameInput.trim()}
-              style={{
-                padding: '14px 40px',
+                maxWidth: 320,
+                padding: '15px 36px',
                 borderRadius: 99,
                 border: 'none',
-                background: nameInput.trim()
-                  ? 'linear-gradient(135deg, #7c3aed, #5b21b6)'
-                  : 'rgba(255,255,255,0.08)',
-                color: nameInput.trim() ? 'white' : 'rgba(255,255,255,0.3)',
+                background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+                color: 'white',
                 fontSize: 16,
                 fontWeight: 800,
-                cursor: nameInput.trim() ? 'pointer' : 'default',
-                boxShadow: nameInput.trim() ? '0 8px 32px rgba(124,58,237,0.45)' : 'none',
-                transition: 'all 0.2s ease',
+                cursor: 'pointer',
+                boxShadow: '0 8px 32px rgba(124,58,237,0.45)',
+                animation: 'cta-in 0.4s cubic-bezier(0.34,1.56,0.64,1)',
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              Continuar →
+              Vamos começar! 🚀
             </button>
-          </div>
-        )}
+          )}
 
-        {/* ── Step 2: Quem vai jogar? ── */}
-        {step === 2 && (
-          <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-            <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
-              Quem vai jogar?
-            </p>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-              {MODES.map(card => (
-                <button
-                  key={card.mode}
-                  className="onb-card"
-                  onMouseEnter={playMenuHover}
-                  onClick={() => handleModeChoose(card.mode)}
-                  style={{
-                    flex: '1 1 200px',
-                    background: card.glow,
-                    border: `2px solid ${card.border}`,
-                    borderRadius: 20,
-                    padding: '28px 20px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    boxShadow: `0 4px 24px ${card.glow}`,
-                  }}
-                >
-                  <div style={{ fontSize: 44, marginBottom: 10, lineHeight: 1 }}>{card.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 22, color: card.accent }}>{card.title}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 14 }}>{card.age}</div>
-                  <ul style={{ margin: 0, padding: '0 0 0 16px', display: 'flex', flexDirection: 'column', gap: 7 }}>
-                    {card.bullets.map(b => (
-                      <li key={b} style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>{b}</li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          {/* Placeholder para manter o espaço quando o CTA ainda não apareceu */}
+          {step === 0 && !ctaVisible && (
+            <div style={{ height: 52 }} />
+          )}
 
-        {/* ── Step 3: Qual é o seu nível? ── */}
-        {step === 3 && (
-          <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-            <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
-              Qual é o seu nível?
-            </p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '-6px 0 4px', textAlign: 'center' }}>
-              Você pode mudar isso a qualquer hora durante o jogo.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
-              {DIFFICULTIES.map(card => (
-                <button
-                  key={card.difficulty}
-                  className="onb-card"
-                  onMouseEnter={playMenuHover}
-                  onClick={() => handleDifficultyChoose(card.difficulty)}
-                  style={{
-                    width: '100%',
-                    background: card.glow,
-                    border: `2px solid ${card.border}`,
-                    borderRadius: 18,
-                    padding: '18px 20px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 16,
-                    boxShadow: `0 4px 16px ${card.glow}`,
-                  }}
-                >
-                  <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>{card.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 18, color: card.accent }}>{card.title}</div>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>{card.sub}</div>
-                  </div>
-                  <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 18 }}>›</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          {step === 3 && (
+            <button
+              onClick={() => setStep(2)}
+              style={{
+                background: 'none', border: 'none',
+                color: 'rgba(255,255,255,0.35)', fontSize: 13,
+                cursor: 'pointer', padding: '2px 0',
+              }}
+            >
+              ← voltar
+            </button>
+          )}
+        </div>
 
-        {/* ── Back / hint ── */}
-        {step === 3 && (
-          <button
-            onClick={() => setStep(2)}
-            style={{
-              background: 'none', border: 'none',
-              color: 'rgba(255,255,255,0.35)', fontSize: 13,
-              cursor: 'pointer', padding: '2px 0',
-            }}
-          >
-            ← voltar
-          </button>
-        )}
-        {step === 2 && (
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
-            Você pode mudar isso depois nas configurações.
-          </p>
-        )}
       </div>
     </>
   )
