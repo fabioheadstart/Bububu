@@ -40,7 +40,8 @@ async function _sfxPlay(name: string): Promise<boolean> {
 
 ;['bub_chomp.mp3','bub_fart4.mp3','bub_fart1.mp3','bub_fart2.mp3','bub_fart3.mp3','bub_burp.mp3',
   'sounds/reward-normal.wav','sounds/reward-bonus.wav','sounds/reward-jackpot.wav',
-  'sounds/bububu-normal.wav','sounds/bububu-tired.wav','sounds/bububu-super.wav']
+  'sounds/bububu-normal.wav','sounds/bububu-tired.wav','sounds/bububu-super.wav',
+  'sounds/present-pop.wav']
   .forEach(n => _sfxLoad(n))
 
 // ── FM LFO helper (modulates AudioParam frequency — no gain automation conflict) ──
@@ -632,8 +633,8 @@ export function playFartJackpot(): void {
 
 
 // ─── Present pop — estouro do presente (tap to reveal) ──────────────────────
-// Cork pop + whoosh up + shimmer: satisfatório e imediato
-export function playPresentPop(): void {
+// Arquivo real primeiro; synth como fallback
+function _presentPopSynth(): void {
   try {
     const ac  = actx()
     const now = ac.currentTime
@@ -656,7 +657,7 @@ export function playPresentPop(): void {
     whooshG.gain.setValueAtTime(0, now + 0.01)
     whooshG.gain.linearRampToValueAtTime(0.28, now + 0.04)
     whooshG.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
-       whoosh.connect(whooshG); whooshG.connect(ac.destination)
+    whoosh.connect(whooshG); whooshG.connect(ac.destination)
     whoosh.start(now + 0.01); whoosh.stop(now + 0.23)
 
     // 3. Shimmer — 3 sines agudos em sequência rápida (coins/bells feel)
@@ -672,6 +673,12 @@ export function playPresentPop(): void {
 
     setTimeout(() => ac.close(), 600)
   } catch {}
+}
+
+export function playPresentPop(): void {
+  _sfxPlay('sounds/present-pop.wav').then(ok => {
+    if (!ok) _presentPopSynth()
+  }).catch(() => _presentPopSynth())
 }
 
 // ─── Haptics ──────────────────────────────────────────────────────────────────
