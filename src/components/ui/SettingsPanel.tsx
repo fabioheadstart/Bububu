@@ -84,12 +84,29 @@ export function SettingsPanel({
           margin: '0 auto',
         }}
       >
-        {/* Handle */}
-        <div style={{
-          width: 36, height: 4, borderRadius: 99,
-          background: 'rgba(255,255,255,0.15)',
-          margin: '0 auto 20px',
-        }} />
+        {/* Handle + botão fechar */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ flex: 1 }} />
+          <div style={{
+            width: 36, height: 4, borderRadius: 99,
+            background: 'rgba(255,255,255,0.15)',
+          }} />
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 8, color: 'rgba(255,255,255,0.55)',
+                fontSize: 13, fontWeight: 700,
+                padding: '4px 10px', cursor: 'pointer',
+                lineHeight: 1.4,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
 
         {/* ── Stats ── */}
         <div style={{
@@ -165,6 +182,21 @@ export function SettingsPanel({
             </button>
           ))}
         </div>
+
+        {/* ── Pronto ── */}
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%', padding: '14px',
+            borderRadius: 14, border: 'none',
+            background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+            color: '#fff', fontSize: 15, fontWeight: 800,
+            cursor: 'pointer', marginBottom: 14,
+            boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
+          }}
+        >
+          Pronto ✓
+        </button>
 
         {/* ── Progresso por categoria ── */}
         <button
