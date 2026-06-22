@@ -381,11 +381,11 @@ function TinyTrain() {
       `}</style>
       <div style={{
         position: 'absolute',
-        bottom: '8%',
+        bottom: 0,
         left: 0,
-        zIndex: 0,
+        zIndex: 1,
         pointerEvents: 'none',
-        opacity: 0.52,
+        opacity: 0.78,
         animation: 'train-cross 14s linear forwards',
       }}>
         {/* Trilho */}
@@ -492,8 +492,8 @@ function TinyTruck() {
         }
       `}</style>
       <div style={{
-        position: 'absolute', bottom: '8%', left: 0,
-        pointerEvents: 'none', opacity: 0.62,
+        position: 'absolute', bottom: 0, left: 0,
+        pointerEvents: 'none', opacity: 0.82,
         animation: 'truck-cross 13s linear forwards',
       }}>
         <svg width="150" height="54" viewBox="0 0 150 54">
@@ -546,8 +546,8 @@ function TinyCar() {
         }
       `}</style>
       <div style={{
-        position: 'absolute', bottom: '8%', left: 0,
-        pointerEvents: 'none', opacity: 0.62,
+        position: 'absolute', bottom: 2, left: 0,
+        pointerEvents: 'none', opacity: 0.82,
         animation: 'car-cross 10s linear forwards',
       }}>
         <svg width="120" height="46" viewBox="0 0 120 46">
@@ -582,16 +582,40 @@ export function SceneBackground({ isKids = false, worldId = 1 }: { isKids?: bool
   return (
     <>
       {isKids ? renderKidsWorld() : <ProBackground />}
-      {/* Estrada abaixo do Bububu — trem, caminhão e carro */}
-      <div style={{ position: 'absolute', top: '57%', left: 0, right: 0, height: '22%', overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-        {/* Trilho/estrada */}
-        <svg width="100%" height="2" style={{ position: 'absolute', bottom: '12%', left: 0, opacity: 0.12 }}>
-          <line x1="0" y1="1" x2="100%" y2="1" stroke="white" strokeWidth="2" strokeDasharray="18 12" />
-        </svg>
-        <TinyTrain />
-        <TinyTruck />
-        <TinyCar />
-      </div>
+      {/* ── Estrada dos veículos — só Kids ── */}
+      {isKids && (
+        <div style={{
+          position: 'absolute',
+          bottom: '18%',   /* fica acima dos chips, abaixo da plataforma */
+          left: 0, right: 0,
+          height: 72,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}>
+          {/* Faixa de asfalto */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            height: 32,
+            background: 'rgba(0,0,0,0.08)',
+            borderTop: '1.5px solid rgba(255,255,255,0.18)',
+          }}>
+            {/* Faixa central tracejada */}
+            <svg width="100%" height="32" style={{ position: 'absolute', top: 0, left: 0 }}>
+              <line x1="0" y1="16" x2="100%" y2="16"
+                stroke="rgba(255,255,255,0.25)" strokeWidth="2"
+                strokeDasharray="20 14" />
+            </svg>
+          </div>
+
+          {/* Veículos */}
+          <div style={{ position: 'absolute', bottom: 2, left: 0, right: 0 }}>
+            <TinyTrain />
+            <TinyTruck />
+            <TinyCar />
+          </div>
+        </div>
+      )}
     </>
   )
 }
