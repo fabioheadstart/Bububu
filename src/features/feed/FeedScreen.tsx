@@ -228,6 +228,8 @@ export function FeedScreen() {
   const feedsSinceCombo  = useRef(0)
 
   const [superPeido,    setSuperPeido]    = useState(false)
+  const [presentWaiting, setPresentWaiting] = useState(false)
+  const presentResolveRef = useRef<(() => void) | null>(null)
   const [evolutionStage, setEvolutionStage] = useState<EvolutionStage | null>(null)
   const prevStageRef = useRef<EvolutionStage>(getStage(computedLevel))
   const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
@@ -255,6 +257,13 @@ export function FeedScreen() {
   const [bulletTimePhase, setBulletTimePhase] = useState<'off' | 'fly' | 'impact'>('off')
 
   // Mostra uma fala do Bububu por `duration` ms, depois limpa
+  const handlePresentTap = useCallback(() => {
+    if (presentResolveRef.current) {
+      presentResolveRef.current()
+      presentResolveRef.current = null
+    }
+  }, [])
+
   const showSpeech = useCallback((text: string, duration = 2900) => {
     clearTimeout(speechTimerRef.current)
     setBubSpeech(text)
@@ -528,7 +537,6 @@ export function FeedScreen() {
     await delay(1000)
     setMunchText(false)
     const feedResult = await feedResultPromise
-    setResult(feedResult)
 
     if (feedResult.rewardTier === 'jackpot') {
       playFartJackpot()      // reward-jackpot.wav → ElevenLabs → mega synth
@@ -543,12 +551,23 @@ export function FeedScreen() {
       setIsBurp(soundType === 'burp')
     }
 
-    // Ciclo do 💩: aparece → some em ~950ms → resultado some depois
+    // Presente desliza até embaixo e fica pulsando aguardando tap
     clearTimeout(poopTimerRef.current)
     clearTimeout(clearTimerRef.current)
     clearTimeout(quizTimerRef.current)
     setShowPoop(true)
-    poopTimerRef.current = setTimeout(() => setShowPoop(false), 950)
+    poopTimerRef.current = setTimeout(() => {
+      setShowPoop(false)
+      setPresentWaiting(true)
+    }, 950)
+
+    // Aguarda tap do usuário (auto-abre após 12s para não travar)
+    await new Promise<void>(resolve => {
+      presentResolveRef.current = resolve
+      setTimeout(resolve, 12000)
+    })
+    setPresentWaiting(false)
+    setResult(feedResult)
 
     // ── Quiz pós-feed: só para palavras novas e não-frases ────────────────────
     const shouldQuiz = isNew && !entry.word.includes(' ') && !isOver
@@ -1164,7 +1183,7 @@ export function FeedScreen() {
           animation: 'poop-fixed-drop 0.80s cubic-bezier(0.25,0.46,0.45,0.94) forwards',
           ['--poop-drop-y' as string]: `${poopFixed.dropPx}px`,
         } as React.CSSProperties}>
-          {isBurp ? '🤢' : '💩'}
+          {isBurp ? '🤢' : '🎁'}
         </div>
       )}
 
@@ -1219,7 +1238,44 @@ export function FeedScreen() {
         position: 'relative',
         zIndex: 1,
       }}>
-        {result && !munchText && (
+        {presentWaiting && !munchText && (
+          <div
+            onClick={handlePresentTap}
+            style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '18px 0 14px',
+              cursor: 'pointer',
+              userSelect: 'none',
+              animation: 'present-slide-in 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
+            }}
+          >
+            <div style={{
+              fontSize: 56,
+              animation: 'present-pulse 0.9s ease-in-out infinite',
+              filter: 'drop-shadow(0 0 18px rgba(251,191,36,0.55))',
+              lineHeight: 1,
+            }}>
+              🎁
+            </div>
+            <div style={{
+              marginTop: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: 1.5,
+              color: isKids ? 'rgba(45,31,107,0.45)' : 'rgba(255,255,255,0.38)',
+              textTransform: 'uppercase',
+              animation: 'present-pulse 0.9s ease-in-out infinite',
+              animationDelay: '0.15s',
+            }}>
+              toca aqui
+            </div>
+          </div>
+        )}
+        {result && !munchText && !presentWaiting && (
           <div style={{
             width: '100%',
             background: theme.resultZoneBg,
@@ -1230,7 +1286,7 @@ export function FeedScreen() {
             <PoopReveal result={result} isReview={isReview} isBurp={isBurp} isKids={isKids} justMastered={justMastered} />
           </div>
         )}
-        {!result && !munchText && !isFeeding && (
+        {!result && !presentWaiting && !munchText && !isFeeding && (
           <div style={{ textAlign: 'center' }}>
             <p style={{
               color: isKids ? 'rgba(45,31,107,0.55)' : 'rgba(255,255,255,0.60)',
@@ -1431,6 +1487,14 @@ export function FeedScreen() {
       {bulletTimePhase !== 'off' && createPortal(
         <>
           <style>{`
+            @keyframes present-slide-in {
+              from { opacity: 0; transform: translateY(24px) scale(0.7); }
+              to   { opacity: 1; transform: translateY(0)    scale(1);   }
+            }
+            @keyframes present-pulse {
+              0%, 100% { transform: scale(1);    }
+              50%       { transform: scale(1.12); }
+            }
             @keyframes bt-zoom {
               from { opacity:0; transform:scale(0.05) rotate(-8deg); filter:blur(6px); }
               to   { opacity:1; transform:scale(1)    rotate(0deg);  filter:blur(0);  }
