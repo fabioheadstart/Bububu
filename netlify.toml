@@ -5,3 +5,29 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+
+# ── Segurança: bloqueia scripts/conteúdo de terceiros ─────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # CSP: só permite recursos da própria origem + CDNs necessários
+    # Bloqueia qualquer script/ad de terceiros injetado pelo browser/adware
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' https://cdn.jsdelivr.net data: blob:;
+      media-src 'self' blob:;
+      font-src 'self' data:;
+      connect-src 'self' https://api.elevenlabs.io;
+      worker-src 'self' blob:;
+      frame-ancestors 'none';
+    """
+    # Impede que o app seja embutido em iframes (anti-clickjacking)
+    X-Frame-Options = "DENY"
+    # Impede que o browser adivinhe o tipo de arquivo (segurança)
+    X-Content-Type-Options = "nosniff"
+    # Desabilita APIs de browser que não são usadas
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    # Não vaza a URL do Bububu para sites externos
+    Referrer-Policy = "strict-origin-when-cross-origin"
