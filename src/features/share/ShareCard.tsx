@@ -6,11 +6,12 @@ interface Props {
   level:        number
   wordsLearned: number
   streak:       number
+  userName?:    string
   onClose:      () => void
 }
 
 async function renderCardToBlob(
-  mode: AppMode, level: number, wordsLearned: number, streak: number,
+  mode: AppMode, level: number, wordsLearned: number, streak: number, userName?: string,
 ): Promise<Blob> {
   const W = 540; const H = 960
   const canvas = document.createElement('canvas')
@@ -102,12 +103,17 @@ async function renderCardToBlob(
   // Rodapé
   ctx.fillStyle = isKids ? 'rgba(45,31,107,0.30)' : 'rgba(196,181,253,0.22)'
   ctx.font = '400 14px system-ui,sans-serif'
-  ctx.fillText('Aprenda inglês com o Bububu 🫧', W/2, H - 38)
+  ctx.fillText(
+    userName
+      ? `${userName} aprende inglês com o Bububu 🫧`
+      : 'Aprenda inglês com o Bububu 🫧',
+    W/2, H - 38,
+  )
 
   return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'))
 }
 
-export function ShareCard({ mode, level, wordsLearned, streak, onClose }: Props) {
+export function ShareCard({ mode, level, wordsLearned, streak, userName, onClose }: Props) {
   const [sharing, setSharing] = useState(false)
   const isKids = mode === 'kids'
   const bodyColor = isKids ? '#fbbf24' : '#a78bfa'
@@ -115,10 +121,13 @@ export function ShareCard({ mode, level, wordsLearned, streak, onClose }: Props)
   const handleShare = useCallback(async () => {
     setSharing(true)
     try {
-      const blob = await renderCardToBlob(mode, level, wordsLearned, streak)
+      const blob = await renderCardToBlob(mode, level, wordsLearned, streak, userName)
       const file = new File([blob], 'bububu-progress.png', { type: 'image/png' })
+      const shareText = userName
+        ? `${userName} está no nível ${level} com ${wordsLearned} palavras no Bububu! 🫧`
+        : `Estou no nível ${level} com ${wordsLearned} palavras! 🫧`
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Meu Bububu', text: `Estou no nível ${level} com ${wordsLearned} palavras! 🫧` })
+        await navigator.share({ files: [file], title: 'Meu Bububu', text: shareText })
       } else {
         const url = URL.createObjectURL(blob)
         Object.assign(document.createElement('a'), { href: url, download: 'bububu-progress.png' }).click()
@@ -127,7 +136,7 @@ export function ShareCard({ mode, level, wordsLearned, streak, onClose }: Props)
     } finally {
       setSharing(false)
     }
-  }, [mode, level, wordsLearned, streak])
+  }, [mode, level, wordsLearned, streak, userName])
 
   return (
     <div onClick={onClose} style={{
@@ -145,7 +154,9 @@ export function ShareCard({ mode, level, wordsLearned, streak, onClose }: Props)
         animation: 'slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1)',
         textAlign: 'center',
       }}>
-        <div style={{ fontSize: 13, color: isKids ? 'rgba(45,31,107,0.45)' : 'rgba(196,181,253,0.45)', marginBottom: 8 }}>🫧 bububu</div>
+        <div style={{ fontSize: 13, color: isKids ? 'rgba(45,31,107,0.45)' : 'rgba(196,181,253,0.45)', marginBottom: 8 }}>
+          🫧 bububu{userName ? ` · ${userName}` : ''}
+        </div>
         <div style={{ display: 'inline-block', background: isKids ? '#f59e0b' : '#7c3aed', color: 'white', fontWeight: 900, fontSize: 13, padding: '4px 16px', borderRadius: 20, marginBottom: 14 }}>LVL {level}</div>
         <div style={{ margin: '0 auto 12px' }}>
           <svg width="120" height="138" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">

@@ -1563,6 +1563,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           level={computedLevel}
           wordsLearned={progress.wordsLearned.length}
           streak={progress.streak}
+          userName={progress.userName}
           onClose={() => setShowShare(false)}
         />
       )}
@@ -1583,7 +1584,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           whiteSpace: 'nowrap',
         }}>
           <span style={{ fontSize: 22 }}>🔥</span>
-          {progress.streak} dias seguidos!
+          {progress.userName ? `${progress.userName}! ` : ''}{progress.streak} {progress.streak === 1 ? 'dia' : 'dias'} seguidos!
         </div>
       )}
 
