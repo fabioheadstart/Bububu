@@ -724,23 +724,6 @@ export function playMenuHover(): void {
     setTimeout(() => ac.close(), 200)
   } catch {}
 }
- whoosh.connect(whooshG); whooshG.connect(ac.destination)
-    whoosh.start(now + 0.01); whoosh.stop(now + 0.23)
-
-    // 3. Shimmer — 3 sines agudos em sequência rápida (coins/bells feel)
-    ;[[1047, 0.10], [1319, 0.16], [1568, 0.21]].forEach(([freq, delay]) => {
-      const o = ac.createOscillator(); const g = ac.createGain()
-      o.type = 'sine'; o.frequency.value = freq
-      g.gain.setValueAtTime(0, now + delay)
-      g.gain.linearRampToValueAtTime(0.22, now + delay + 0.008)
-      g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.12)
-      o.connect(g); g.connect(ac.destination)
-      o.start(now + delay); o.stop(now + delay + 0.13)
-    })
-
-    setTimeout(() => ac.close(), 600)
-  } catch {}
-}
 
 export const hapticPresentPop = () => vibe([8, 4, 18, 4, 35])     // pop + shimmer
 
