@@ -12,19 +12,6 @@ interface Props {
   isKids?: boolean
 }
 
-const CAT_PT: Record<string, string> = {
-  animals:    'animais 🐘',
-  food:       'comida 🍕',
-  colors:     'cores 🎨',
-  home:       'casa 🏠',
-  actions:    'ações 💪',
-  adjectives: 'adjetivos ✨',
-  body:       'corpo 🫀',
-  family:     'família 👨‍👩‍👧',
-  time:       'tempo ⏰',
-  transport:  'transporte 🚗',
-  phrases:    'frases 💬',
-}
 
 type Msg = { id: number; text: string | React.ReactNode; delay: number }
 
