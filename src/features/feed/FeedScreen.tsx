@@ -162,7 +162,11 @@ const HOLD_DURATION = 3000          // ms para carregar o bullet time
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function FeedScreen() {
+interface FeedScreenProps {
+  onResetToOnboarding?: () => void
+}
+
+export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const { feedWord }                                           = useFeed()
   const { speakWord }                                          = useAudio()
   const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, resetProgress } = useProgress()
@@ -1458,7 +1462,7 @@ export function FeedScreen() {
           setDifficulty(d)
           setChips(getRandomChips(4, getUnlockedPool(computedLevel, d)))
         }}
-        onReset={resetProgress}
+        onReset={() => { resetProgress(); onResetToOnboarding?.() }}
         onShowProgress={() => { setShowSettings(false); setShowProgress(true) }}
       />
 

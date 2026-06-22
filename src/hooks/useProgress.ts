@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import { getProgress, setProgress, subscribeProgress } from '@/lib/storage/progressStore'
-import { loadProgress } from '@/lib/storage/progressStorage'
+import { loadProgress, clearProgress } from '@/lib/storage/progressStorage'
 import { ALL_WORDS, getWordsByLevel } from '@/data/vocabulary/index'
 import type { UserProgress, AppMode, DifficultyLevel, VocabEntry } from '@/types'
 import { DAILY_LIMIT, MASTERY_THRESHOLD } from '@/types'
@@ -149,9 +149,14 @@ export function useProgress(): UseProgressReturn {
     setProgress({ ...getProgress(), difficulty })
   }, [])
 
+  const setUserName = useCallback((name: string) => {
+    setProgress({ ...getProgress(), userName: name.trim() })
+  }, [])
+
   const resetProgress = useCallback(() => {
+    clearProgress()
     setProgress(loadProgress())
   }, [])
 
-  return { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, resetProgress }
+  return { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, setUserName, resetProgress }
 }

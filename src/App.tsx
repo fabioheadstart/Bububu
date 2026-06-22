@@ -212,7 +212,7 @@ export default function App() {
           display: 'flex', flexDirection: 'column', minHeight: 0,
         }}>
           {activeScreen === 'feed'
-            ? <FeedScreen />
+            ? <FeedScreen onResetToOnboarding={() => setOnboardingDone(false)} />
             : <ChallengeScreen />
           }
         </div>

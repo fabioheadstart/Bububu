@@ -33,6 +33,7 @@ export const MASTERY_THRESHOLD = 3  // reviews necessários para dominar uma pal
 
 export interface UserProgress {
   userId: string
+  userName?: string            // nome escolhido no onboarding
   mode: AppMode
   difficulty: DifficultyLevel  // conteúdo: easy=A1 | medium=A1+A2 | hard=tudo
   bububuLevel: number          // = competência real, nunca XP inflado

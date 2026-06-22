@@ -9,7 +9,7 @@ const STORY: { id: number; text: string; delay: number }[] = [
   { id: 2, text: 'Nasci em São Sebastião do Rio Verde, em Minas Gerais 🌄',                       delay: 900  },
   { id: 3, text: 'Todo mundo se conhece lá... mas eu precisava de algo maior 🌎',                  delay: 1600 },
   { id: 4, text: 'Eu aprendo inglês com você — cada palavra vira energia pra eu crescer! 🌱',     delay: 2400 },
-  { id: 5, text: 'Meu sonho? Ir pra Hollywood e dizer uma frase que a Jennifer Aniston nunca vai esquecer 🌟', delay: 3300 },
+  { id: 5, text: 'Meu sonho? Falar inglês tão bem que nem o Vini Jr. vai precisar me dar entrevista! ⚽🌟', delay: 3300 },
 ]
 const CTA_DELAY = 4400
 
@@ -102,9 +102,10 @@ const DIFFICULTIES: DiffCard[] = [
 ]
 
 export function OnboardingScreen({ onComplete }: Props) {
-  const { setMode, setDifficulty } = useProgress()
-  const [step, setStep] = useState<0 | 1 | 2>(0)
+  const { setMode, setDifficulty, setUserName } = useProgress()
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [ctaVisible, setCtaVisible] = useState(false)
+  const [nameInput, setNameInput] = useState('')
 
   useEffect(() => {
     if (step !== 0) return
@@ -112,9 +113,16 @@ export function OnboardingScreen({ onComplete }: Props) {
     return () => clearTimeout(t)
   }, [step])
 
+  function handleNameSubmit() {
+    const name = nameInput.trim()
+    if (!name) return
+    setUserName(name)
+    setStep(2)
+  }
+
   function handleModeChoose(mode: AppMode) {
     setMode(mode)
-    setStep(2)
+    setStep(3)
   }
 
   function handleDifficultyChoose(difficulty: DifficultyLevel) {
@@ -192,10 +200,10 @@ export function OnboardingScreen({ onComplete }: Props) {
           )}
         </div>
 
-        {/* ── Step indicators (só nos steps 1 e 2) ── */}
+        {/* ── Step indicators (steps 1, 2, 3) ── */}
         {step > 0 && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {[1, 2].map(s => (
+            {[1, 2, 3].map(s => (
               <div key={s} style={{
                 height: 6, borderRadius: 99,
                 width: step === s ? 24 : 8,
@@ -261,8 +269,63 @@ export function OnboardingScreen({ onComplete }: Props) {
           </div>
         )}
 
-        {/* ── Step 1: Quem vai jogar? ── */}
+        {/* ── Step 1: Qual é o seu nome? ── */}
         {step === 1 && (
+          <div className="slide-in" style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
+            <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0, textAlign: 'center' }}>
+              Qual é o seu nome?
+            </p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '-6px 0 4px', textAlign: 'center' }}>
+              O Bububu vai te chamar pelo nome 🫧
+            </p>
+            <input
+              autoFocus
+              type="text"
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
+              placeholder="Digite seu nome..."
+              maxLength={24}
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                borderRadius: 16,
+                border: '2px solid rgba(192,132,252,0.35)',
+                background: 'rgba(124,58,237,0.12)',
+                color: '#f0e6ff',
+                fontSize: 18,
+                fontWeight: 700,
+                outline: 'none',
+                textAlign: 'center',
+                boxSizing: 'border-box',
+              }}
+            />
+            <button
+              onClick={handleNameSubmit}
+              disabled={!nameInput.trim()}
+              style={{
+                padding: '14px 40px',
+                borderRadius: 99,
+                border: 'none',
+                background: nameInput.trim()
+                  ? 'linear-gradient(135deg, #7c3aed, #5b21b6)'
+                  : 'rgba(255,255,255,0.08)',
+                color: nameInput.trim() ? 'white' : 'rgba(255,255,255,0.3)',
+                fontSize: 16,
+                fontWeight: 800,
+                cursor: nameInput.trim() ? 'pointer' : 'default',
+                boxShadow: nameInput.trim() ? '0 8px 32px rgba(124,58,237,0.45)' : 'none',
+                transition: 'all 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              Continuar →
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 2: Quem vai jogar? ── */}
+        {step === 2 && (
           <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
             <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
               Quem vai jogar?
@@ -299,8 +362,8 @@ export function OnboardingScreen({ onComplete }: Props) {
           </div>
         )}
 
-        {/* ── Step 2: Qual é o seu nível? ── */}
-        {step === 2 && (
+        {/* ── Step 3: Qual é o seu nível? ── */}
+        {step === 3 && (
           <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
             <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
               Qual é o seu nível?
@@ -342,9 +405,9 @@ export function OnboardingScreen({ onComplete }: Props) {
         )}
 
         {/* ── Back / hint ── */}
-        {step === 2 && (
+        {step === 3 && (
           <button
-            onClick={() => setStep(1)}
+            onClick={() => setStep(2)}
             style={{
               background: 'none', border: 'none',
               color: 'rgba(255,255,255,0.35)', fontSize: 13,
@@ -354,7 +417,7 @@ export function OnboardingScreen({ onComplete }: Props) {
             ← voltar
           </button>
         )}
-        {step === 1 && (
+        {step === 2 && (
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
             Você pode mudar isso depois nas configurações.
           </p>
