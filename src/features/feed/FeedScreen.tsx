@@ -701,14 +701,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       })
       setQuizResult(null)
       setQuizSelectedIdx(null)
-      // Resultado some após quiz (quiz tem 1.3s pós-resposta, mais 4s de janela)
-      clearTimerRef.current = setTimeout(() => {
-        setResult(null)
-        setIsBurp(false)
-        setQuizState(null)
-        setQuizResult(null)
-        setQuizSelectedIdx(null)
-      }, 7500)
+      // Sem auto-dismiss — aguarda a criança tocar "continuar"
     } else {
       clearTimerRef.current = setTimeout(() => {
         setResult(null)
@@ -899,16 +892,16 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     } else {
       showSpeech(`É "${quizState?.correct}" 😅`, 2200)
     }
-    // Auto-avança após 1.3s
-    clearTimeout(quizTimerRef.current)
-    quizTimerRef.current = setTimeout(() => {
-      setQuizState(null)
-      setQuizResult(null)
-      setQuizSelectedIdx(null)
-      setResult(null)
-      setIsBurp(false)
-    }, 1300)
   }, [quizState, showSpeech])
+
+  const handleQuizContinue = useCallback(() => {
+    clearTimeout(quizTimerRef.current)
+    setQuizState(null)
+    setQuizResult(null)
+    setQuizSelectedIdx(null)
+    setResult(null)
+    setIsBurp(false)
+  }, [])
 
   const theme     = useTheme()
   const isKids    = theme.isKids
@@ -1594,6 +1587,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             selectedIdx={quizSelectedIdx}
             result={quizResult}
             onAnswer={handleQuizAnswer}
+            onContinue={handleQuizContinue}
             isKids={isKids}
           />
         ) : (

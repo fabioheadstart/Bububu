@@ -12,12 +12,13 @@ interface Props {
   selectedIdx:   number | null
   result:        'correct' | 'wrong' | null
   onAnswer:      (correct: boolean, idx: number) => void
+  onContinue:    () => void   // chamado quando criança toca "continuar"
   isKids?:       boolean
 }
 
 export function QuizOptions({
   word, options, correctAnswer,
-  selectedIdx, result, onAnswer, isKids = false,
+  selectedIdx, result, onAnswer, onContinue, isKids = false,
 }: Props) {
 
   const labelColor  = isKids ? 'rgba(45,31,107,0.60)' : 'rgba(233,213,255,0.65)'
@@ -120,6 +121,34 @@ export function QuizOptions({
           )
         })}
       </div>
+
+      {/* Botão continuar — aparece após responder */}
+      {result !== null && (
+        <button
+          onClick={onContinue}
+          style={{
+            marginTop: 10,
+            width: '100%',
+            padding: '13px',
+            borderRadius: 14,
+            border: 'none',
+            background: result === 'correct'
+              ? 'rgba(16,185,129,0.22)'
+              : (isKids ? 'rgba(45,31,107,0.14)' : 'rgba(255,255,255,0.10)'),
+            color: result === 'correct'
+              ? '#34d399'
+              : (isKids ? 'rgba(45,31,107,0.70)' : 'rgba(255,255,255,0.65)'),
+            fontSize: 14,
+            fontWeight: 800,
+            cursor: 'pointer',
+            letterSpacing: 0.3,
+            WebkitTapHighlightColor: 'transparent',
+            animation: 'quiz-fadein 0.30s ease both',
+          }}
+        >
+          {result === 'correct' ? '✓ continuar' : 'entendi, continuar →'}
+        </button>
+      )}
     </>
   )
 }
