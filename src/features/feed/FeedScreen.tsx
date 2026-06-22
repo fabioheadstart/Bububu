@@ -1000,44 +1000,6 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         >📚 {wordCount} {wordCount === 1 ? 'palavra' : 'palavras'}</span>
         {streak > 0 && <span>🔥 {streak} {streak === 1 ? 'dia' : 'dias'}</span>}
 
-        {/* Alavanca de mundos — só Kids, só se tiver ≥1 mundo desbloqueado além do 1 */}
-        {isKids && unlockedWorlds.length > 1 && (
-          <WorldSwitcher
-            activeWorld={activeWorld}
-            unlockedWorlds={unlockedWorlds}
-            onSwitch={setWorld}
-          />
-        )}
-
-        {/* Botão celular — abre o BububuPhone */}
-        <div style={{ position: 'relative' }}>
-          <button
-            onClick={() => { setShowPhone(true); const d = new Date().toISOString().slice(0,10); localStorage.setItem('bub_phone_seen', d); setPhoneBadge(false) }}
-            style={{
-              width: 26, height: 26, borderRadius: '50%',
-              border: `1px solid ${isKids ? 'rgba(45,31,107,0.20)' : 'rgba(255,255,255,0.18)'}`,
-              background: isKids ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.07)',
-              color: isKids ? 'rgba(45,31,107,0.60)' : 'rgba(255,255,255,0.45)',
-              fontSize: 13, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: 0,
-            }}
-            title="Mensagens do Bububu"
-          >
-            📱
-          </button>
-          {/* Badge de notificação — some depois de abrir hoje */}
-          {phoneBadge && (
-            <div style={{
-              position: 'absolute', top: -2, right: -2,
-              width: 8, height: 8, borderRadius: '50%',
-              background: '#f87171',
-              border: '1.5px solid rgba(10,4,30,0.9)',
-              pointerEvents: 'none',
-            }} />
-          )}
-        </div>
-
         {/* Botão compartilhar */}
         <button
           onClick={() => setShowShare(true)}
@@ -1088,6 +1050,48 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           minHeight: 0,
         }}
       >
+        {/* ── Botão 📱 flutuante — canto direito da cena ── */}
+        <div style={{ position: 'absolute', right: 10, top: '18%', zIndex: 5 }}>
+          <button
+            onClick={() => { setShowPhone(true); const d = new Date().toISOString().slice(0,10); localStorage.setItem('bub_phone_seen', d); setPhoneBadge(false) }}
+            title="Mensagens do Bububu"
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              border: `1.5px solid ${isKids ? 'rgba(45,31,107,0.22)' : 'rgba(167,139,250,0.28)'}`,
+              background: isKids ? 'rgba(255,255,255,0.55)' : 'rgba(124,58,237,0.18)',
+              color: isKids ? 'rgba(45,31,107,0.70)' : 'rgba(196,181,253,0.85)',
+              fontSize: 17, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 0,
+              boxShadow: isKids ? '0 2px 8px rgba(0,0,0,0.10)' : '0 2px 10px rgba(124,58,237,0.25)',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            📱
+          </button>
+          {phoneBadge && (
+            <div style={{
+              position: 'absolute', top: -2, right: -2,
+              width: 10, height: 10, borderRadius: '50%',
+              background: '#f87171',
+              border: `1.5px solid ${isKids ? 'rgba(254,243,199,0.85)' : 'rgba(10,4,30,0.9)'}`,
+              pointerEvents: 'none',
+            }} />
+          )}
+        </div>
+
+        {/* ── WorldSwitcher flutuante — canto esquerdo da cena (Kids) ── */}
+        {isKids && unlockedWorlds.length > 1 && (
+          <div style={{ position: 'absolute', left: 10, top: '18%', zIndex: 5 }}>
+            <WorldSwitcher
+              activeWorld={activeWorld}
+              unlockedWorlds={unlockedWorlds}
+              onSwitch={setWorld}
+              direction="column"
+            />
+          </div>
+        )}
+
         <BububuSpeech text={bubSpeech} isKids={isKids} />
 
         {/* Botão de pronúncia — cartoon, grande, animado */}

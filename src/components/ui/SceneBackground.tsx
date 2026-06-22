@@ -586,7 +586,7 @@ export function SceneBackground({ isKids = false, worldId = 1 }: { isKids?: bool
       {isKids && (
         <div style={{
           position: 'absolute',
-          bottom: '18%',   /* fica acima dos chips, abaixo da plataforma */
+          bottom: '4%',   /* fica na base da cena, longe dos chips e da plataforma */
           left: 0, right: 0,
           height: 72,
           overflow: 'hidden',

@@ -5,16 +5,18 @@ interface Props {
   activeWorld:    KidsWorldId
   unlockedWorlds: KidsWorldId[]
   onSwitch:       (id: KidsWorldId) => void
+  direction?:     'row' | 'column'
 }
 
 const ALL_WORLDS: KidsWorldId[] = [1, 2, 3]
 
-export function WorldSwitcher({ activeWorld, unlockedWorlds, onSwitch }: Props) {
+export function WorldSwitcher({ activeWorld, unlockedWorlds, onSwitch, direction = 'row' }: Props) {
   const unlockedSet = new Set(unlockedWorlds)
 
   return (
     <div style={{
       display: 'flex',
+      flexDirection: direction,
       gap: 6,
       alignItems: 'center',
     }}>
