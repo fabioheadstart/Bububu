@@ -22,6 +22,7 @@ function defaultProgress(mode: AppMode = 'pro'): UserProgress {
     lastFedAt: 0,
     wordsToday: 0,
     lastFeedDate: '',
+    lastKidsChallengeDate: '',
   }
 }
 
@@ -33,8 +34,9 @@ export function migrateProgress(p: Partial<UserProgress>): UserProgress {
     difficulty:        p.difficulty        ?? 'easy',
     wordsToday:        p.wordsToday        ?? 0,
     lastFeedDate:      p.lastFeedDate      ?? '',
-    wordReviewCounts:  p.wordReviewCounts  ?? {},
-    masteredWords:     p.masteredWords     ?? [],
+    wordReviewCounts:          p.wordReviewCounts          ?? {},
+    masteredWords:             p.masteredWords             ?? [],
+    lastKidsChallengeDate:     p.lastKidsChallengeDate     ?? '',
   }
 }
 

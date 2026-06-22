@@ -45,6 +45,7 @@ export interface UserProgress {
   lastFedAt: number            // timestamp ms — quando última palavra foi alimentada
   wordsToday: number           // palavras alimentadas hoje (reset à meia-noite)
   lastFeedDate: string         // ISO date — para detectar virada de dia
+  lastKidsChallengeDate?: string  // ISO date — controle da sessão diária kids
 }
 
 // ─── Limite diário de apetite ─────────────────────────────────────────────────

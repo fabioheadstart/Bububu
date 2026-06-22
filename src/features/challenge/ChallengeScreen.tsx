@@ -44,11 +44,14 @@ const GLASS_CARD: React.CSSProperties = {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function ChallengeScreen() {
-  const { progress, setDifficulty }    = useProgress()
+  const { progress, setDifficulty, markKidsChallengeComplete } = useProgress()
   const { speakBububu } = useBububuVoice()
   const phase: ProblemPhase = progress.mode === 'kids' ? 'kids' : 'adult'
   const theme  = useTheme()
-  const isKids = theme.isKids
+  const isKids       = theme.isKids
+  const todayKey     = new Date().toISOString().slice(0, 10)
+  const kidsDoneToday = isKids && progress.lastKidsChallengeDate === todayKey
+
   const [showSettings, setShowSettings] = useState(false)
 
   const [session, setSession]             = useState<Problem[]>(() => buildSession(phase, progress.difficulty))
@@ -57,7 +60,7 @@ export function ChallengeScreen() {
   const [consecutiveOk, setConsecutiveOk] = useState(0)
   const [maxStreak, setMaxStreak]         = useState(0)
 
-  const [uiPhase, setUiPhase]         = useState<UIPhase>('enigma')
+  const [uiPhase, setUiPhase]         = useState<UIPhase>(isKids ? 'options' : 'enigma')
   const [result, setResult]           = useState<ChallengeResult | null>(null)
   const [hintVisible, setHintVisible] = useState(false)
   const [usedHint, setUsedHint]       = useState(false)
@@ -90,7 +93,7 @@ export function ChallengeScreen() {
     setPressedOpt(null)
 
     const score          = problem.options.find(o => o.key === key)!.score
-    const effectiveScore = usedHint ? 'medium' : score
+    const effectiveScore = (usedHint && !isKids) ? 'medium' : score
     const xp             = XP[effectiveScore as keyof typeof XP]
     const isCorrect      = score === 'high' && !usedHint
 
@@ -119,18 +122,22 @@ export function ChallengeScreen() {
     if (isCorrect) playCoinBonus(); else playCoinNormal()
 
     setChoosing(false)
-  }, [choosing, uiPhase, problem, usedHint, consecutiveOk, maxStreak, speakBububu])
+  }, [choosing, uiPhase, problem, usedHint, consecutiveOk, maxStreak, speakBububu, isKids])
 
   const handleNext = useCallback(() => {
     const next = sessionIdx + 1
-    if (next >= SESSION_SIZE) { setUiPhase('done'); return }
+    if (next >= SESSION_SIZE) {
+      if (isKids) markKidsChallengeComplete()
+      setUiPhase('done')
+      return
+    }
     setSessionIdx(next)
     setResult(null)
     setHintVisible(false)
     setUsedHint(false)
     setBubState('idle')
-    setUiPhase('enigma')
-  }, [sessionIdx])
+    setUiPhase(isKids ? 'options' : 'enigma')
+  }, [sessionIdx, isKids, markKidsChallengeComplete])
 
   const handleNewSession = useCallback((diff?: DifficultyLevel) => {
     const d = diff ?? progress.difficulty
@@ -143,8 +150,8 @@ export function ChallengeScreen() {
     setHintVisible(false)
     setUsedHint(false)
     setBubState('idle')
-    setUiPhase('enigma')
-  }, [phase, progress.difficulty])
+    setUiPhase(isKids ? 'options' : 'enigma')
+  }, [phase, progress.difficulty, isKids])
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -161,8 +168,8 @@ export function ChallengeScreen() {
       {/* Estrelas decorativas */}
       <Stars isKids={isKids} />
 
-      {/* Botão de configurações */}
-      <div style={{ position: 'absolute', top: 12, right: 16, zIndex: 10 }}>
+      {/* Botão de configurações — oculto em kids */}
+      {!isKids && <div style={{ position: 'absolute', top: 12, right: 16, zIndex: 10 }}>
         <button
           onClick={() => setShowSettings(s => !s)}
           style={{
@@ -218,67 +225,73 @@ export function ChallengeScreen() {
           </>,
           document.body
         )}
-      </div>
+      </div>}
 
-      {/* Bububu + XP pops */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <BububuCharacter state={bubState} rewardTier={isHigh ? 'context_bonus' : undefined} onTap={speakBububu} />
-        {xpPops.map(pop => (
-          <div key={pop.id} style={{
-            position: 'absolute', top: 8, left: '50%',
-            transform: 'translateX(-50%)',
-            fontWeight: 800, fontSize: 18,
-            color: isKids ? '#f59e0b' : '#c4b5fd',
-            pointerEvents: 'none', whiteSpace: 'nowrap',
-            animation: 'xp-pop 0.95s ease-out forwards',
-          }}>
-            +{pop.amount} XP
-          </div>
-        ))}
-      </div>
-
-      {uiPhase === 'done'
-        ? <SessionDone sessionXp={sessionXp} maxStreak={maxStreak} onNew={handleNewSession} isKids={isKids} />
-        : (
-          <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 12, zIndex: 1 }}>
-
-            {/* Progress */}
-            <ProgressDots total={SESSION_SIZE} current={sessionIdx} isKids={isKids} />
-
-            {/* Streak banner */}
-            {consecutiveOk >= 2 && uiPhase !== 'result' && (
-              <div style={{
-                textAlign: 'center', fontSize: 14, fontWeight: 800,
-                color: isKids ? '#E07000' : '#c4b5fd', animation: 'streak-pop 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+      {kidsDoneToday && uiPhase !== 'done' ? (
+        <KidsLockedScreen />
+      ) : (
+        <>
+          {/* Bububu + XP pops */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <BububuCharacter state={bubState} rewardTier={isHigh ? 'context_bonus' : undefined} onTap={speakBububu} />
+            {xpPops.map(pop => (
+              <div key={pop.id} style={{
+                position: 'absolute', top: 8, left: '50%',
+                transform: 'translateX(-50%)',
+                fontWeight: 800, fontSize: 18,
+                color: isKids ? '#f59e0b' : '#c4b5fd',
+                pointerEvents: 'none', whiteSpace: 'nowrap',
+                animation: 'xp-pop 0.95s ease-out forwards',
               }}>
-                {streakLabel(consecutiveOk)}
+                +{pop.amount} XP
               </div>
-            )}
-
-            {uiPhase === 'enigma' && (
-              <EnigmaView problem={problem} onTap={handleCardTap} isKids={isKids} />
-            )}
-
-            {uiPhase === 'options' && (
-              <OptionsView
-                problem={problem}
-                hintVisible={hintVisible}
-                usedHint={usedHint}
-                choosing={choosing}
-                pressedOpt={pressedOpt}
-                onHint={handleHint}
-                onPressStart={setPressedOpt}
-                onChoose={handleChoose}
-                isKids={isKids}
-              />
-            )}
-
-            {uiPhase === 'result' && result && (
-              <ResultView result={result} onNext={handleNext} isKids={isKids} />
-            )}
+            ))}
           </div>
-        )
-      }
+
+          {uiPhase === 'done'
+            ? <SessionDone sessionXp={sessionXp} maxStreak={maxStreak} onNew={handleNewSession} isKids={isKids} kidsDoneToday={kidsDoneToday} />
+            : (
+              <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 12, zIndex: 1 }}>
+
+                {/* Progress */}
+                <ProgressDots total={SESSION_SIZE} current={sessionIdx} isKids={isKids} />
+
+                {/* Streak banner */}
+                {consecutiveOk >= 2 && uiPhase !== 'result' && (
+                  <div style={{
+                    textAlign: 'center', fontSize: 14, fontWeight: 800,
+                    color: isKids ? '#E07000' : '#c4b5fd', animation: 'streak-pop 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+                  }}>
+                    {streakLabel(consecutiveOk)}
+                  </div>
+                )}
+
+                {uiPhase === 'enigma' && (
+                  <EnigmaView problem={problem} onTap={handleCardTap} isKids={isKids} />
+                )}
+
+                {uiPhase === 'options' && (
+                  <OptionsView
+                    problem={problem}
+                    hintVisible={hintVisible}
+                    usedHint={usedHint}
+                    choosing={choosing}
+                    pressedOpt={pressedOpt}
+                    onHint={handleHint}
+                    onPressStart={setPressedOpt}
+                    onChoose={handleChoose}
+                    isKids={isKids}
+                  />
+                )}
+
+                {uiPhase === 'result' && result && (
+                  <ResultView result={result} onNext={handleNext} isKids={isKids} />
+                )}
+              </div>
+            )
+          }
+        </>
+      )}
     </div>
   )
 }
@@ -527,7 +540,7 @@ function OptionsView({ problem, hintVisible, usedHint, choosing, pressedOpt, onH
           fontSize: 13, fontWeight: 700, cursor: 'pointer',
           padding: '2px 0', alignSelf: 'center', opacity: usedHint ? 0.45 : 1,
         }}>
-          💡 ver dica {usedHint ? '(XP reduzido)' : ''}
+          💡 ver dica {usedHint && !isKids ? '(XP reduzido)' : ''}
         </button>
       ) : (
         <div style={{
@@ -684,8 +697,31 @@ function ResultView({ result, onNext, isKids = false }: { result: ChallengeResul
   )
 }
 
+// ─── Tela de trava diária (kids já treinou hoje) ──────────────────────────────
+function KidsLockedScreen() {
+  return (
+    <div style={{
+      textAlign: 'center', zIndex: 1, padding: '40px 20px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+    }}>
+      <div style={{ fontSize: 80, lineHeight: 1 }}>🌙</div>
+      <div style={{ fontWeight: 900, fontSize: 22, color: '#2D1F6B' }}>
+        Missão do dia completa!
+      </div>
+      <div style={{
+        background: 'rgba(255,255,255,0.80)',
+        border: '2px solid rgba(124,58,237,0.20)',
+        borderRadius: 18, padding: '16px 24px',
+        fontSize: 15, color: 'rgba(45,31,107,0.65)', lineHeight: 1.7, maxWidth: 320,
+      }}>
+        Você já treinou hoje. Volte amanhã para a próxima missão! 💪
+      </div>
+    </div>
+  )
+}
+
 // ─── Fase 4: Sessão completa ──────────────────────────────────────────────────
-function SessionDone({ sessionXp, maxStreak, onNew, isKids = false }: { sessionXp: number; maxStreak: number; onNew: () => void; isKids?: boolean }) {
+function SessionDone({ sessionXp, maxStreak, onNew, isKids = false, kidsDoneToday = false }: { sessionXp: number; maxStreak: number; onNew: () => void; isKids?: boolean; kidsDoneToday?: boolean }) {
   return (
     <div style={{
       width: '100%', maxWidth: 400, textAlign: 'center',
@@ -730,28 +766,40 @@ function SessionDone({ sessionXp, maxStreak, onNew, isKids = false }: { sessionX
           </div>
         </div>
 
-        <button
-          onClick={onNew}
-          style={{
-            width: '100%', padding: '16px', borderRadius: 16, border: 'none',
-            background: isKids
-              ? 'linear-gradient(135deg, #f59e0b, #fbbf24)'
-              : 'linear-gradient(135deg, #7c3aed, #a855f7)',
-            color: isKids ? '#2D1F6B' : '#fff',
-            fontSize: 16, fontWeight: 800, cursor: 'pointer',
-            boxShadow: isKids
-              ? '0 5px 0 #b45309, 0 8px 24px rgba(245,158,11,0.30)'
-              : '0 5px 0 #4c1d95, 0 8px 24px rgba(124,58,237,0.3)',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-          onPointerDown={e => {
-            e.currentTarget.style.transform = 'translateY(4px)'
-            e.currentTarget.style.boxShadow = isKids ? '0 1px 0 #b45309' : '0 1px 0 #4c1d95'
-          }}
-          onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-        >
-          Nova sessão 🎮
-        </button>
+        {isKids && kidsDoneToday ? (
+          <div style={{
+            width: '100%', padding: '16px', borderRadius: 16,
+            background: 'rgba(45,31,107,0.08)',
+            border: '2px solid rgba(45,31,107,0.15)',
+            color: 'rgba(45,31,107,0.45)',
+            fontSize: 16, fontWeight: 800, textAlign: 'center',
+          }}>
+            Volte amanhã! 🌙
+          </div>
+        ) : (
+          <button
+            onClick={onNew}
+            style={{
+              width: '100%', padding: '16px', borderRadius: 16, border: 'none',
+              background: isKids
+                ? 'linear-gradient(135deg, #f59e0b, #fbbf24)'
+                : 'linear-gradient(135deg, #7c3aed, #a855f7)',
+              color: isKids ? '#2D1F6B' : '#fff',
+              fontSize: 16, fontWeight: 800, cursor: 'pointer',
+              boxShadow: isKids
+                ? '0 5px 0 #b45309, 0 8px 24px rgba(245,158,11,0.30)'
+                : '0 5px 0 #4c1d95, 0 8px 24px rgba(124,58,237,0.3)',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+            onPointerDown={e => {
+              e.currentTarget.style.transform = 'translateY(4px)'
+              e.currentTarget.style.boxShadow = isKids ? '0 1px 0 #b45309' : '0 1px 0 #4c1d95'
+            }}
+            onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+          >
+            Nova sessão 🎮
+          </button>
+        )}
       </div>
     </div>
   )

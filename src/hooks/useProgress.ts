@@ -106,11 +106,12 @@ export interface UseProgressReturn {
   levelProgress:   number
   dailyLimit:      number
   recordWord:      (entry: VocabEntry) => RecordWordResult
-  setMode:              (mode: AppMode) => void
-  setDifficulty:        (difficulty: DifficultyLevel) => void
-  setUserName:          (name: string) => void
-  resetProgress:        () => void
-  wordsUntilNextStage:  number
+  setMode:                    (mode: AppMode) => void
+  setDifficulty:              (difficulty: DifficultyLevel) => void
+  setUserName:                (name: string) => void
+  resetProgress:              () => void
+  wordsUntilNextStage:        number
+  markKidsChallengeComplete:  () => void
 }
 
 export function useProgress(): UseProgressReturn {
@@ -183,7 +184,12 @@ export function useProgress(): UseProgressReturn {
     setProgress(loadProgress())
   }, [])
 
+  const markKidsChallengeComplete = useCallback(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    setProgress({ ...getProgress(), lastKidsChallengeDate: today })
+  }, [])
+
   const wordsUntilNextStage = computeWordsUntilNextStage(progress.wordsLearned)
 
-  return { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, setUserName, resetProgress, wordsUntilNextStage }
+  return { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, setUserName, resetProgress, wordsUntilNextStage, markKidsChallengeComplete }
 }
