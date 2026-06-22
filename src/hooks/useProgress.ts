@@ -85,6 +85,7 @@ export interface UseProgressReturn {
   recordWord:      (entry: VocabEntry) => RecordWordResult
   setMode:         (mode: AppMode) => void
   setDifficulty:   (difficulty: DifficultyLevel) => void
+  setUserName:     (name: string) => void
   resetProgress:   () => void
 }
 
