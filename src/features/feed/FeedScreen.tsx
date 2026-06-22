@@ -1261,18 +1261,6 @@ export function FeedScreen() {
             }}>
               🎁
             </div>
-            <div style={{
-              marginTop: 8,
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: 1.5,
-              color: isKids ? 'rgba(45,31,107,0.45)' : 'rgba(255,255,255,0.38)',
-              textTransform: 'uppercase',
-              animation: 'present-pulse 0.9s ease-in-out infinite',
-              animationDelay: '0.15s',
-            }}>
-              toca aqui
-            </div>
           </div>
         )}
         {result && !munchText && !presentWaiting && (
