@@ -107,7 +107,7 @@ export function BububuLore() {
                 Bububu veio de um lugar muito distante — um lugar onde ninguém fala, ninguém escreve, ninguém tem nome para nada.
               </p>
               <p style={{ margin: 0 }}>
-                Chegou aqui sem querer. Caiu bem no meio de São Sebastião do Rio Verde, Minas Gerais: uma cidadezinha onde todo mundo se conhece, o queijo é artesanal e a linguiça é de sábado. Ninguém sabia o que era ele — mas ficaram amigos assim mesmo. 💜
+                Chegou aqui sem querer. Caiu bem no meio de São Sebastião do Rio Verde, Minas Gerais: uma cidadezinha onde todo mundo se conhece, o queijo é artesanal e a linguiça é de Pouso Alto. Ninguém sabia o que era ele — mas ficaram amigos assim mesmo. 💜
               </p>
               <p style={{ margin: 0 }}>
                 Foi aqui que ele descobriu que tudo tem nome. <em>Cachorro. Dog. Sol. Sun.</em>

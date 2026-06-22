@@ -1200,33 +1200,60 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         {/* ── Estrada com veículos — só Kids, posicionada na zona da cena ── */}
         {isKids && <VehicleRoad />}
 
-        {/* ── Botão 📱 flutuante — canto direito da cena ── */}
-        <div style={{ position: 'absolute', right: 10, top: '18%', zIndex: 5 }}>
-          <button
-            onClick={() => { setShowPhone(true); const d = new Date().toISOString().slice(0,10); localStorage.setItem('bub_phone_seen', d); setPhoneBadge(false) }}
-            title="Mensagens do Bububu"
-            style={{
-              width: 36, height: 36, borderRadius: '50%',
-              border: `1.5px solid ${isKids ? 'rgba(45,31,107,0.22)' : 'rgba(167,139,250,0.28)'}`,
-              background: isKids ? 'rgba(255,255,255,0.55)' : 'rgba(124,58,237,0.18)',
-              color: isKids ? 'rgba(45,31,107,0.70)' : 'rgba(196,181,253,0.85)',
-              fontSize: 17, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: 0,
-              boxShadow: isKids ? '0 2px 8px rgba(0,0,0,0.10)' : '0 2px 10px rgba(124,58,237,0.25)',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            📱
-          </button>
-          {phoneBadge && (
-            <div style={{
-              position: 'absolute', top: -2, right: -2,
-              width: 10, height: 10, borderRadius: '50%',
-              background: '#f87171',
-              border: `1.5px solid ${isKids ? 'rgba(254,243,199,0.85)' : 'rgba(10,4,30,0.9)'}`,
-              pointerEvents: 'none',
-            }} />
+        {/* ── Botões flutuantes — canto direito da cena ── */}
+        <div style={{
+          position: 'absolute', right: 10, top: '14%', zIndex: 5,
+          display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center',
+        }}>
+          {/* 📱 Mensagens */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => { setShowPhone(true); const d = new Date().toISOString().slice(0,10); localStorage.setItem('bub_phone_seen', d); setPhoneBadge(false) }}
+              title="Mensagens do Bububu"
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                border: `1.5px solid ${isKids ? 'rgba(45,31,107,0.22)' : 'rgba(167,139,250,0.28)'}`,
+                background: isKids ? 'rgba(255,255,255,0.55)' : 'rgba(124,58,237,0.18)',
+                color: isKids ? 'rgba(45,31,107,0.70)' : 'rgba(196,181,253,0.85)',
+                fontSize: 17, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: 0,
+                boxShadow: isKids ? '0 2px 8px rgba(0,0,0,0.10)' : '0 2px 10px rgba(124,58,237,0.25)',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              📱
+            </button>
+            {phoneBadge && (
+              <div style={{
+                position: 'absolute', top: -2, right: -2,
+                width: 10, height: 10, borderRadius: '50%',
+                background: '#f87171',
+                border: `1.5px solid ${isKids ? 'rgba(254,243,199,0.85)' : 'rgba(10,4,30,0.9)'}`,
+                pointerEvents: 'none',
+              }} />
+            )}
+          </div>
+
+          {/* 🃏 Memory — só aparece com ≥ 2 palavras */}
+          {progress.wordsLearned.length >= 2 && (
+            <button
+              onClick={() => setShowMemory(true)}
+              title="Jogo da memória"
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                border: `1.5px solid ${isKids ? 'rgba(45,31,107,0.22)' : 'rgba(167,139,250,0.28)'}`,
+                background: isKids ? 'rgba(255,255,255,0.55)' : 'rgba(124,58,237,0.18)',
+                color: isKids ? 'rgba(45,31,107,0.70)' : 'rgba(196,181,253,0.85)',
+                fontSize: 17, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: 0,
+                boxShadow: isKids ? '0 2px 8px rgba(0,0,0,0.10)' : '0 2px 10px rgba(124,58,237,0.25)',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              🃏
+            </button>
           )}
         </div>
 
