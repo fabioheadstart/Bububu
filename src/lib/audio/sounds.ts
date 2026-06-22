@@ -41,7 +41,8 @@ async function _sfxPlay(name: string): Promise<boolean> {
 ;['bub_chomp.mp3','bub_fart4.mp3','bub_fart1.mp3','bub_fart2.mp3','bub_fart3.mp3','bub_burp.mp3',
   'sounds/reward-normal.wav','sounds/reward-bonus.wav','sounds/reward-jackpot.wav',
   'sounds/bububu-normal.wav','sounds/bububu-tired.wav','sounds/bububu-super.wav',
-  'sounds/present-pop.wav']
+  'sounds/present-pop.wav',
+  'audio/heroic_brass_trumpet1.wav','audio/heroic_brass_trumpet2.wav','audio/heroic_brass_trumpet3.wav']
   .forEach(n => _sfxLoad(n))
 
 // ── FM LFO helper (modulates AudioParam frequency — no gain automation conflict) ──
@@ -740,7 +741,21 @@ export function playNavTap(): void {
   } catch {}
 }
 
-// ─── Bullet time impact — Street Fighter ultra-move style (3 camadas) ────────
+// ─── Bullet Time Fanfare — sorteia 1 de 3 fanfarras ElevenLabs ───────────────
+const _FANFARES = [
+  'audio/heroic_brass_trumpet1.wav',
+  'audio/heroic_brass_trumpet2.wav',
+  'audio/heroic_brass_trumpet3.wav',
+]
+
+export function playBulletTimeFanfare(): void {
+  const file = _FANFARES[Math.floor(Math.random() * _FANFARES.length)]
+  _sfxPlay(file).then(ok => {
+    if (!ok) playBulletTimeImpact()   // fallback synth se arquivo falhar
+  }).catch(() => playBulletTimeImpact())
+}
+
+// ─── Bullet time impact — synth fallback (Street Fighter ultra-move style) ───
 export function playBulletTimeImpact(): void {
   try {
     const ac  = actx()

@@ -22,7 +22,7 @@ import {
   playFartBonus,
   playFartJackpot,
   playBububuSuper,
-  playBulletTimeImpact,
+  playBulletTimeFanfare,
   playPresentPop,
   hapticPresentPop,
   preloadJackpotFart,
@@ -337,7 +337,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     const word = result?.entry.word ?? lastFedWords.current.at(-1)?.word ?? 'bububu'
     setBulletTimeWord(word.toUpperCase())
     setBulletTimePhase('fly')
-    playBulletTimeImpact()                                   // boom no t=0 — sincronizado com a palavra
+    playBulletTimeFanfare()                                  // fanfarra heroica — sorteia 1 de 3 variações
     setScreenFlash('#ffffff')
     setTimeout(() => setScreenFlash(null), 80)
     setTimeout(() => showSpeech(getBubPhrase('bullet_time'), 3500), 2800)
@@ -1885,70 +1885,114 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       {bulletTimePhase !== 'off' && createPortal(
         <>
           <style>{`
-            @keyframes bt-zoom {
-              0%   { opacity:0; transform:scale(0.04) rotate(-12deg); filter:blur(12px) brightness(3); letter-spacing:60px; }
-              60%  { opacity:1; transform:scale(1.08) rotate(1deg);   filter:blur(0)    brightness(1.2); letter-spacing:6px; }
-              100% { opacity:1; transform:scale(1)    rotate(0deg);   filter:blur(0)    brightness(1); letter-spacing:6px; }
+            @keyframes bt-fly-up {
+              0%   { opacity:0; transform:translateY(100vh) scale(0.35) rotate(4deg); filter:blur(18px) brightness(2.5); letter-spacing:2px; }
+              55%  { opacity:1; transform:translateY(-22px) scale(1.13) rotate(-1.5deg); filter:blur(0) brightness(1.3); letter-spacing:8px; }
+              72%  { transform:translateY(10px) scale(0.96) rotate(0.8deg); letter-spacing:5px; }
+              84%  { transform:translateY(-6px) scale(1.04); letter-spacing:7px; }
+              100% { opacity:1; transform:translateY(0) scale(1) rotate(0); filter:blur(0) brightness(1); letter-spacing:6px; }
             }
-            @keyframes bt-impact {
-              0%   { transform:scale(1);    opacity:1; letter-spacing:6px;  filter:brightness(1); }
-              25%  { transform:scale(1.18); opacity:1; letter-spacing:22px; filter:brightness(2.2); }
-              60%  { transform:scale(2.8);  opacity:0.4; letter-spacing:40px; filter:brightness(1.4) blur(2px); }
-              100% { transform:scale(4);    opacity:0; letter-spacing:60px; filter:brightness(1)   blur(6px); }
+            @keyframes bt-blast-up {
+              0%   { opacity:1; transform:translateY(0) scale(1); letter-spacing:6px; filter:brightness(1); }
+              18%  { transform:translateY(-14px) scale(1.20); letter-spacing:22px; filter:brightness(3.5); }
+              100% { opacity:0; transform:translateY(-110vh) scale(3); letter-spacing:90px; filter:brightness(1) blur(14px); }
             }
             @keyframes bt-scanlines {
               0%   { background-position: 0 0; }
               100% { background-position: 0 6px; }
             }
+            @keyframes bt-bg-in {
+              0%   { opacity:0; }
+              100% { opacity:1; }
+            }
             @keyframes bt-bg-pulse {
-              0%, 100% { opacity: 0.90; }
+              0%, 100% { opacity: 0.92; }
               50%       { opacity: 1.00; }
+            }
+            @keyframes bt-line {
+              0%   { stroke-dashoffset: 0;    opacity: 0.85; }
+              100% { stroke-dashoffset:-280;  opacity: 0; }
+            }
+            @keyframes bt-line2 {
+              0%   { stroke-dashoffset: 0;    opacity: 0.60; }
+              100% { stroke-dashoffset:-180;  opacity: 0; }
             }
           `}</style>
 
-          {/* Fundo: radial escuro nas bordas, roxo no centro */}
+          {/* Fundo: radial escuro nas bordas, roxo/dourado no centro */}
           <div style={{
             position: 'fixed', inset: 0,
-            background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.85) 0%, rgba(3,0,20,0.97) 100%)',
+            background: 'radial-gradient(ellipse 65% 55% at 50% 50%, rgba(90,20,180,0.88) 0%, rgba(2,0,18,0.98) 100%)',
             zIndex: 9990,
             pointerEvents: 'none',
-            animation: 'bt-bg-pulse 1.8s ease-in-out infinite',
+            animation: bulletTimePhase === 'fly'
+              ? 'bt-bg-in 0.25s ease forwards, bt-bg-pulse 2s ease-in-out 0.25s infinite'
+              : 'bt-bg-pulse 2s ease-in-out infinite',
           }} />
 
           {/* Scanlines VHS */}
           <div style={{
-            position: 'fixed', inset: 0,
-            zIndex: 9991,
-            pointerEvents: 'none',
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.28) 3px, rgba(0,0,0,0.28) 6px)',
+            position: 'fixed', inset: 0, zIndex: 9991, pointerEvents: 'none',
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.22) 3px, rgba(0,0,0,0.22) 6px)',
             backgroundSize: '100% 6px',
             animation: 'bt-scanlines 0.10s linear infinite',
             mixBlendMode: 'multiply',
           }} />
 
-          {/* Palavra */}
+          {/* Speed lines — SVG radial mangá style */}
+          {bulletTimePhase === 'fly' && (
+            <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              style={{ position:'fixed', inset:0, width:'100%', height:'100%', zIndex:9992, pointerEvents:'none' }}
+            >
+              {Array.from({ length: 28 }).map((_, i) => {
+                const angle = (i / 28) * 360
+                const rad   = (angle * Math.PI) / 180
+                const thick = i % 5 === 0
+                const len   = thick ? 52 : 42 + (i % 3) * 6
+                const delay = `${(i % 4) * 0.06}s`
+                const dur   = thick ? '0.55s' : '0.40s'
+                return (
+                  <line
+                    key={i}
+                    x1="50" y1="50"
+                    x2={50 + Math.cos(rad) * len}
+                    y2={50 + Math.sin(rad) * len}
+                    stroke={thick ? 'rgba(251,191,36,0.55)' : 'rgba(255,255,255,0.18)'}
+                    strokeWidth={thick ? 0.8 : 0.35}
+                    strokeDasharray="280"
+                    strokeDashoffset="0"
+                    style={{ animation: `${thick ? 'bt-line' : 'bt-line2'} ${dur} ease-out ${delay} forwards` }}
+                  />
+                )
+              })}
+            </svg>
+          )}
+
+          {/* Palavra — voa de baixo para cima, depois explode para cima */}
           <div style={{
             position: 'fixed', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 9992,
-            pointerEvents: 'none',
+            zIndex: 9993, pointerEvents: 'none',
           }}>
             <div style={{
-              fontSize: 76, fontWeight: 900,
+              fontSize: 'clamp(52px, 13vw, 88px)',
+              fontWeight: 900,
               color: '#ffffff',
               letterSpacing: 6,
               fontFamily: 'system-ui, sans-serif',
               textTransform: 'uppercase',
               textShadow: [
-                '-4px 0 rgba(255,50,50,0.90)',
-                '4px 0 rgba(0,200,255,0.90)',
-                '0 0 50px rgba(251,191,36,0.85)',
-                '0 0 100px rgba(167,139,250,0.60)',
+                '-7px 0 rgba(255,30,90,0.92)',
+                '7px 0 rgba(0,220,255,0.92)',
+                '0 0 55px rgba(251,191,36,1)',
+                '0 0 120px rgba(167,139,250,0.65)',
               ].join(', '),
               willChange: 'transform, opacity, filter, letter-spacing',
               animation: bulletTimePhase === 'fly'
-                ? 'bt-zoom 2.5s cubic-bezier(0.12,0,0.04,1) forwards'
-                : 'bt-impact 0.60s cubic-bezier(0.22,1,0.36,1) forwards',
+                ? 'bt-fly-up 0.95s cubic-bezier(0.22,1,0.36,1) forwards'
+                : 'bt-blast-up 0.70s cubic-bezier(0.55,0,1,0.45) forwards',
             }}>
               {bulletTimeWord}
             </div>
