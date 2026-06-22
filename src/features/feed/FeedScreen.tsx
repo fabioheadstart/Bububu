@@ -36,6 +36,7 @@ import {
   hapticJackpot,
   hapticCombo,
   hapticKonami,
+  playChurchBell,
 } from '@/lib/audio/sounds'
 import { OPPOSITE_PAIRS } from '@/data/vocabulary/opposites'
 import { getCategoryColor } from '@/data/vocabulary/categoryColors'
@@ -234,6 +235,8 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const [memoryFromSat,  setMemoryFromSat]  = useState(false)  // veio da SatiationScreen?
   const [forceAwake,     setForceAwake]     = useState(false)
   const [overLimit, setOverLimit]         = useState(false)
+  const [bellsVisible, setBellsVisible]   = useState(false)
+  const bellTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [quizState,       setQuizState]       = useState<QuizState | null>(null)
   const [quizResult,      setQuizResult]      = useState<'correct' | 'wrong' | null>(null)
   const [quizSelectedIdx, setQuizSelectedIdx] = useState<number | null>(null)
@@ -494,16 +497,28 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       const now = new Date()
       const min = now.getMinutes()
       const sec = now.getSeconds()
-      const msUntilNext = min < 30
+      // Se min < 30: próximo disparo é às :30 (meia hora)
+      // Se min >= 30: próximo disparo é às :00 (hora cheia)
+      const nextIsOnHour = min >= 30
+      const msUntilNext  = min < 30
         ? ((30 - min) * 60 - sec) * 1000
         : ((60 - min) * 60 - sec) * 1000
       return setTimeout(() => {
-        if (!feeding.current) showSpeech(getBubPhrase('sino', undefined, undefined, undefined, progress.userName), 3800)
+        const bongCount = nextIsOnHour ? 2 : 1
+        playChurchBell(bongCount)
+        // Sinos visuais
+        clearTimeout(bellTimerRef.current)
+        setBellsVisible(true)
+        bellTimerRef.current = setTimeout(() => setBellsVisible(false), 3500)
+        // Fala do Bububu — leve delay pra não sobrepor o bong
+        setTimeout(() => {
+          if (!feeding.current) showSpeech(getBubPhrase('sino', undefined, undefined, undefined, progress.userName), 3800)
+        }, 800)
         timerRef.current = scheduleNextSino()
       }, msUntilNext)
     }
     const timerRef = { current: scheduleNextSino() }
-    return () => clearTimeout(timerRef.current)
+    return () => { clearTimeout(timerRef.current); clearTimeout(bellTimerRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -978,6 +993,28 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       animation: shakeActive ? 'screen-shake 0.42s ease-out' : 'none',
     }}>
       <SceneBackground isKids={isKids} worldId={activeWorld} />
+
+      {/* ── Sinos da Igreja ────────────────────────────────────────────────── */}
+      {bellsVisible && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          display: 'flex', justifyContent: 'space-between',
+          padding: '0 28px', zIndex: 20, pointerEvents: 'none',
+        }}>
+          {[{ delay: '0s', origin: 'top left' }, { delay: '0.18s', origin: 'top right' }].map((bell, i) => (
+            <div key={i} style={{
+              fontSize: 36,
+              transformOrigin: bell.origin,
+              animation: `bell-drop 0.45s cubic-bezier(0.34,1.56,0.64,1) ${bell.delay} both,
+                           bell-swing 1.4s ease-in-out ${bell.delay} 1,
+                           bell-fade-out 0.6s ease 2.9s both`,
+              filter: 'drop-shadow(0 4px 12px rgba(245,158,11,0.55))',
+            }}>
+              🔔
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <XpBar level={computedLevel} progress={levelProgress} wordsUntilNextStage={wordsUntilNextStage} isKids={isKids} />

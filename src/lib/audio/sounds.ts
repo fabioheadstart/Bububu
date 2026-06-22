@@ -816,6 +816,57 @@ export function playBulletTimeImpact(): void {
   } catch {}
 }
 
+// ─── Sino da Igreja — bong clássico com decay longo ─────────────────────────
+// count: número de bongs (1 = meia hora, 2 = hora cheia)
+export function playChurchBell(count = 1): void {
+  try {
+    for (let i = 0; i < count; i++) {
+      const offset = i * 1300   // ms entre cada bong
+      setTimeout(() => {
+        try {
+          const ac  = actx()
+          const now = ac.currentTime
+
+          // Fundamental: G3 ~196Hz — corpo grave do sino, decay 3s
+          const fund  = ac.createOscillator()
+          const fundG = ac.createGain()
+          fund.type = 'sine'
+          fund.frequency.setValueAtTime(196, now)
+          fundG.gain.setValueAtTime(0, now)
+          fundG.gain.linearRampToValueAtTime(0.45, now + 0.002)
+          fundG.gain.exponentialRampToValueAtTime(0.001, now + 3.0)
+          fund.connect(fundG); fundG.connect(ac.destination)
+          fund.start(now); fund.stop(now + 3.1)
+
+          // 2ª parcial inarmônica: ~372Hz (~minor 10th) — timbre de sino real
+          const p2  = ac.createOscillator()
+          const p2G = ac.createGain()
+          p2.type = 'sine'
+          p2.frequency.setValueAtTime(372, now)
+          p2G.gain.setValueAtTime(0, now)
+          p2G.gain.linearRampToValueAtTime(0.28, now + 0.002)
+          p2G.gain.exponentialRampToValueAtTime(0.001, now + 1.8)
+          p2.connect(p2G); p2G.connect(ac.destination)
+          p2.start(now); p2.stop(now + 1.9)
+
+          // 3ª parcial: ~520Hz — brilho do ataque
+          const p3  = ac.createOscillator()
+          const p3G = ac.createGain()
+          p3.type = 'sine'
+          p3.frequency.setValueAtTime(520, now)
+          p3G.gain.setValueAtTime(0, now)
+          p3G.gain.linearRampToValueAtTime(0.18, now + 0.002)
+          p3G.gain.exponentialRampToValueAtTime(0.001, now + 0.9)
+          p3.connect(p3G); p3G.connect(ac.destination)
+          p3.start(now); p3.stop(now + 1.0)
+
+          setTimeout(() => ac.close(), 3200)
+        } catch {}
+      }, offset)
+    }
+  } catch {}
+}
+
 // ─── Menu hover blip (desktop only) ──────────────────────────────────────────
 export function playMenuHover(): void {
   if (!window.matchMedia('(hover: hover)').matches) return
