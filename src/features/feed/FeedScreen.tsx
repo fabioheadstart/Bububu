@@ -1375,15 +1375,32 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
               )
             })}
 
+            {/* Anéis dourados de "toque aqui" — só enquanto aguarda */}
+            {!presentOpening && (
+              <>
+                {[0, 0.50, 1.0].map((delay, i) => (
+                  <div key={i} style={{
+                    position: 'absolute',
+                    width: 72, height: 72,
+                    borderRadius: '50%',
+                    border: `2px solid rgba(251,191,36,${0.72 - i * 0.18})`,
+                    animation: `present-ring 1.55s ease-out ${delay}s infinite`,
+                    pointerEvents: 'none',
+                  }} />
+                ))}
+              </>
+            )}
+
             <div style={{
               fontSize: 56,
               lineHeight: 1,
+              position: 'relative', zIndex: 1,
               animation: presentOpening
                 ? 'present-burst 0.38s cubic-bezier(0.36,0.07,0.19,0.97) forwards'
-                : 'present-pulse 0.9s ease-in-out infinite',
+                : 'present-float 1.4s ease-in-out infinite',
               filter: presentOpening
                 ? 'drop-shadow(0 0 28px rgba(251,191,36,0.9)) brightness(1.4)'
-                : 'drop-shadow(0 0 18px rgba(251,191,36,0.55))',
+                : 'drop-shadow(0 0 16px rgba(251,191,36,0.85)) drop-shadow(0 0 40px rgba(251,191,36,0.40))',
             }}>
               🎁
             </div>
@@ -1665,25 +1682,6 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       {bulletTimePhase !== 'off' && createPortal(
         <>
           <style>{`
-            @keyframes present-slide-in {
-              from { opacity: 0; transform: translateY(24px) scale(0.7); }
-              to   { opacity: 1; transform: translateY(0)    scale(1);   }
-            }
-            @keyframes present-pulse {
-              0%, 100% { transform: scale(1);    }
-              50%       { transform: scale(1.12); }
-            }
-            @keyframes present-burst {
-              0%   { transform: scale(1);    opacity: 1;   filter: brightness(1); }
-              12%  { transform: scale(1.9);  opacity: 1;   filter: brightness(2.2); }
-              40%  { transform: scale(2.4);  opacity: 0.5; filter: brightness(1.4); }
-              100% { transform: scale(3.0);  opacity: 0;   filter: brightness(1); }
-            }
-            @keyframes present-particle {
-              0%   { transform: translate(0, 0) scale(1.2); opacity: 1; }
-              15%  { opacity: 1; }
-              100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
-            }
             @keyframes bt-zoom {
               from { opacity:0; transform:scale(0.05) rotate(-8deg); filter:blur(6px); }
               to   { opacity:1; transform:scale(1)    rotate(0deg);  filter:blur(0);  }
