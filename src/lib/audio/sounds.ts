@@ -868,6 +868,28 @@ export function playChurchBell(count = 1): void {
 }
 
 // ─── Menu hover blip (desktop only) ──────────────────────────────────────────
+/** Quiz — resposta errada: dois tons descendentes suaves (kids-safe, não punitivo) */
+export function playQuizWrong(): void {
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+    // Tom 1: nota mais alta
+    const o1 = ac.createOscillator(); const g1 = ac.createGain()
+    o1.type = 'sine'; o1.frequency.setValueAtTime(440, now)
+    g1.gain.setValueAtTime(0.28, now); g1.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
+    o1.connect(g1); g1.connect(ac.destination)
+    o1.start(now); o1.stop(now + 0.18)
+    // Tom 2: nota mais baixa (100ms depois)
+    const o2 = ac.createOscillator(); const g2 = ac.createGain()
+    o2.type = 'sine'; o2.frequency.setValueAtTime(294, now + 0.12)
+    g2.gain.setValueAtTime(0, now + 0.12); g2.gain.linearRampToValueAtTime(0.22, now + 0.16)
+    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.38)
+    o2.connect(g2); g2.connect(ac.destination)
+    o2.start(now + 0.12); o2.stop(now + 0.40)
+    setTimeout(() => ac.close(), 600)
+  } catch {}
+}
+
 export function playMenuHover(): void {
   if (!window.matchMedia('(hover: hover)').matches) return
   try {

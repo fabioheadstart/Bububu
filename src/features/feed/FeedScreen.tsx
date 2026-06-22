@@ -43,7 +43,7 @@ import { getCategoryColor } from '@/data/vocabulary/categoryColors'
 import { useProgress } from '@/hooks/useProgress'
 import { useTheme } from '@/hooks/useTheme'
 import { usePetState } from '@/hooks/usePetState'
-import { SceneBackground } from '@/components/ui/SceneBackground'
+import { SceneBackground, VehicleRoad } from '@/components/ui/SceneBackground'
 import { WorldSwitcher } from '@/components/ui/WorldSwitcher'
 import { WorldUnlockOverlay } from '@/components/ui/WorldUnlockOverlay'
 import { useKidsWorld } from '@/hooks/useKidsWorld'
@@ -1189,6 +1189,9 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           minHeight: 0,
         }}
       >
+        {/* ── Estrada com veículos — só Kids, posicionada na zona da cena ── */}
+        {isKids && <VehicleRoad />}
+
         {/* ── Botão 📱 flutuante — canto direito da cena ── */}
         <div style={{ position: 'absolute', right: 10, top: '18%', zIndex: 5 }}>
           <button
@@ -1634,6 +1637,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             onAnswer={handleQuizAnswer}
             onContinue={handleQuizContinue}
             isKids={isKids}
+            bububuLevel={computedLevel}
           />
         ) : (
           <>

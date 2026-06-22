@@ -1,3 +1,6 @@
+import { playNavTap, playQuizWrong } from '@/lib/audio/sounds'
+import { useBububuVoice } from '@/lib/audio/useAudio'
+
 /**
  * QuizOptions — mini-quiz pós-feed
  *
@@ -14,13 +17,17 @@ interface Props {
   onAnswer:      (correct: boolean, idx: number) => void
   onContinue:    () => void   // chamado quando criança toca "continuar"
   isKids?:       boolean
+  bububuLevel?:  number       // para voz do Bububu adaptada ao estágio
 }
 
 export function QuizOptions({
   word, options, correctAnswer,
-  selectedIdx, result, onAnswer, onContinue, isKids = false,
+  selectedIdx, result, onAnswer, onContinue, isKids = false, bububuLevel = 1,
 }: Props) {
 
+  const { speakBububu } = useBububuVoice(
+    bububuLevel >= 15 ? 'adult' : bububuLevel >= 10 ? 'teen' : bububuLevel >= 5 ? 'growing' : 'baby'
+  )
   const labelColor  = isKids ? 'rgba(45,31,107,0.60)' : 'rgba(233,213,255,0.65)'
 
   return (
@@ -96,7 +103,13 @@ export function QuizOptions({
               disabled={result !== null}
               onClick={() => {
                 if (result !== null) return
+                playNavTap()
                 onAnswer(isCorrect, i)
+                // Sons de resultado — 180ms depois (shake/pop animation settles)
+                setTimeout(() => {
+                  if (isCorrect) speakBububu()
+                  else playQuizWrong()
+                }, 180)
               }}
               style={{
                 padding: '11px 10px',
