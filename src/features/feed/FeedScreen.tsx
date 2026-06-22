@@ -46,6 +46,7 @@ import { getBubPhrase } from '@/data/bububuPhrases'
 import { FloatingIsland } from '@/components/ui/FloatingIsland'
 import { BububuPhone } from '@/components/ui/BububuPhone'
 import { SettingsPanel } from '@/components/ui/SettingsPanel'
+import { CategoryProgress } from '@/components/ui/CategoryProgress'
 import { SleepScreen } from '@/features/feed/SleepScreen'
 import { SuperPeidoOverlay } from '@/components/ui/SuperPeidoOverlay'
 import { EvolutionOverlay } from '@/components/ui/EvolutionOverlay'
@@ -163,7 +164,8 @@ export function FeedScreen() {
   const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, resetProgress } = useProgress()
   const { speakBububu, speakBububuBulletTime }                  = useBububuVoice(getStage(computedLevel))
   const [showSettings, setShowSettings] = useState(false)
-  const [showShare, setShowShare]       = useState(false)
+  const [showShare, setShowShare]         = useState(false)
+  const [showProgress, setShowProgress]   = useState(false)
 
   // Pool de vocabulário desbloqueado para o nível atual
   const pool    = useMemo(() => getUnlockedPool(computedLevel, progress.difficulty), [computedLevel, progress.difficulty])
@@ -1364,6 +1366,15 @@ export function FeedScreen() {
           setChips(getRandomChips(4, getUnlockedPool(computedLevel, d)))
         }}
         onReset={resetProgress}
+        onShowProgress={() => { setShowSettings(false); setShowProgress(true) }}
+      />
+
+      <CategoryProgress
+        open={showProgress}
+        onClose={() => setShowProgress(false)}
+        wordsLearned={progress.wordsLearned}
+        level={computedLevel}
+        difficulty={progress.difficulty}
       />
 
       {showShare && (

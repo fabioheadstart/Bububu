@@ -15,6 +15,7 @@ interface Props {
   onSetMode: (m: AppMode) => void
   onSetDifficulty: (d: DifficultyLevel) => void
   onReset: () => void
+  onShowProgress: () => void
 }
 
 const MODES: { value: AppMode; label: string; icon: string; color: string }[] = [
@@ -32,7 +33,7 @@ export function SettingsPanel({
   open, onClose,
   level, wordsLearned, streak,
   mode, difficulty,
-  onSetMode, onSetDifficulty, onReset,
+  onSetMode, onSetDifficulty, onReset, onShowProgress,
 }: Props) {
   const [confirmReset, setConfirmReset] = useState(false)
 
@@ -164,6 +165,21 @@ export function SettingsPanel({
             </button>
           ))}
         </div>
+
+        {/* ── Progresso por categoria ── */}
+        <button
+          onClick={onShowProgress}
+          style={{
+            width: '100%', padding: '13px',
+            borderRadius: 14, border: '1px solid rgba(167,139,250,0.20)',
+            background: 'rgba(124,58,237,0.10)',
+            color: 'rgba(196,181,253,0.85)', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer', marginBottom: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          📚 Ver vocabulário por categoria
+        </button>
 
         {/* ── Reset ── */}
         {!confirmReset ? (
