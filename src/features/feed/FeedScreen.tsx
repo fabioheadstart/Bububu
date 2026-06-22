@@ -264,6 +264,8 @@ export function FeedScreen() {
     if (!presentResolveRef.current || presentOpening) return
     playPresentPop()
     hapticPresentPop()
+    setScreenFlash('rgba(255,255,255,0.7)')
+    setTimeout(() => setScreenFlash(null), 180)
     setPresentOpening(true)
     setTimeout(() => {
       setPresentOpening(false)
@@ -1267,17 +1269,18 @@ export function FeedScreen() {
               animation: presentOpening ? undefined : 'present-slide-in 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
             }}
           >
-            {/* Partículas de abertura */}
-            {presentOpening && ['🎀','✨','⭐','💫','🌟','🎊'].map((emoji, i) => {
-              const angle = (i / 6) * 360
-              const rad = (angle * Math.PI) / 180
-              const dist = 55 + (i % 3) * 15
+            {/* Partículas de abertura — 10 emojis voando em todas as direções */}
+            {presentOpening && ['🎀','✨','⭐','💫','🌟','🎊','🎉','💥','⚡','🌈'].map((emoji, i) => {
+              const angle = (i / 10) * 360 + (i % 2 === 0 ? 9 : -9)
+              const rad   = (angle * Math.PI) / 180
+              const dist  = 70 + (i % 4) * 22
               return (
                 <span key={i} style={{
                   position: 'absolute',
-                  fontSize: 18 + (i % 3) * 4,
+                  fontSize: 22 + (i % 3) * 6,
                   pointerEvents: 'none',
-                  animation: 'present-particle 0.38s ease-out forwards',
+                  zIndex: 10,
+                  animation: 'present-particle 0.42s cubic-bezier(0.1,0.8,0.2,1) forwards',
                   ['--px' as string]: `${Math.cos(rad) * dist}px`,
                   ['--py' as string]: `${Math.sin(rad) * dist}px`,
                 } as React.CSSProperties}>

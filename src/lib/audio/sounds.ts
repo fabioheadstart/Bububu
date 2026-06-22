@@ -678,6 +678,70 @@ export function playPresentPop(): void {
   } catch {}
 }
 
+// ─── Haptics ──────────────────────────────────────────────────────────────────
+export const hapticPresentPop = () => { try { navigator.vibrate?.([8, 4, 18, 4, 35]) } catch {} }
+export const hapticTap        = () => { try { navigator.vibrate?.(14) }                catch {} }
+export const hapticBonus      = () => { try { navigator.vibrate?.([20, 10, 35]) }      catch {} }
+export const hapticJackpot    = () => { try { navigator.vibrate?.([30, 12, 55, 12, 100]) } catch {} }
+export const hapticCombo      = () => { try { navigator.vibrate?.([25, 8, 40, 8, 65]) }    catch {} }
+export const hapticKonami     = () => { try { navigator.vibrate?.([20,8,30,8,50,8,80,8,120]) } catch {} }
+
+// ─── Chip tap pop — feedback imediato ao tocar o chip (Candy Crush feel) ────
+export function playChipTap(): void {
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+    const o   = ac.createOscillator()
+    const g   = ac.createGain()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(780, now)
+    o.frequency.exponentialRampToValueAtTime(380, now + 0.048)
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(0.22, now + 0.006)
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.052)
+    o.connect(g); g.connect(ac.destination)
+    o.start(now); o.stop(now + 0.06)
+    setTimeout(() => ac.close(), 200)
+  } catch {}
+}
+
+// ─── Menu hover blip (desktop only) ──────────────────────────────────────────
+export function playMenuHover(): void {
+  if (!window.matchMedia('(hover: hover)').matches) return
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+    const o   = ac.createOscillator()
+    const g   = ac.createGain()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(880, now)
+    o.frequency.exponentialRampToValueAtTime(1040, now + 0.04)
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(0.14, now + 0.008)
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.055)
+    o.connect(g); g.connect(ac.destination)
+    o.start(now); o.stop(now + 0.06)
+    setTimeout(() => ac.close(), 200)
+  } catch {}
+}
+ whoosh.connect(whooshG); whooshG.connect(ac.destination)
+    whoosh.start(now + 0.01); whoosh.stop(now + 0.23)
+
+    // 3. Shimmer — 3 sines agudos em sequência rápida (coins/bells feel)
+    ;[[1047, 0.10], [1319, 0.16], [1568, 0.21]].forEach(([freq, delay]) => {
+      const o = ac.createOscillator(); const g = ac.createGain()
+      o.type = 'sine'; o.frequency.value = freq
+      g.gain.setValueAtTime(0, now + delay)
+      g.gain.linearRampToValueAtTime(0.22, now + delay + 0.008)
+      g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.12)
+      o.connect(g); g.connect(ac.destination)
+      o.start(now + delay); o.stop(now + delay + 0.13)
+    })
+
+    setTimeout(() => ac.close(), 600)
+  } catch {}
+}
+
 export const hapticPresentPop = () => vibe([8, 4, 18, 4, 35])     // pop + shimmer
 
 export const hapticTap     = () => vibe(14)                        // toque suave
