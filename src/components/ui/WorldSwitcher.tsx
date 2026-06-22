@@ -7,7 +7,6 @@ interface Props {
   onSwitch:       (id: KidsWorldId) => void
   direction?:     'row' | 'column'
   currentLevel?:  number   // para o arco de progresso nos botões bloqueados
-  maxLevel?:      number   // nível máximo do tier atual (para calcular %)
 }
 
 const ALL_WORLDS: KidsWorldId[] = [1, 2, 3]
@@ -17,7 +16,7 @@ const CIRC = 2 * Math.PI * R  // circunferência
 
 export function WorldSwitcher({
   activeWorld, unlockedWorlds, onSwitch,
-  direction = 'row', currentLevel = 1, maxLevel = 15,
+  direction = 'row', currentLevel = 1,
 }: Props) {
   const unlockedSet = new Set(unlockedWorlds)
 
