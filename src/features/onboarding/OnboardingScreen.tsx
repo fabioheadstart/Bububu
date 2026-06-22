@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useProgress } from '@/hooks/useProgress'
 import { playMenuHover } from '@/lib/audio/sounds'
 import { useBububuVoice } from '@/lib/audio/useAudio'
+import { markOnboardingDone } from '@/lib/storage/progressStorage'
 import { BububuCharacter } from '@/components/bububu/BububuCharacter'
 import type { AppMode, DifficultyLevel } from '@/types'
 
@@ -151,6 +152,7 @@ export function OnboardingScreen({ onComplete }: Props) {
 
   function handleDifficultyChoose(difficulty: DifficultyLevel) {
     setDifficulty(difficulty)
+    markOnboardingDone()
     onComplete()
   }
 
@@ -266,13 +268,15 @@ export function OnboardingScreen({ onComplete }: Props) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
 
-            {/* CTA — aparece após as mensagens */}
-            {ctaVisible && (
-              <button
+        {/* CTA — fora do scroll, sempre visível abaixo dos balões */}
+        {step === 0 && ctaVisible && (
+          <button
                 onClick={() => setStep(1)}
                 style={{
-                  marginTop: 12,
+                  marginTop: 4,
                   alignSelf: 'center',
                   padding: '14px 36px',
                   borderRadius: 99,
@@ -289,8 +293,6 @@ export function OnboardingScreen({ onComplete }: Props) {
               >
                 Vamos começar! 🚀
               </button>
-            )}
-          </div>
         )}
 
         {/* ── Step 1: Qual é o seu nome? ── */}

@@ -3,17 +3,10 @@ import { FeedScreen } from '@/features/feed/FeedScreen'
 import { ChallengeScreen } from '@/features/challenge/ChallengeScreen'
 import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen'
 import { playNavTap } from '@/lib/audio/sounds'
+import { hasOnboardingDone } from '@/lib/storage/progressStorage'
 import './styles/global.css'
 
 type ActiveScreen = 'feed' | 'challenge'
-
-function hasCompletedOnboarding(): boolean {
-  try {
-    return localStorage.getItem('bububu:progress') !== null
-  } catch {
-    return false
-  }
-}
 
 // Detecta iOS Safari (não suporta beforeinstallprompt)
 function isIosSafari(): boolean {
@@ -25,7 +18,7 @@ function isIosSafari(): boolean {
 }
 
 export default function App() {
-  const [onboardingDone, setOnboardingDone] = useState(hasCompletedOnboarding)
+  const [onboardingDone, setOnboardingDone] = useState(hasOnboardingDone)
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('feed')
   const [installPrompt, setInstallPrompt] = useState<any>(null)
   const [installDismissed, setInstallDismissed] = useState(false)

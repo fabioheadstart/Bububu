@@ -64,4 +64,13 @@ export function saveProgress(progress: UserProgress): void {
 
 export function clearProgress(): void {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem('bububu:onboarding_done')
+}
+
+export function markOnboardingDone(): void {
+  try { localStorage.setItem('bububu:onboarding_done', '1') } catch { /* ignore */ }
+}
+
+export function hasOnboardingDone(): boolean {
+  try { return localStorage.getItem('bububu:onboarding_done') === '1' } catch { return false }
 }
