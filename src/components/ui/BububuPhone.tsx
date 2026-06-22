@@ -80,8 +80,7 @@ function getMessages(level: number, wordsLearned: string[], streak: number) {
 export function BububuPhone({ open, onClose, level, wordsLearned, streak, isKids = false }: Props) {
   const messages = getMessages(level, wordsLearned, streak)
 
-  const accentColor = isKids ? '#22c55e' : '#7c3aed'
-  const headerBg    = isKids ? 'linear-gradient(135deg, #16a34a, #15803d)' : 'linear-gradient(135deg, #5b21b6, #4c1d95)'
+  const headerBg = isKids ? 'linear-gradient(135deg, #16a34a, #15803d)' : 'linear-gradient(135deg, #5b21b6, #4c1d95)'
 
   if (!open) return null
 
