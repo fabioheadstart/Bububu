@@ -134,7 +134,7 @@ export function WordChips({
                   ? (isKids ? '11px 16px 14px' : '10px 14px 13px')
                   : (isKids ? '14px 20px 18px' : '12px 18px 16px'),
                 fontSize: isPhrase
-                  ? (entry.word.length > 20 ? 11 : 12)
+                  ? (entry.word.length > 28 ? 13 : isKids ? 17 : 16)
                   : (isKids ? 17 : 16),
                 ...(isGrid ? { width: '100%', textAlign: 'center' as const } : {}),
                 ...(isPhrase ? { width: '100%', textAlign: 'center' as const } : {}),
