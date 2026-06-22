@@ -93,6 +93,46 @@ function GiftSvg({ size = 56 }: { size?: number }) {
   )
 }
 
+// ─── Sino SVG — cor fixa, transparecer controlável ───────────────────────────
+function BellSvgIcon({
+  size = 80,
+  fillOpacity = 0.18,
+  strokeOpacity = 0.85,
+}: {
+  size?: number
+  fillOpacity?: number
+  strokeOpacity?: number
+}) {
+  const fo = fillOpacity
+  const so = strokeOpacity
+  const h  = Math.round(size * 1.15)
+  return (
+    <svg width={size} height={h} viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Gancho / coroa */}
+      <rect x="33" y="1" width="14" height="10" rx="5"
+        fill={`rgba(251,191,36,${so})`} />
+      {/* Corpo do sino */}
+      <path d="M40 10 C24 13 12 30 10 52 L10 64 C10 68 22 73 40 73 C58 73 70 68 70 64 L70 52 C68 30 56 13 40 10 Z"
+        fill={`rgba(245,158,11,${fo})`}
+        stroke={`rgba(251,191,36,${so})`}
+        strokeWidth="2.5"
+        strokeLinejoin="round" />
+      {/* Borda / saia */}
+      <ellipse cx="40" cy="73" rx="30" ry="8"
+        fill={`rgba(245,158,11,${fo * 1.4})`}
+        stroke={`rgba(251,191,36,${so})`}
+        strokeWidth="2" />
+      {/* Haste do badalo */}
+      <line x1="40" y1="74" x2="40" y2="84"
+        stroke={`rgba(251,191,36,${so * 0.80})`}
+        strokeWidth="3" strokeLinecap="round" />
+      {/* Badalo */}
+      <circle cx="40" cy="88" r="5"
+        fill={`rgba(245,158,11,${so * 0.75})`} />
+    </svg>
+  )
+}
+
 // ─── Fome do dia — categoria que o Bububu quer comer hoje ────────────────────
 const CRAVING_CATS = ['food', 'actions', 'adjectives', 'time', 'transport', 'animals', 'colors', 'home', 'phrases']
 
@@ -1106,22 +1146,43 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       {/* ── Sinos da Igreja ────────────────────────────────────────────────── */}
       {bellsVisible && (
         <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          display: 'flex', justifyContent: 'space-between',
-          padding: '0 28px', zIndex: 20, pointerEvents: 'none',
+          position: 'absolute', inset: 0,
+          zIndex: 20, pointerEvents: 'none', overflow: 'hidden',
         }}>
-          {[{ delay: '0s', origin: 'top left' }, { delay: '0.18s', origin: 'top right' }].map((bell, i) => (
-            <div key={i} style={{
-              fontSize: 36,
-              transformOrigin: bell.origin,
-              animation: `bell-drop 0.45s cubic-bezier(0.34,1.56,0.64,1) ${bell.delay} both,
-                           bell-swing 1.4s ease-in-out ${bell.delay} 1,
-                           bell-fade-out 0.6s ease 2.9s both`,
-              filter: 'drop-shadow(0 4px 12px rgba(245,158,11,0.55))',
+
+          {/* Sino-fantasma — fundo, gigante, quase invisível */}
+          <div style={{
+            position: 'absolute', top: -50, left: '50%', marginLeft: -130,
+            animation: 'bell-ghost-fade 3.4s ease both',
+          }}>
+            <div style={{
+              transformOrigin: '130px top',
+              animation: 'bell-ghost-swing 2.8s ease-in-out 0.35s 1',
             }}>
-              🔔
+              <BellSvgIcon size={260} fillOpacity={0.055} strokeOpacity={0.09} />
             </div>
-          ))}
+          </div>
+
+          {/* Sino esquerdo */}
+          <div style={{
+            position: 'absolute', top: -6, left: 18,
+            transformOrigin: '44px top',
+            animation: 'bell-drop 0.45s cubic-bezier(0.34,1.56,0.64,1) both, bell-swing 1.4s ease-in-out 1, bell-fade-out 0.6s ease 2.9s both',
+            filter: 'drop-shadow(0 8px 22px rgba(245,158,11,0.55))',
+          }}>
+            <BellSvgIcon size={88} fillOpacity={0.20} strokeOpacity={0.88} />
+          </div>
+
+          {/* Sino direito */}
+          <div style={{
+            position: 'absolute', top: -6, right: 18,
+            transformOrigin: '44px top',
+            animation: 'bell-drop 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.18s both, bell-swing 1.4s ease-in-out 0.18s 1, bell-fade-out 0.6s ease 2.9s both',
+            filter: 'drop-shadow(0 8px 22px rgba(245,158,11,0.55))',
+          }}>
+            <BellSvgIcon size={88} fillOpacity={0.20} strokeOpacity={0.88} />
+          </div>
+
         </div>
       )}
 

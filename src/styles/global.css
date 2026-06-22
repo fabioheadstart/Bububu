@@ -374,6 +374,22 @@ body {
   100% { opacity: 0; transform: translateY(-20px) scale(0.7); }
 }
 
+@keyframes bell-ghost-fade {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  78%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes bell-ghost-swing {
+  0%   { transform: rotate(0deg); }
+  18%  { transform: rotate(-7deg); }
+  42%  { transform: rotate(6deg); }
+  62%  { transform: rotate(-4deg); }
+  80%  { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+
 /* ── Easter Egg: Mega Fart ───────────────────────────────────────────────── */
 
 @keyframes mega-fart-smoke {
