@@ -8,6 +8,7 @@ export interface ComboData {
   type: ComboType
   words: string[]
   category?: string   // para trio
+  label?: string      // override do header no VS (ex: "🔗 sinônimos 🔗")
 }
 
 interface Props {
@@ -200,7 +201,7 @@ function VersusView({ combo }: { combo: ComboData }) {
           fontSize: 11, fontWeight: 900, letterSpacing: 5,
           textTransform: 'uppercase', color: 'rgba(196,181,253,0.65)',
         }}>
-          ⚡ opostos ⚡
+          {combo.label ?? '⚡ opostos ⚡'}
         </span>
       </div>
 

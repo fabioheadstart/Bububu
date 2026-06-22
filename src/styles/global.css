@@ -476,6 +476,17 @@ body {
   100% { transform: scale(1.65); opacity: 0;    }
 }
 
+/* ── Pair chip — oposto/sinônimo após o feed ─────────────────────────────────── */
+@keyframes pair-chip-in {
+  0%   { transform: translateY(10px) scale(0.88); opacity: 0; }
+  65%  { transform: translateY(-2px) scale(1.04); opacity: 1; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+@keyframes pair-chip-glow {
+  0%,100% { box-shadow: 0 0 8px var(--pair-glow), 0 2px 8px rgba(0,0,0,0.25); }
+  50%      { box-shadow: 0 0 18px var(--pair-glow), 0 2px 12px rgba(0,0,0,0.30); }
+}
+
 /* 💩 cai do bumbum do Bububu com bounce */
 @keyframes poop-drop-from-bub {
   0%   { transform: translateY(-150px) scale(0.08) rotate(25deg); opacity: 0; }

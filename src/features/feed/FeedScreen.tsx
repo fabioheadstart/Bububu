@@ -38,7 +38,7 @@ import {
   hapticKonami,
   playChurchBell,
 } from '@/lib/audio/sounds'
-import { OPPOSITE_PAIRS } from '@/data/vocabulary/opposites'
+import { OPPOSITE_PAIRS, SYNONYM_PAIRS } from '@/data/vocabulary/opposites'
 import { getCategoryColor } from '@/data/vocabulary/categoryColors'
 import { useProgress } from '@/hooks/useProgress'
 import { useTheme } from '@/hooks/useTheme'
@@ -261,8 +261,13 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const lastFedWords     = useRef<VocabEntry[]>([])
   const konamiProgress   = useRef(0)
   const chipsRef         = useRef<VocabEntry[]>([])
-  // Cooldown: impede Trio/VS de disparar de novo em menos de 10 feeds
+  // Cooldown: impede Trio/VS de disparar de novo em menos de 3 feeds
   const feedsSinceCombo  = useRef(0)
+
+  // Pair chip — oposto/sinônimo que aparece após cada feed
+  const [pairChip, setPairChip] = useState<{ entry: VocabEntry; type: 'opposite' | 'synonym' } | null>(null)
+  const pairChipTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const pairChipRef   = useRef<HTMLButtonElement | null>(null)
 
   const [superPeido,    setSuperPeido]    = useState(false)
   const [presentWaiting, setPresentWaiting] = useState(false)
@@ -651,10 +656,12 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     if (feeding.current) return
     feeding.current = true
 
-    // Limpa hints imediatamente ao tocar
+    // Limpa hints e pair chip imediatamente ao tocar
     clearTimeout(hintTimerRef.current)
+    clearTimeout(pairChipTimer.current)
     setHintIds(new Set())
     setKonamiHintId(null)
+    setPairChip(null)
 
     const mouth = getMouthPos()
 
@@ -857,7 +864,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     lastFedWords.current = [...lastFedWords.current, entry].slice(-5)
     feedsSinceCombo.current++
 
-    const COMBO_COOLDOWN = 10   // feeds mínimos entre dois combos Trio/VS
+    const COMBO_COOLDOWN = 3    // feeds mínimos entre dois combos Trio/VS
     let comboFired = false
 
     // 1. Konami (highest priority, sem cooldown — é raro por design)
@@ -880,13 +887,23 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     // 2. Opposites VS — cooldown garante que não spame
     if (!comboFired && feedsSinceCombo.current >= COMBO_COOLDOWN && lastFedWords.current.length >= 2) {
       const prevEntry = lastFedWords.current[lastFedWords.current.length - 2]
-      if (OPPOSITE_PAIRS[w] === prevEntry.word.toLowerCase()) {
+      const prevW = prevEntry.word.toLowerCase()
+      if (OPPOSITE_PAIRS[w] === prevW || OPPOSITE_PAIRS[prevW] === w) {
         lastFedWords.current = []
         feedsSinceCombo.current = 0
         playComboVS()
         hapticCombo()
         showSpeech(getBubPhrase('combo_vs'), 3000)
         setActiveCombo({ type: 'versus', words: [prevEntry.word, entry.word] })
+        setShakeKey(k => k + 1)
+        comboFired = true
+      } else if (SYNONYM_PAIRS[w] === prevW || SYNONYM_PAIRS[prevW] === w) {
+        lastFedWords.current = []
+        feedsSinceCombo.current = 0
+        playComboVS()
+        hapticCombo()
+        showSpeech('São parecidas! 🔗', 3000)
+        setActiveCombo({ type: 'versus', words: [prevEntry.word, entry.word], label: '🔗 sinônimos 🔗' })
         setShakeKey(k => k + 1)
         comboFired = true
       }
@@ -907,6 +924,26 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           category: last3[0].category,
         })
         setShakeKey(k => k + 1)
+      }
+    }
+
+    // ── Pair chip — mostra oposto ou sinônimo após o feed ────────────────────
+    clearTimeout(pairChipTimer.current)
+    setPairChip(null)
+    if (!comboFired && !isOver) {
+      const oppWord = OPPOSITE_PAIRS[w]
+      const synWord = SYNONYM_PAIRS[w]
+      const pairWord = oppWord ?? synWord
+      const pairType: 'opposite' | 'synonym' = oppWord ? 'opposite' : 'synonym'
+      if (pairWord) {
+        const pairEntry = ALL_WORDS.find(e2 => e2.word.toLowerCase() === pairWord)
+        if (pairEntry) {
+          // Pequeno delay para o chip aparecer depois da animação de comer
+          setTimeout(() => {
+            setPairChip({ entry: pairEntry, type: pairType })
+            pairChipTimer.current = setTimeout(() => setPairChip(null), 6000)
+          }, 600)
+        }
       }
     }
 
@@ -1422,6 +1459,65 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             {' '}+{wordsUntilNextVisual} para evoluir
           </div>
         )}
+
+        {/* Pair chip — oposto ou sinônimo, aparece após cada feed */}
+        {pairChip && !isFeeding && (() => {
+          const isOpp = pairChip.type === 'opposite'
+          const glowColor = isKids
+            ? (isOpp ? 'rgba(239,68,68,0.70)' : 'rgba(34,197,94,0.70)')
+            : (isOpp ? 'rgba(248,113,113,0.65)' : 'rgba(74,222,128,0.65)')
+          const bgColor = isKids
+            ? (isOpp ? 'rgba(254,226,226,0.92)' : 'rgba(220,252,231,0.92)')
+            : (isOpp ? 'rgba(127,29,29,0.55)' : 'rgba(20,83,45,0.55)')
+          const borderColor = isKids
+            ? (isOpp ? 'rgba(239,68,68,0.55)' : 'rgba(34,197,94,0.55)')
+            : (isOpp ? 'rgba(248,113,113,0.60)' : 'rgba(74,222,128,0.60)')
+          const textColor = isKids
+            ? (isOpp ? '#991b1b' : '#14532d')
+            : (isOpp ? '#fca5a5' : '#86efac')
+          const labelColor = isKids
+            ? (isOpp ? 'rgba(153,27,27,0.55)' : 'rgba(20,83,45,0.55)')
+            : (isOpp ? 'rgba(252,165,165,0.55)' : 'rgba(134,239,172,0.55)')
+
+          return (
+            <button
+              key={pairChip.entry.id}
+              ref={pairChipRef}
+              onClick={() => {
+                if (!pairChipRef.current || feeding.current) return
+                feedsSinceCombo.current = 999
+                handleChipSelect(pairChip.entry, pairChipRef.current.getBoundingClientRect())
+              }}
+              style={{
+                marginTop: 8,
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '7px 16px 7px 10px',
+                borderRadius: 99,
+                border: `1.5px solid ${borderColor}`,
+                background: bgColor,
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                animation: 'pair-chip-in 0.38s cubic-bezier(0.34,1.56,0.64,1) both',
+                ['--pair-glow' as string]: glowColor,
+                animationDelay: '0.05s',
+              } as React.CSSProperties}
+            >
+              <span style={{ fontSize: 13 }}>{isOpp ? '⚡' : '🔗'}</span>
+              <div style={{ lineHeight: 1.2 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.2,
+                  textTransform: 'uppercase', color: labelColor }}>
+                  {isOpp ? 'oposto' : 'sinônimo'}
+                </div>
+                <div style={{ fontSize: 17, fontWeight: 900, color: textColor, letterSpacing: -0.5 }}>
+                  {pairChip.entry.word}
+                </div>
+              </div>
+              <span style={{ fontSize: 10, color: labelColor, marginLeft: 2 }}>→</span>
+            </button>
+          )
+        })()}
 
         {xpPops.map(pop => createPortal(
           <div key={pop.id} style={{
