@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { FeedScreen } from '@/features/feed/FeedScreen'
 import { ChallengeScreen } from '@/features/challenge/ChallengeScreen'
 import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen'
+import { playNavTap } from '@/lib/audio/sounds'
 import './styles/global.css'
 
 type ActiveScreen = 'feed' | 'challenge'
@@ -234,7 +235,7 @@ export default function App() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveScreen(tab.id)}
+                onClick={() => { playNavTap(); setActiveScreen(tab.id) }}
                 style={{
                   flex: 1,
                   padding: '10px 0 14px',

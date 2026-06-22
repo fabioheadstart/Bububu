@@ -708,6 +708,38 @@ export function playChipTap(): void {
   } catch {}
 }
 
+// ─── Nav tab tap — bottom navigation switch (satisfying, distinct from chip tap) ─
+export function playNavTap(): void {
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+    // Two-tone ascending "click": low thud + high shimmer
+    const thud = ac.createOscillator()
+    const tg   = ac.createGain()
+    thud.type = 'sine'
+    thud.frequency.setValueAtTime(220, now)
+    thud.frequency.exponentialRampToValueAtTime(110, now + 0.055)
+    tg.gain.setValueAtTime(0, now)
+    tg.gain.linearRampToValueAtTime(0.30, now + 0.006)
+    tg.gain.exponentialRampToValueAtTime(0.001, now + 0.060)
+    thud.connect(tg); tg.connect(ac.destination)
+    thud.start(now); thud.stop(now + 0.065)
+
+    const shimmer = ac.createOscillator()
+    const sg      = ac.createGain()
+    shimmer.type = 'sine'
+    shimmer.frequency.setValueAtTime(1100, now + 0.010)
+    shimmer.frequency.exponentialRampToValueAtTime(1600, now + 0.065)
+    sg.gain.setValueAtTime(0, now + 0.010)
+    sg.gain.linearRampToValueAtTime(0.14, now + 0.018)
+    sg.gain.exponentialRampToValueAtTime(0.001, now + 0.075)
+    shimmer.connect(sg); sg.connect(ac.destination)
+    shimmer.start(now + 0.010); shimmer.stop(now + 0.080)
+
+    setTimeout(() => ac.close(), 300)
+  } catch {}
+}
+
 // ─── Menu hover blip (desktop only) ──────────────────────────────────────────
 export function playMenuHover(): void {
   if (!window.matchMedia('(hover: hover)').matches) return
