@@ -357,11 +357,11 @@ function TinyTrain() {
       t = setTimeout(() => {
         setVisible(true)
         setTimeout(() => setVisible(false), 14000)
-        schedule(Math.round((60 + Math.random() * 60) * 1_000))
+        schedule(Math.round((15 + Math.random() * 15) * 1_000))
       }, delay)
     }
 
-    schedule(5_000) // primeira aparição em 5s; depois 60-120s
+    schedule(5_000) // primeira aparição em 5s; depois 15-30s
     return () => clearTimeout(t)
   }, [])
 
@@ -475,7 +475,7 @@ function TinyTruck() {
         setVisible(true)
         setTimeout(() => {
           setVisible(false)
-          schedule(Math.round((70 + Math.random() * 50) * 1_000))
+          schedule(Math.round((18 + Math.random() * 12) * 1_000))
         }, 13_000)
       }, delay)
     }
@@ -529,7 +529,7 @@ function TinyCar() {
         setVisible(true)
         setTimeout(() => {
           setVisible(false)
-          schedule(Math.round((50 + Math.random() * 40) * 1_000))
+          schedule(Math.round((15 + Math.random() * 10) * 1_000))
         }, 10_000)
       }, delay)
     }
