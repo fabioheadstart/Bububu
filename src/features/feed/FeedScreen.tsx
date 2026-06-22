@@ -937,7 +937,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       <SceneBackground isKids={isKids} worldId={activeWorld} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <XpBar level={computedLevel} progress={levelProgress} wordsUntilNextStage={wordsUntilNextStage} />
+        <XpBar level={computedLevel} progress={levelProgress} wordsUntilNextStage={wordsUntilNextStage} isKids={isKids} />
       </div>
 
       {/* Fome do dia + contador de apetite */}
@@ -948,12 +948,12 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         {/* Badge de fome do dia */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 4,
-          background: `${cravingColor.bg}22`,
-          border: `1px solid ${cravingColor.ring}55`,
+          background: isKids ? 'rgba(45,31,107,0.08)' : `${cravingColor.bg}22`,
+          border: `1px solid ${isKids ? 'rgba(45,31,107,0.22)' : cravingColor.ring + '55'}`,
           borderRadius: 99, padding: '2px 9px 2px 7px',
         }}>
           <span style={{ fontSize: 13 }}>🔥</span>
-          <span style={{ fontSize: 11, fontWeight: 800, color: cravingColor.ring, letterSpacing: 0.2 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: isKids ? 'rgba(45,31,107,0.80)' : cravingColor.ring, letterSpacing: 0.2 }}>
             {cravingColor.label || cravingCategory}
           </span>
         </div>

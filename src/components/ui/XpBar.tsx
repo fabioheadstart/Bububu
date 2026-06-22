@@ -2,9 +2,10 @@ interface Props {
   level: number
   progress: number // 0–1
   wordsUntilNextStage?: number
+  isKids?: boolean
 }
 
-export function XpBar({ level, progress, wordsUntilNextStage }: Props) {
+export function XpBar({ level, progress, wordsUntilNextStage, isKids }: Props) {
   const isMax = level >= 15
   const fill  = Math.min(Math.max(progress, 0), 1) * 100
 
@@ -63,7 +64,7 @@ export function XpBar({ level, progress, wordsUntilNextStage }: Props) {
           textAlign: 'right',
           fontSize: 10,
           fontWeight: 600,
-          color: 'rgba(167,139,250,0.55)',
+          color: isKids ? 'rgba(45,31,107,0.60)' : 'rgba(167,139,250,0.55)',
           marginTop: 3,
           letterSpacing: 0.2,
         }}>

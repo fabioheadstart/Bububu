@@ -12,28 +12,26 @@ const A1_TOTAL = getWordsByLevel('A1').length
 const A2_TOTAL = getWordsByLevel('A2').length
 const B1_TOTAL = getWordsByLevel('B1').length
 
-// Quantas palavras NOVAS até o próximo estágio de evolução
+// Quantas palavras NOVAS até o próximo nível de evolução
+// Usa Math.floor+1 para evitar off-by-one: ceil(N/total*5) nunca avança em N=threshold,
+// mas ceil((N+1)/total*5) avança — portanto o threshold real é floor(total*subLvl/5)+1
 function computeWordsUntilNextStage(wordsLearned: string[]): number {
   const byLevel = { A1: 0, A2: 0, B1: 0 }
   for (const id of wordsLearned) {
     const entry = ALL_WORDS_BY_ID.get(id)
     if (entry) byLevel[entry.level]++
   }
-  // baby→growing: precisa completar A1 (nível 5 requer 80%+ de A1)
-  if (byLevel.A1 < A1_TOTAL) {
-    const nextThreshold = Math.ceil(A1_TOTAL * Math.ceil((byLevel.A1 / A1_TOTAL) * 5) / 5)
-    return Math.max(1, nextThreshold - byLevel.A1)
+
+  function wordsToNextSubLevel(count: number, total: number): number {
+    const currentSubLvl = Math.max(1, Math.ceil((count / total) * 5))
+    const rawThreshold  = Math.floor(total * currentSubLvl / 5) + 1
+    const nextThreshold = Math.min(rawThreshold, total)
+    return Math.max(1, nextThreshold - count)
   }
-  // growing→teen: precisa completar A2
-  if (byLevel.A2 < A2_TOTAL) {
-    const nextThreshold = Math.ceil(A2_TOTAL * Math.ceil((byLevel.A2 / A2_TOTAL) * 5) / 5)
-    return Math.max(1, nextThreshold - byLevel.A2)
-  }
-  // teen→adult: precisa completar B1
-  if (byLevel.B1 < B1_TOTAL) {
-    const nextThreshold = Math.ceil(B1_TOTAL * Math.ceil((byLevel.B1 / B1_TOTAL) * 5) / 5)
-    return Math.max(1, nextThreshold - byLevel.B1)
-  }
+
+  if (byLevel.A1 < A1_TOTAL) return wordsToNextSubLevel(byLevel.A1, A1_TOTAL)
+  if (byLevel.A2 < A2_TOTAL) return wordsToNextSubLevel(byLevel.A2, A2_TOTAL)
+  if (byLevel.B1 < B1_TOTAL) return wordsToNextSubLevel(byLevel.B1, B1_TOTAL)
   return 0 // MAX
 }
 
