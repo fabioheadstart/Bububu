@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useProgress } from '@/hooks/useProgress'
 import { playMenuHover } from '@/lib/audio/sounds'
+import { useBububuVoice } from '@/lib/audio/useAudio'
 import { BububuCharacter } from '@/components/bububu/BububuCharacter'
 import type { AppMode, DifficultyLevel } from '@/types'
 
@@ -106,16 +107,34 @@ const DIFFICULTIES: DiffCard[] = [
   },
 ]
 
+// IDs das mensagens em que o Bububu "fala" — 1ª mensagem + momentos emocionais
+const BUB_SOUND_ON = new Set([1, 6, 10])
+
 export function OnboardingScreen({ onComplete }: Props) {
   const { setMode, setDifficulty, setUserName } = useProgress()
+  const { speakBububu } = useBububuVoice('baby')
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [ctaVisible, setCtaVisible] = useState(false)
   const [nameInput, setNameInput] = useState('')
+  const [visibleMsgs, setVisibleMsgs] = useState<number[]>([])
+  const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Revela mensagens uma a uma conforme o delay, sem deixar balões invisíveis no DOM
   useEffect(() => {
     if (step !== 0) return
-    const t = setTimeout(() => setCtaVisible(true), CTA_DELAY)
-    return () => clearTimeout(t)
+    const timers: ReturnType<typeof setTimeout>[] = []
+    STORY.forEach(msg => {
+      timers.push(setTimeout(() => {
+        setVisibleMsgs(prev => [...prev, msg.id])
+        if (BUB_SOUND_ON.has(msg.id)) speakBububu()
+        // Auto-scroll para o último balão
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
+        })
+      }, msg.delay))
+    })
+    timers.push(setTimeout(() => setCtaVisible(true), CTA_DELAY))
+    return () => timers.forEach(clearTimeout)
   }, [step])
 
   function handleNameSubmit() {
@@ -221,11 +240,11 @@ export function OnboardingScreen({ onComplete }: Props) {
 
         {/* ── Step 0: História do Bububu ── */}
         {step === 0 && (
-          <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {STORY.map(msg => (
+          <div ref={scrollRef} style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', maxHeight: '55dvh', paddingBottom: 4 }}>
+            {STORY.filter(msg => visibleMsgs.includes(msg.id)).map(msg => (
               <div key={msg.id} style={{
                 display: 'flex', alignItems: 'flex-end', gap: 10,
-                animation: `msg-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) ${msg.delay}ms both`,
+                animation: 'msg-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) both',
               }}>
                 <div style={{
                   width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
