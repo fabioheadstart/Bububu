@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { rollRewardTier, XP_BY_TIER } from '@/features/rewards/rewardEngine'
-import type { VocabEntry, FeedResult } from '@/types'
+import type { VocabEntry, FeedResult, RewardTier } from '@/types'
 
 export function useFeed() {
   const [lastResult, setLastResult] = useState<FeedResult | null>(null)
