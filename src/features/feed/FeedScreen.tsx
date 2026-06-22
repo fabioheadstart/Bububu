@@ -105,10 +105,32 @@ interface FlyingData { word: string; startX: number; startY: number; endX: numbe
 const MOUTH_OFFSET_X = (60 / 120) * 140   // = 70px do left do SVG
 const MOUTH_OFFSET_Y = (80 / 140) * 160   // ≈ 91px do top do SVG
 
+// Garante máx 1 chip de frase nos 4 chips — frases longas ocupam muito espaço
+function capPhraseChips(chips: VocabEntry[], pool: VocabEntry[]): VocabEntry[] {
+  const phraseCount = chips.filter(c => c.category === 'phrases').length
+  if (phraseCount <= 1) return chips
+  // Remove frases excedentes e substitui por palavras de outra categoria
+  let result = [...chips]
+  let firstPhraseSeen = false
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].category === 'phrases') {
+      if (!firstPhraseSeen) { firstPhraseSeen = true; continue }
+      // Substitui esta frase por uma palavra não-frase não duplicada
+      const excludeIds = result.map(c => c.id)
+      const nonPhrase = pool.filter(w => w.category !== 'phrases' && !excludeIds.includes(w.id))
+      if (nonPhrase.length > 0) {
+        result[i] = nonPhrase[Math.floor(Math.random() * nonPhrase.length)]
+      }
+    }
+  }
+  return result
+}
+
 function getRandomChips(count: number, pool: VocabEntry[], excludeIds: string[] = []): VocabEntry[] {
   const source = pool.filter(w => !excludeIds.includes(w.id))
   const from   = source.length >= count ? source : pool
-  return [...from].sort(() => Math.random() - 0.5).slice(0, count)
+  const chips  = [...from].sort(() => Math.random() - 0.5).slice(0, count)
+  return capPhraseChips(chips, pool)
 }
 
 // Chip orquestrado: tenta sempre entregar algo com potencial de combo
@@ -760,7 +782,12 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     setChips(prev => {
       const remaining = prev.filter(c => c.id !== entry.id)
       const exclude   = [...remaining.map(c => c.id), entry.id]
-      const smart = getSmartChipReplacement(poolRef.current, exclude, entry, nextKonamiStep)
+      // Rejeita frases se já há 1 frase nos remaining
+      const alreadyHasPhrase = remaining.some(c => c.category === 'phrases')
+      const smart = getSmartChipReplacement(
+        alreadyHasPhrase ? poolRef.current.filter(w => w.category !== 'phrases') : poolRef.current,
+        exclude, entry, nextKonamiStep,
+      )
       if (smart) {
         clearTimeout(newChipTimer.current)
         setNewChipId(smart.id)
