@@ -630,10 +630,6 @@ export function playFartJackpot(): void {
   }).catch(() => _fartMegaSynth())
 }
 
-// ─── Haptic feedback (Android Chrome; silent on iOS) ─────────────────────────
-const vibe = (pattern: number | number[]) => {
-  try { navigator.vibrate?.(pattern) } catch {}
-}
 
 // ─── Present pop — estouro do presente (tap to reveal) ──────────────────────
 // Cork pop + whoosh up + shimmer: satisfatório e imediato
@@ -660,7 +656,7 @@ export function playPresentPop(): void {
     whooshG.gain.setValueAtTime(0, now + 0.01)
     whooshG.gain.linearRampToValueAtTime(0.28, now + 0.04)
     whooshG.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
-    whoosh.connect(whooshG); whooshG.connect(ac.destination)
+       whoosh.connect(whooshG); whooshG.connect(ac.destination)
     whoosh.start(now + 0.01); whoosh.stop(now + 0.23)
 
     // 3. Shimmer — 3 sines agudos em sequência rápida (coins/bells feel)
