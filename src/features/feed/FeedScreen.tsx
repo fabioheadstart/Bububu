@@ -239,6 +239,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const presentResolveRef = useRef<(() => void) | null>(null)
   const [evolutionStage, setEvolutionStage] = useState<EvolutionStage | null>(null)
   const prevStageRef = useRef<EvolutionStage>(getStage(computedLevel))
+  const [streakToast,   setStreakToast]   = useState(false)
   const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
   const [hintIds,       setHintIds]       = useState<Set<string>>(new Set())
   const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
@@ -359,6 +360,20 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       }, 1400)
       return () => clearTimeout(t)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Toast de streak — aparece uma vez por dia se streak ≥ 2
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    if ((progress.streak ?? 0) < 2) return
+    if (localStorage.getItem('bub_streak_toast') === today) return
+    const t = setTimeout(() => {
+      setStreakToast(true)
+      localStorage.setItem('bub_streak_toast', today)
+      setTimeout(() => setStreakToast(false), 3000)
+    }, 1800)
+    return () => clearTimeout(t)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -980,8 +995,8 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             transition: 'background 0.15s',
           }}
           title="Revisar palavras"
-        >📚 {wordCount} word{wordCount !== 1 ? 's' : ''}</span>
-        {streak > 0 && <span>🔥 {streak} day{streak !== 1 ? 's' : ''}</span>}
+        >📚 {wordCount} {wordCount === 1 ? 'palavra' : 'palavras'}</span>
+        {streak > 0 && <span>🔥 {streak} {streak === 1 ? 'dia' : 'dias'}</span>}
 
         {/* Alavanca de mundos — só Kids, só se tiver ≥1 mundo desbloqueado além do 1 */}
         {isKids && unlockedWorlds.length > 1 && (
@@ -1526,6 +1541,26 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           streak={progress.streak}
           onClose={() => setShowShare(false)}
         />
+      )}
+
+      {/* ── Toast de streak ──────────────────────────────────────── */}
+      {streakToast && (
+        <div style={{
+          position: 'fixed', top: 56, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 500, pointerEvents: 'none',
+          background: 'linear-gradient(135deg, #92400e, #d97706)',
+          color: '#fff',
+          borderRadius: 99,
+          padding: '10px 22px',
+          fontSize: 15, fontWeight: 800,
+          boxShadow: '0 4px 20px rgba(217,119,6,0.55)',
+          display: 'flex', alignItems: 'center', gap: 8,
+          animation: 'toast-in 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ fontSize: 22 }}>🔥</span>
+          {progress.streak} dias seguidos!
+        </div>
       )}
 
       <SuperPeidoOverlay active={superPeido} onDone={() => setSuperPeido(false)} />
