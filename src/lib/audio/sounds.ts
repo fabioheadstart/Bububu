@@ -129,11 +129,11 @@ function _chompSynth() {
   setTimeout(() => ac.close(), 1400)
 }
 
-const _CHOMP_FILES = ['bub_chomp.mp3', 'bub_fart4.mp3']
-
 export function playMunch() {
-  const file = _CHOMP_FILES[Math.floor(Math.random() * _CHOMP_FILES.length)]
-  _sfxPlay(file).then(ok => { if (!ok) _chompSynth() }).catch(_chompSynth)
+  // Synth sempre executa — garante som em qualquer ambiente
+  _chompSynth()
+  // Arquivo real em cima do synth se disponível (mais rico)
+  _sfxPlay('bub_chomp.mp3').catch(() => {})
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
