@@ -22,6 +22,8 @@ import {
   playFartBonus,
   playFartJackpot,
   playBububuSuper,
+  playPresentPop,
+  hapticPresentPop,
   preloadJackpotFart,
   playCoinNormal,
   playCoinBonus,
@@ -260,6 +262,8 @@ export function FeedScreen() {
   // Mostra uma fala do Bububu por `duration` ms, depois limpa
   const handlePresentTap = useCallback(() => {
     if (!presentResolveRef.current || presentOpening) return
+    playPresentPop()
+    hapticPresentPop()
     setPresentOpening(true)
     setTimeout(() => {
       setPresentOpening(false)
@@ -1517,12 +1521,14 @@ export function FeedScreen() {
               50%       { transform: scale(1.12); }
             }
             @keyframes present-burst {
-              0%   { transform: scale(1);   opacity: 1; }
-              45%  { transform: scale(1.8); opacity: 0.7; }
-              100% { transform: scale(2.4); opacity: 0; }
+              0%   { transform: scale(1);    opacity: 1;   filter: brightness(1); }
+              12%  { transform: scale(1.9);  opacity: 1;   filter: brightness(2.2); }
+              40%  { transform: scale(2.4);  opacity: 0.5; filter: brightness(1.4); }
+              100% { transform: scale(3.0);  opacity: 0;   filter: brightness(1); }
             }
             @keyframes present-particle {
-              0%   { transform: translate(0, 0) scale(1);   opacity: 1; }
+              0%   { transform: translate(0, 0) scale(1.2); opacity: 1; }
+              15%  { opacity: 1; }
               100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
             }
             @keyframes bt-zoom {

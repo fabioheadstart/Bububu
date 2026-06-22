@@ -635,6 +635,51 @@ const vibe = (pattern: number | number[]) => {
   try { navigator.vibrate?.(pattern) } catch {}
 }
 
+// ─── Present pop — estouro do presente (tap to reveal) ──────────────────────
+// Cork pop + whoosh up + shimmer: satisfatório e imediato
+export function playPresentPop(): void {
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+
+    // 1. Cork pop — ruído impulsivo com filtro (ataque em <5ms)
+    const pop = ac.createBufferSource()
+    pop.buffer = noiseBuffer(ac, 0.08)
+    const popLp = ac.createBiquadFilter(); popLp.type = 'lowpass'; popLp.frequency.value = 2200
+    const popG  = ac.createGain()
+    popG.gain.setValueAtTime(1.2, now)
+    popG.gain.exponentialRampToValueAtTime(0.001, now + 0.07)
+    pop.connect(popLp); popLp.connect(popG); popG.connect(ac.destination)
+    pop.start(now); pop.stop(now + 0.08)
+
+    // 2. Whoosh ascendente — sine 200→1800Hz em 0.18s
+    const whoosh = ac.createOscillator(); whoosh.type = 'sine'
+    whoosh.frequency.setValueAtTime(200, now + 0.01)
+    whoosh.frequency.exponentialRampToValueAtTime(1800, now + 0.19)
+    const whooshG = ac.createGain()
+    whooshG.gain.setValueAtTime(0, now + 0.01)
+    whooshG.gain.linearRampToValueAtTime(0.28, now + 0.04)
+    whooshG.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
+    whoosh.connect(whooshG); whooshG.connect(ac.destination)
+    whoosh.start(now + 0.01); whoosh.stop(now + 0.23)
+
+    // 3. Shimmer — 3 sines agudos em sequência rápida (coins/bells feel)
+    ;[[1047, 0.10], [1319, 0.16], [1568, 0.21]].forEach(([freq, delay]) => {
+      const o = ac.createOscillator(); const g = ac.createGain()
+      o.type = 'sine'; o.frequency.value = freq
+      g.gain.setValueAtTime(0, now + delay)
+      g.gain.linearRampToValueAtTime(0.22, now + delay + 0.008)
+      g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.12)
+      o.connect(g); g.connect(ac.destination)
+      o.start(now + delay); o.stop(now + delay + 0.13)
+    })
+
+    setTimeout(() => ac.close(), 600)
+  } catch {}
+}
+
+export const hapticPresentPop = () => vibe([8, 4, 18, 4, 35])     // pop + shimmer
+
 export const hapticTap     = () => vibe(14)                        // toque suave
 export const hapticBonus   = () => vibe([20, 10, 35])              // duplo
 export const hapticJackpot = () => vibe([30, 12, 55, 12, 100])    // crescente
