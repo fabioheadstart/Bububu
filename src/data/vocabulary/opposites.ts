@@ -52,7 +52,7 @@ export const OPPOSITE_PAIRS: Record<string, string> = {
 
   // espaço / posição
   'up':        'down',       'down':      'up',
-  'left':      'right',      'right':     'left',
+  'left':      'right',
   'inside':    'outside',    'outside':   'inside',
   'near':      'far',        'far':       'near',
   'first':     'last',       'last':      'first',
