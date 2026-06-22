@@ -175,6 +175,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const [showShare, setShowShare]         = useState(false)
   const [showProgress, setShowProgress]   = useState(false)
   const [showPhone, setShowPhone]         = useState(false)
+  const [phoneBadge, setPhoneBadge]       = useState(() => localStorage.getItem('bub_phone_seen') !== new Date().toISOString().slice(0,10))
 
   // Pool de vocabulário desbloqueado para o nível atual
   const pool    = useMemo(() => getUnlockedPool(computedLevel, progress.difficulty), [computedLevel, progress.difficulty])
@@ -885,6 +886,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         mode={progress.mode}
         wordsToday={progress.wordsToday}
         streak={progress.streak}
+        userName={progress.userName}
         onContinue={() => { setShowSatiation(false); setOverLimit(true) }}
         onPlayMemory={progress.wordsLearned.length >= 2
           ? () => { setShowSatiation(false); setMemoryFromSat(true); setShowMemory(true) }
@@ -1010,7 +1012,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         {/* Botão celular — abre o BububuPhone */}
         <div style={{ position: 'relative' }}>
           <button
-            onClick={() => { setShowPhone(true); localStorage.setItem('bub_phone_seen', new Date().toISOString().slice(0,10)) }}
+            onClick={() => { setShowPhone(true); const d = new Date().toISOString().slice(0,10); localStorage.setItem('bub_phone_seen', d); setPhoneBadge(false) }}
             style={{
               width: 26, height: 26, borderRadius: '50%',
               border: `1px solid ${isKids ? 'rgba(45,31,107,0.20)' : 'rgba(255,255,255,0.18)'}`,
@@ -1025,7 +1027,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             📱
           </button>
           {/* Badge de notificação — some depois de abrir hoje */}
-          {localStorage.getItem('bub_phone_seen') !== new Date().toISOString().slice(0,10) && (
+          {phoneBadge && (
             <div style={{
               position: 'absolute', top: -2, right: -2,
               width: 8, height: 8, borderRadius: '50%',

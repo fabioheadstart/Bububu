@@ -6,6 +6,7 @@ interface Props {
   mode:          AppMode
   wordsToday:    number
   streak:        number
+  userName?:     string
   onContinue:    () => void   // continuar com XP reduzido
   onPlayMemory?: () => void   // jogar memory com as palavras do dia
 }
@@ -38,7 +39,7 @@ function useCountdown(targetMs: number) {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
-export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMemory }: Props) {
+export function SatiationScreen({ mode, wordsToday, streak, userName, onContinue, onPlayMemory }: Props) {
   const limit      = DAILY_LIMIT[mode]
   const returnTime = getReturnTime()
   const targetMs   = getMidnightMs()
@@ -124,14 +125,16 @@ export function SatiationScreen({ mode, wordsToday, streak, onContinue, onPlayMe
           color: isKids ? '#92400e' : '#e9d5ff',
           marginBottom: 4, lineHeight: 1.2,
         }}>
-          Bububu está saciado! 🎉
+          {userName ? `Parabéns, ${userName}! 🎉` : 'Bububu está saciado! 🎉'}
         </div>
         <div style={{
           fontSize: 13,
           color: isKids ? 'rgba(120,60,0,0.70)' : 'rgba(196,181,253,0.70)',
           lineHeight: 1.4,
         }}>
-          Você alimentou {wordsToday} de {limit} palavras hoje.
+          {userName
+            ? `Você alimentou o Bububu com ${wordsToday} palavras hoje.`
+            : `Você alimentou ${wordsToday} de ${limit} palavras hoje.`}
           <br />Ótimo trabalho!
         </div>
       </div>
