@@ -1000,7 +1000,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
 
   // Falta X palavras para o próximo estágio visual
   const currentVisStage = getVisualStage(wordCount)
-  const VISUAL_NEXT: Partial<Record<EvolutionStage, number>> = { baby: 5, growing: 15, teen: 40 }
+  const VISUAL_NEXT: Partial<Record<EvolutionStage, number>> = { baby: 10, growing: 50, teen: 150 }
   const wordsUntilNextVisual =
     VISUAL_NEXT[currentVisStage] !== undefined
       ? (VISUAL_NEXT[currentVisStage] as number) - wordCount

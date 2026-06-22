@@ -46,9 +46,9 @@ export function getStage(level: number): EvolutionStage {
 
 /** Estágio visual baseado em palavras aprendidas — responde rápido, independente do CEFR */
 export function getVisualStage(wordCount: number): EvolutionStage {
-  if (wordCount >= 40) return 'adult'
-  if (wordCount >= 15) return 'teen'
-  if (wordCount >= 5)  return 'growing'
+  if (wordCount >= 150) return 'adult'
+  if (wordCount >= 50)  return 'teen'
+  if (wordCount >= 10)  return 'growing'
   return 'baby'
 }
 
