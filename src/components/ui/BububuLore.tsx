@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useTheme } from '@/hooks/useTheme'
 
 export function BububuLore() {
   const [open, setOpen] = useState(false)
+  const { isKids } = useTheme()
 
   return (
     <>
@@ -16,11 +18,11 @@ export function BububuLore() {
           width: 26,
           height: 26,
           borderRadius: '50%',
-          border: '1px solid rgba(255,255,255,0.22)',
-          background: 'rgba(255,255,255,0.08)',
+          border: isKids ? '1px solid rgba(45,31,107,0.22)' : '1px solid rgba(255,255,255,0.22)',
+          background: isKids ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.08)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          color: 'rgba(255,255,255,0.50)',
+          color: isKids ? 'rgba(45,31,107,0.65)' : 'rgba(255,255,255,0.50)',
           fontSize: 13,
           fontWeight: 900,
           cursor: 'pointer',
@@ -33,8 +35,14 @@ export function BububuLore() {
           WebkitTapHighlightColor: 'transparent',
           transition: 'opacity 0.2s, background 0.2s',
         }}
-        onPointerEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; e.currentTarget.style.color = 'rgba(255,255,255,0.80)' }}
-        onPointerLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.50)' }}
+        onPointerEnter={e => {
+          e.currentTarget.style.background = isKids ? 'rgba(255,255,255,0.80)' : 'rgba(255,255,255,0.14)'
+          e.currentTarget.style.color = isKids ? 'rgba(45,31,107,0.90)' : 'rgba(255,255,255,0.80)'
+        }}
+        onPointerLeave={e => {
+          e.currentTarget.style.background = isKids ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.08)'
+          e.currentTarget.style.color = isKids ? 'rgba(45,31,107,0.65)' : 'rgba(255,255,255,0.50)'
+        }}
       >
         ?
       </button>
