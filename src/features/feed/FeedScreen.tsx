@@ -1460,6 +1460,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         level={computedLevel}
         wordsLearned={progress.wordsLearned}
         streak={progress.streak ?? 0}
+        userName={progress.userName}
         isKids={isKids}
       />
 
