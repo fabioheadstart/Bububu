@@ -261,8 +261,10 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const speechTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // ── Easter egg: segura o Bububu ──────────────────────────────────────────────
-  const holdStartRef  = useRef<number | null>(null)
-  const holdRafRef    = useRef<number | null>(null)
+  const holdStartRef       = useRef<number | null>(null)
+  const holdRafRef         = useRef<number | null>(null)
+  const holdChargeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const [holdActive,      setHoldActive]      = useState(false)
   const [bulletTimeWord,  setBulletTimeWord]  = useState<string | null>(null)
   const [bulletTimePhase, setBulletTimePhase] = useState<'off' | 'fly' | 'impact'>('off')
 
@@ -296,7 +298,9 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
 
   fireBulletTimeRef.current = () => {
     cancelAnimationFrame(holdRafRef.current ?? 0)
+    clearTimeout(holdChargeTimerRef.current)
     holdStartRef.current = null
+    setHoldActive(false)
     // bloqueia o click que o browser vai gerar quando o dedo soltar
     suppressNextTapRef.current = true
     setTimeout(() => { suppressNextTapRef.current = false }, 600)
@@ -304,13 +308,19 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     setBulletTimeWord(word.toUpperCase())
     setBulletTimePhase('fly')
     setScreenFlash('#ffffff')
-    setTimeout(() => setScreenFlash(null), 60)
+    setTimeout(() => setScreenFlash(null), 80)
     setTimeout(() => showSpeech(getBubPhrase('bullet_time'), 3500), 2800)
     setTimeout(() => {
       const mouth = getMouthPos()
       triggerXpPop(15, mouth.x, mouth.y - 60, 'bonus')
     }, 3200)
-    setTimeout(() => { setBulletTimePhase('impact'); speakBububuBulletTime() }, 2600)
+    setTimeout(() => {
+      setBulletTimePhase('impact')
+      speakBububuBulletTime()
+      setShakeKey(k => k + 1)
+      setConfettiActive(true)
+      setTimeout(() => setConfettiActive(false), 2200)
+    }, 2600)
     setTimeout(() => { setBulletTimePhase('off'); setBulletTimeWord(null) }, 4200)
   }
 
@@ -324,13 +334,17 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   function handleBubHoldStart() {
     if (feeding.current || holdStartRef.current !== null || bulletTimePhase !== 'off') return
     holdStartRef.current = Date.now()
+    // 400ms de delay antes de mostrar a UI de carga — protege o tap rápido
+    holdChargeTimerRef.current = setTimeout(() => setHoldActive(true), 400)
     holdRafRef.current = requestAnimationFrame(tickHoldRef.current)
   }
 
   function handleBubHoldEnd() {
     if (holdStartRef.current === null) return
     cancelAnimationFrame(holdRafRef.current ?? 0)
+    clearTimeout(holdChargeTimerRef.current)
     holdStartRef.current = null
+    setHoldActive(false)
   }
 
   // Shake: ativa por 420ms cada vez que shakeKey sobe
@@ -1177,8 +1191,56 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           onPointerUp={handleBubHoldEnd}
           onPointerLeave={handleBubHoldEnd}
           onPointerCancel={handleBubHoldEnd}
-          style={{ position: 'relative', display: 'inline-block', touchAction: 'none' }}
+          style={{
+            position: 'relative',
+            display: 'inline-block',
+            touchAction: 'none',
+            animation: holdActive ? 'charge-vibrate 0.10s linear infinite' : undefined,
+            filter: holdActive ? 'drop-shadow(0 0 14px rgba(167,139,250,0.65)) drop-shadow(0 0 30px rgba(251,191,36,0.35))' : undefined,
+            transition: 'filter 0.15s ease',
+          }}
         >
+          {/* Charging ring — só aparece após 400ms de hold */}
+          {holdActive && (
+            <svg
+              width="172" height="192"
+              viewBox="0 0 172 192"
+              style={{
+                position: 'absolute',
+                top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none',
+                zIndex: 10,
+              }}
+            >
+              <defs>
+                <linearGradient id="charge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(167,139,250,0.95)" />
+                  <stop offset="50%" stopColor="rgba(251,191,36,1)" />
+                  <stop offset="100%" stopColor="rgba(167,139,250,0.95)" />
+                </linearGradient>
+              </defs>
+              {/* Track fantasma */}
+              <circle
+                cx="86" cy="96" r="80"
+                stroke="rgba(167,139,250,0.15)"
+                strokeWidth="4"
+                fill="none"
+              />
+              {/* Ring animado */}
+              <circle
+                cx="86" cy="96" r="80"
+                stroke="url(#charge-grad)"
+                strokeWidth="5"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray="503"
+                strokeDashoffset="503"
+                transform="rotate(-90 86 96)"
+                style={{ animation: 'charge-fill 2600ms linear forwards' }}
+              />
+            </svg>
+          )}
           <BububuCharacter
             state={activeBubState}
             rewardTier={result?.rewardTier}
@@ -1683,31 +1745,69 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         <>
           <style>{`
             @keyframes bt-zoom {
-              from { opacity:0; transform:scale(0.05) rotate(-8deg); filter:blur(6px); }
-              to   { opacity:1; transform:scale(1)    rotate(0deg);  filter:blur(0);  }
+              0%   { opacity:0; transform:scale(0.04) rotate(-12deg); filter:blur(12px) brightness(3); letter-spacing:60px; }
+              60%  { opacity:1; transform:scale(1.08) rotate(1deg);   filter:blur(0)    brightness(1.2); letter-spacing:6px; }
+              100% { opacity:1; transform:scale(1)    rotate(0deg);   filter:blur(0)    brightness(1); letter-spacing:6px; }
             }
             @keyframes bt-impact {
-              0%   { transform:scale(1);   opacity:1; filter:brightness(1); }
-              35%  { transform:scale(1.5); opacity:1; filter:brightness(2.5); }
-              100% { transform:scale(2.5); opacity:0; filter:brightness(1); }
+              0%   { transform:scale(1);    opacity:1; letter-spacing:6px;  filter:brightness(1); }
+              25%  { transform:scale(1.18); opacity:1; letter-spacing:22px; filter:brightness(2.2); }
+              60%  { transform:scale(2.8);  opacity:0.4; letter-spacing:40px; filter:brightness(1.4) blur(2px); }
+              100% { transform:scale(4);    opacity:0; letter-spacing:60px; filter:brightness(1)   blur(6px); }
+            }
+            @keyframes bt-scanlines {
+              0%   { background-position: 0 0; }
+              100% { background-position: 0 6px; }
+            }
+            @keyframes bt-bg-pulse {
+              0%, 100% { opacity: 0.90; }
+              50%       { opacity: 1.00; }
             }
           `}</style>
+
+          {/* Fundo: radial escuro nas bordas, roxo no centro */}
           <div style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.85) 0%, rgba(3,0,20,0.97) 100%)',
             zIndex: 9990,
+            pointerEvents: 'none',
+            animation: 'bt-bg-pulse 1.8s ease-in-out infinite',
+          }} />
+
+          {/* Scanlines VHS */}
+          <div style={{
+            position: 'fixed', inset: 0,
+            zIndex: 9991,
+            pointerEvents: 'none',
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.28) 3px, rgba(0,0,0,0.28) 6px)',
+            backgroundSize: '100% 6px',
+            animation: 'bt-scanlines 0.10s linear infinite',
+            mixBlendMode: 'multiply',
+          }} />
+
+          {/* Palavra */}
+          <div style={{
+            position: 'fixed', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9992,
             pointerEvents: 'none',
           }}>
             <div style={{
-              fontSize: 52, fontWeight: 900,
+              fontSize: 76, fontWeight: 900,
               color: '#ffffff',
               letterSpacing: 6,
-              textShadow: '0 0 40px rgba(251,191,36,0.9), 0 0 80px rgba(251,191,36,0.4)',
-              willChange: 'transform, opacity, filter',
+              fontFamily: 'system-ui, sans-serif',
+              textTransform: 'uppercase',
+              textShadow: [
+                '-4px 0 rgba(255,50,50,0.90)',
+                '4px 0 rgba(0,200,255,0.90)',
+                '0 0 50px rgba(251,191,36,0.85)',
+                '0 0 100px rgba(167,139,250,0.60)',
+              ].join(', '),
+              willChange: 'transform, opacity, filter, letter-spacing',
               animation: bulletTimePhase === 'fly'
                 ? 'bt-zoom 2.5s cubic-bezier(0.12,0,0.04,1) forwards'
-                : 'bt-impact 0.55s ease-out forwards',
+                : 'bt-impact 0.60s cubic-bezier(0.22,1,0.36,1) forwards',
             }}>
               {bulletTimeWord}
             </div>

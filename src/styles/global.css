@@ -476,6 +476,23 @@ body {
   100% { transform: translate(-50%, var(--poop-drop-y))                scale(1.0)  rotate(0deg); opacity: 1; }
 }
 
+/* ── Bullet time — charge ring + vibrate ────────────────────────────────────── */
+
+/* Ring SVG stroke fill: r=80, circumference≈503 */
+@keyframes charge-fill {
+  from { stroke-dashoffset: 503; }
+  to   { stroke-dashoffset: 0;   }
+}
+
+/* Bububu vibra levemente durante o carregamento */
+@keyframes charge-vibrate {
+  0%,100% { transform: translate(0, 0)       rotate(0deg);    }
+  20%      { transform: translate(-1.5px, 0.5px) rotate(-0.4deg); }
+  40%      { transform: translate(1px,  -1px)    rotate(0.3deg);  }
+  60%      { transform: translate(-0.5px, 1px)   rotate(-0.2deg); }
+  80%      { transform: translate(1.5px,-0.5px)  rotate(0.4deg);  }
+}
+
 /* ── Present (🎁) — slide-in, float idle, burst, particles ─────────────────── */
 
 /* Entrada: desliza de baixo com spring */
