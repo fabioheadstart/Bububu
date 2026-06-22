@@ -1065,13 +1065,15 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         <button
           onClick={() => setShowShare(true)}
           style={{
-            width: 26, height: 26, borderRadius: '50%',
-            border: `1px solid ${isKids ? 'rgba(45,31,107,0.20)' : 'rgba(255,255,255,0.18)'}`,
-            background: isKids ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.07)',
-            color: isKids ? 'rgba(45,31,107,0.60)' : 'rgba(255,255,255,0.45)',
-            fontSize: 13, cursor: 'pointer',
+            width: isKids ? 32 : 26, height: isKids ? 32 : 26, borderRadius: '50%',
+            border: `1.5px solid ${isKids ? 'rgba(45,31,107,0.30)' : 'rgba(255,255,255,0.18)'}`,
+            background: isKids ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.07)',
+            color: isKids ? 'rgba(45,31,107,0.85)' : 'rgba(255,255,255,0.45)',
+            fontSize: isKids ? 15 : 13, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 0,
+            boxShadow: isKids ? '0 2px 6px rgba(0,0,0,0.10)' : 'none',
+            WebkitTapHighlightColor: 'transparent',
           }}
           title="Compartilhar progresso"
         >
@@ -1083,18 +1085,19 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           <button
             onClick={() => setShowSettings(s => !s)}
             style={{
-              width: 26, height: 26, borderRadius: '50%',
-              border: `1px solid ${isKids ? 'rgba(45,31,107,0.20)' : 'rgba(255,255,255,0.18)'}`,
-              background: isKids ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.07)',
-              color: isKids ? 'rgba(45,31,107,0.60)' : 'rgba(255,255,255,0.45)',
-              fontSize: 13, cursor: 'pointer',
+              width: isKids ? 32 : 26, height: isKids ? 32 : 26, borderRadius: '50%',
+              border: `1.5px solid ${isKids ? 'rgba(45,31,107,0.30)' : 'rgba(255,255,255,0.18)'}`,
+              background: isKids ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.07)',
+              color: isKids ? 'rgba(45,31,107,0.85)' : 'rgba(255,255,255,0.45)',
+              fontSize: isKids ? 15 : 13, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 0,
+              boxShadow: isKids ? '0 2px 6px rgba(0,0,0,0.10)' : 'none',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
             ⚙️
           </button>
-
         </div>
       </div>
 
@@ -1142,7 +1145,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
         </div>
 
         {/* ── WorldSwitcher flutuante — canto esquerdo da cena (Kids) ── */}
-        {isKids && unlockedWorlds.length > 1 && (
+        {isKids && (
           <div style={{ position: 'absolute', left: 10, top: '18%', zIndex: 5 }}>
             <WorldSwitcher
               activeWorld={activeWorld}

@@ -188,85 +188,68 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false, justMaste
         {entry.translation}
       </div>
 
-      {/* ── Exemplo: context_bonus recebe story card especial ── */}
-      {isBonus ? (
+      {/* ── Card de contexto — sempre visível, destaque varia por tier ── */}
+      <div style={{
+        marginTop: 10,
+        width: '100%',
+        maxWidth: 310,
+        background: isBonus
+          ? (isKids ? 'rgba(255,255,255,0.60)' : `${catColor.bg}20`)
+          : (isKids ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.06)'),
+        border: `1.5px solid ${isBonus
+          ? (isKids ? catColor.ring + '66' : catColor.ring + '55')
+          : (isKids ? 'rgba(45,31,107,0.14)' : 'rgba(255,255,255,0.10)')}`,
+        borderRadius: 14,
+        padding: '10px 14px 9px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        animation: 'fadeSlideUp 0.42s ease 0.45s both',
+        boxShadow: isBonus
+          ? (isKids ? '0 2px 10px rgba(0,0,0,0.07)' : `0 2px 12px ${catColor.bg}30`)
+          : 'none',
+      }}>
+        {/* Header */}
         <div style={{
-          marginTop: 10,
-          width: '100%',
-          maxWidth: 310,
-          background: isKids
-            ? 'rgba(255,255,255,0.55)'
-            : `${catColor.bg}18`,
-          border: `1.5px solid ${isKids ? catColor.ring + '55' : catColor.ring + '44'}`,
-          borderRadius: 14,
-          padding: '10px 14px 9px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          animation: 'fadeSlideUp 0.42s ease 0.45s both',
+          display: 'flex', alignItems: 'center', gap: 5,
+          fontSize: 10, fontWeight: 800, letterSpacing: 1,
+          color: isBonus
+            ? catColor.ring
+            : (isKids ? 'rgba(45,31,107,0.40)' : 'rgba(255,255,255,0.30)'),
+          textTransform: 'uppercase',
         }}>
-          {/* Header do card */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            fontSize: 10, fontWeight: 800, letterSpacing: 1,
-            color: catColor.ring,
-            textTransform: 'uppercase',
-            opacity: 0.85,
-          }}>
-            <span style={{ fontSize: 13 }}>❓</span>
-            como usar
-          </div>
-          {/* Frase em inglês */}
-          <div style={{
-            fontSize: isKids ? 13 : 14,
-            color: isKids ? '#2D1F6B' : '#e9d5ff',
-            fontWeight: 600,
-            lineHeight: 1.4,
-            fontStyle: 'italic',
-          }}>
-            "{entry.exampleSentence}"
-          </div>
-          {/* Tradução */}
-          <div style={{
-            fontSize: isKids ? 11 : 12,
-            color: isKids ? 'rgba(45,31,107,0.55)' : 'rgba(196,181,253,0.55)',
-            lineHeight: 1.35,
-          }}>
-            {entry.exampleTranslation}
-          </div>
+          <span style={{ fontSize: 12 }}>❓</span>
+          como usar
+          {isBonus && (
+            <span style={{
+              marginLeft: 'auto', fontSize: 9, fontWeight: 900,
+              color: catColor.ring, letterSpacing: 0.5,
+            }}>✨ bônus</span>
+          )}
         </div>
-      ) : (
-        <>
-          {/* ── Linha 3: exemplo em inglês (tier normal/jackpot) ── */}
-          <div style={{
-            fontSize: isKids ? 14 : 15,
-            color: exampleColor,
-            textAlign: 'center',
-            maxWidth: 310,
-            lineHeight: 1.45,
-            marginTop: 6,
-            fontWeight: 500,
-            letterSpacing: 0.1,
-            animation: 'fadeSlideUp 0.4s ease 0.50s both',
-          }}>
-            "{entry.exampleSentence}"
-          </div>
-
-          {/* ── Linha 4: tradução do exemplo ── */}
-          <div style={{
-            fontSize: isKids ? 12 : 13,
-            color: exampleTransColor,
-            textAlign: 'center',
-            maxWidth: 310,
-            lineHeight: 1.4,
-            marginTop: 3,
-            fontStyle: 'italic',
-            animation: 'fadeSlideUp 0.4s ease 0.65s both',
-          }}>
-            {entry.exampleTranslation}
-          </div>
-        </>
-      )}
+        {/* Frase em inglês */}
+        <div style={{
+          fontSize: isKids ? 13 : 14,
+          color: isBonus
+            ? (isKids ? '#2D1F6B' : '#e9d5ff')
+            : exampleColor,
+          fontWeight: isBonus ? 600 : 500,
+          lineHeight: 1.4,
+          fontStyle: 'italic',
+        }}>
+          "{entry.exampleSentence}"
+        </div>
+        {/* Tradução */}
+        <div style={{
+          fontSize: isKids ? 11 : 12,
+          color: isBonus
+            ? (isKids ? 'rgba(45,31,107,0.55)' : 'rgba(196,181,253,0.60)')
+            : exampleTransColor,
+          lineHeight: 1.35,
+        }}>
+          {entry.exampleTranslation}
+        </div>
+      </div>
 
     </div>
   )
