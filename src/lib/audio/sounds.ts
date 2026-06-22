@@ -740,6 +740,82 @@ export function playNavTap(): void {
   } catch {}
 }
 
+// ─── Bullet time impact — Street Fighter ultra-move style (3 camadas) ────────
+export function playBulletTimeImpact(): void {
+  try {
+    const ac  = actx()
+    const now = ac.currentTime
+
+    // ── Camada 1: Bass boom — sine pesado caindo de 90Hz → 22Hz ──────────────
+    const bass  = ac.createOscillator()
+    const bassG = ac.createGain()
+    const dist  = ac.createWaveShaper()
+    // Distorção leve para dar "corpo" ao bass
+    const curve = new Float32Array(256)
+    for (let i = 0; i < 256; i++) {
+      const x = (i * 2) / 256 - 1
+      curve[i] = (Math.PI + 300) * x / (Math.PI + 300 * Math.abs(x))
+    }
+    dist.curve = curve
+    bass.type = 'sine'
+    bass.frequency.setValueAtTime(90, now)
+    bass.frequency.exponentialRampToValueAtTime(22, now + 0.55)
+    bassG.gain.setValueAtTime(0, now)
+    bassG.gain.linearRampToValueAtTime(0.95, now + 0.018)   // ataque instantâneo
+    bassG.gain.exponentialRampToValueAtTime(0.001, now + 0.70)
+    bass.connect(dist); dist.connect(bassG); bassG.connect(ac.destination)
+    bass.start(now); bass.stop(now + 0.72)
+
+    // ── Camada 2: Impact crack — sawtooth cortante, burst de 55ms ─────────────
+    const crack  = ac.createOscillator()
+    const crackG = ac.createGain()
+    const crackD = ac.createWaveShaper()
+    const curve2 = new Float32Array(256)
+    for (let i = 0; i < 256; i++) {
+      const x = (i * 2) / 256 - 1
+      curve2[i] = x < 0 ? -1 : 1   // hard clip = crunch máximo
+    }
+    crackD.curve = curve2
+    crack.type = 'sawtooth'
+    crack.frequency.setValueAtTime(220, now)
+    crack.frequency.exponentialRampToValueAtTime(55, now + 0.055)
+    crackG.gain.setValueAtTime(0, now)
+    crackG.gain.linearRampToValueAtTime(0.55, now + 0.005)
+    crackG.gain.exponentialRampToValueAtTime(0.001, now + 0.058)
+    crack.connect(crackD); crackD.connect(crackG); crackG.connect(ac.destination)
+    crack.start(now); crack.stop(now + 0.06)
+
+    // ── Camada 3: Power shimmer — harmônicos agudos com reverb simulado ────────
+    // 3a: sweep ascendente (a "energia se soltando")
+    const sweep  = ac.createOscillator()
+    const sweepG = ac.createGain()
+    sweep.type = 'triangle'
+    sweep.frequency.setValueAtTime(180, now)
+    sweep.frequency.exponentialRampToValueAtTime(1800, now + 0.30)
+    sweepG.gain.setValueAtTime(0, now)
+    sweepG.gain.linearRampToValueAtTime(0.30, now + 0.012)
+    sweepG.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
+    sweep.connect(sweepG); sweepG.connect(ac.destination)
+    sweep.start(now); sweep.stop(now + 0.36)
+
+    // 3b: shimmer agudo com decay — simula reverb/arena echo
+    ;[2200, 3100, 4400].forEach((freq, i) => {
+      const sh  = ac.createOscillator()
+      const shG = ac.createGain()
+      sh.type = 'sine'
+      sh.frequency.setValueAtTime(freq, now + 0.02)
+      sh.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.80)
+      shG.gain.setValueAtTime(0, now + 0.02)
+      shG.gain.linearRampToValueAtTime(0.12 - i * 0.03, now + 0.035)
+      shG.gain.exponentialRampToValueAtTime(0.001, now + 0.75 + i * 0.15)
+      sh.connect(shG); shG.connect(ac.destination)
+      sh.start(now + 0.02); sh.stop(now + 0.95)
+    })
+
+    setTimeout(() => ac.close(), 1200)
+  } catch {}
+}
+
 // ─── Menu hover blip (desktop only) ──────────────────────────────────────────
 export function playMenuHover(): void {
   if (!window.matchMedia('(hover: hover)').matches) return

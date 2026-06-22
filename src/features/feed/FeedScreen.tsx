@@ -22,6 +22,7 @@ import {
   playFartBonus,
   playFartJackpot,
   playBububuSuper,
+  playBulletTimeImpact,
   playPresentPop,
   hapticPresentPop,
   preloadJackpotFart,
@@ -329,6 +330,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     const word = result?.entry.word ?? lastFedWords.current.at(-1)?.word ?? 'bububu'
     setBulletTimeWord(word.toUpperCase())
     setBulletTimePhase('fly')
+    playBulletTimeImpact()                                   // boom no t=0 — sincronizado com a palavra
     setScreenFlash('#ffffff')
     setTimeout(() => setScreenFlash(null), 80)
     setTimeout(() => showSpeech(getBubPhrase('bullet_time'), 3500), 2800)
@@ -338,7 +340,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     }, 3200)
     setTimeout(() => {
       setBulletTimePhase('impact')
-      speakBububuBulletTime()
+      speakBububuBulletTime()                               // voz grave do Bububu como "eco" do impacto
       setShakeKey(k => k + 1)
       setConfettiActive(true)
       setTimeout(() => setConfettiActive(false), 2200)
