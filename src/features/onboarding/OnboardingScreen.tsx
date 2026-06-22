@@ -364,4 +364,65 @@ export function OnboardingScreen({ onComplete }: Props) {
 
         {/* ── Step 3: Qual é o seu nível? ── */}
         {step === 3 && (
-          <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirectio
+          <div className="slide-in" style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
+            <p style={{ fontWeight: 700, fontSize: 17, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
+              Qual é o seu nível?
+            </p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '-6px 0 4px', textAlign: 'center' }}>
+              Você pode mudar isso a qualquer hora durante o jogo.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+              {DIFFICULTIES.map(card => (
+                <button
+                  key={card.difficulty}
+                  className="onb-card"
+                  onMouseEnter={playMenuHover}
+                  onClick={() => handleDifficultyChoose(card.difficulty)}
+                  style={{
+                    width: '100%',
+                    background: card.glow,
+                    border: `2px solid ${card.border}`,
+                    borderRadius: 18,
+                    padding: '18px 20px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16,
+                    boxShadow: `0 4px 16px ${card.glow}`,
+                  }}
+                >
+                  <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>{card.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 800, fontSize: 18, color: card.accent }}>{card.title}</div>
+                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>{card.sub}</div>
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 18 }}>›</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Back / hint ── */}
+        {step === 3 && (
+          <button
+            onClick={() => setStep(2)}
+            style={{
+              background: 'none', border: 'none',
+              color: 'rgba(255,255,255,0.35)', fontSize: 13,
+              cursor: 'pointer', padding: '2px 0',
+            }}
+          >
+            ← voltar
+          </button>
+        )}
+        {step === 2 && (
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+            Você pode mudar isso depois nas configurações.
+          </p>
+        )}
+      </div>
+    </>
+  )
+}

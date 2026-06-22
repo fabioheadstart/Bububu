@@ -140,6 +140,14 @@ const THOUGHTS = [
   'São Sebastião pra mundo — esse é o plano',
 ]
 
+const THOUGHTS_NAMED = (name: string) => [
+  `${name}, cada palavra é um passo pra fora daqui`,
+  `continua me alimentando, ${name}`,
+  `${name}, você tá mais perto do que pensa`,
+  `São Sebastião pra mundo — é nós, ${name}`,
+  `${name}, o Vini Jr. não parou. você também não para`,
+]
+
 // ── Sino da Igreja — dispara às :00 e :30 de cada hora ───────────────────────
 const SINO_PHRASES = [
   'bong! o sino tocou. hora de aprender mais uma 🔔',
@@ -148,6 +156,12 @@ const SINO_PHRASES = [
   'o sino chamou. ele tá do nosso lado 🔔',
   'bong bong! São Sebastião acordou. e você?',
   'o sino é pontual. seja como o sino 🔔',
+]
+
+const SINO_NAMED = (name: string) => [
+  `bong! o sino tocou, ${name}. vamos! 🔔`,
+  `${name}, o sino chamou. ele não mente ⛪`,
+  `meia hora, ${name}. me alimenta aí 🔔`,
 ]
 
 // ── API pública ────────────────────────────────────────────────────────────────
@@ -209,6 +223,7 @@ export function getBubPhrase(
   word?: string,
   stage?: string,
   category?: string,
+  userName?: string,
 ): string {
   switch (trigger) {
     case 'idle_normal':  return pick(IDLE_NORMAL)
@@ -220,4 +235,22 @@ export function getBubPhrase(
       return pick(EAT_NORMAL)
     }
     case 'eat_review':   return pick(EAT_REVIEW)
-    case 'eat_
+    case 'eat_jackpot':  return pick(EAT_JACKPOT)
+    case 'eat_context':  return pick(EAT_CONTEXT)
+    case 'eat_craving':  return pick(EAT_CRAVING)
+    case 'bullet_time':  return pick(BULLET_TIME)
+    case 'mastery':      return word ? MASTERY_PHRASES(word) : pick(EAT_NORMAL)
+    case 'combo_trio':   return pick(COMBO_TRIO)
+    case 'combo_vs':     return pick(COMBO_VS)
+    case 'combo_konami': return pick(COMBO_KONAMI)
+    case 'thought':
+      // 35% de chance de usar o nome quando disponível
+      if (userName && Math.random() < 0.35) return pick(THOUGHTS_NAMED(userName))
+      return pick(THOUGHTS)
+    case 'evolution':    return stage ? pick(EVOLUTION_PHRASES[stage] ?? EVOLUTION_PHRASES.growing) : 'cresci!'
+    case 'sino':
+      // 40% de chance de usar o nome no sino
+      if (userName && Math.random() < 0.40) return pick(SINO_NAMED(userName))
+      return pick(SINO_PHRASES)
+  }
+}

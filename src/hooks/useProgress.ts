@@ -144,4 +144,48 @@ export function useProgress(): UseProgressReturn {
     const newReviewCount    = isNew ? 0 : prevReviewCount + 1
     const justMastered      = !isNew && !alreadyMastered && newReviewCount >= MASTERY_THRESHOLD
 
-    const wordRevie
+    const wordReviewCounts = isNew
+      ? prev.wordReviewCounts
+      : { ...prev.wordReviewCounts, [entry.id]: newReviewCount }
+
+    const masteredWords = justMastered
+      ? [...prev.masteredWords, entry.id]
+      : prev.masteredWords
+
+    const updated: UserProgress = {
+      ...prev,
+      wordsLearned,
+      wordReviewCounts,
+      masteredWords,
+      bububuLevel:  computeLevel(wordsLearned),
+      lastFedAt:    Date.now(),
+      wordsToday:   wordsTodayAfter,
+      lastFeedDate: today,
+      ...updateStreak(prev),
+    }
+    setProgress(updated)
+
+    return { isNew, wordsToday: wordsTodayAfter, justSatiated, overLimit, justMastered, reviewCount: newReviewCount }
+  }, [])
+
+  const setMode = useCallback((mode: AppMode) => {
+    setProgress({ ...getProgress(), mode })
+  }, [])
+
+  const setDifficulty = useCallback((difficulty: DifficultyLevel) => {
+    setProgress({ ...getProgress(), difficulty })
+  }, [])
+
+  const setUserName = useCallback((name: string) => {
+    setProgress({ ...getProgress(), userName: name.trim() })
+  }, [])
+
+  const resetProgress = useCallback(() => {
+    clearProgress()
+    setProgress(loadProgress())
+  }, [])
+
+  const wordsUntilNextStage = computeWordsUntilNextStage(progress.wordsLearned)
+
+  return { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, setUserName, resetProgress, wordsUntilNextStage }
+}

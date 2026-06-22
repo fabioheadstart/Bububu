@@ -721,4 +721,9 @@ export function playMenuHover(): void {
     o.frequency.exponentialRampToValueAtTime(1040, now + 0.04)
     g.gain.setValueAtTime(0, now)
     g.gain.linearRampToValueAtTime(0.14, now + 0.008)
-    g.gain.exponentialRam
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.055)
+    o.connect(g); g.connect(ac.destination)
+    o.start(now); o.stop(now + 0.06)
+    setTimeout(() => ac.close(), 200)
+  } catch {}
+}
