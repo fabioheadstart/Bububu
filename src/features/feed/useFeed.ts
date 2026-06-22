@@ -6,10 +6,10 @@ export function useFeed() {
   const [lastResult, setLastResult] = useState<FeedResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const feedWord = useCallback(async (entry: VocabEntry) => {
+  const feedWord = useCallback(async (entry: VocabEntry, overrideTier?: RewardTier) => {
     setIsLoading(true)
     // TODO: integrar com API de pronúncia
-    const rewardTier = rollRewardTier()
+    const rewardTier = overrideTier ?? rollRewardTier()
     const result: FeedResult = {
       entry,
       rewardTier,

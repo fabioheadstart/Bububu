@@ -28,17 +28,27 @@ interface Props {
   onTap?: () => void
   onMegaFart?: () => void   // callback para tocar sons na FeedScreen
   hungry?: boolean
-  level?: number            // nível atual — define estágio de evolução
+  level?: number            // nível CEFR — fallback quando wordCount não fornecido
+  wordCount?: number        // palavras aprendidas — controla estágio visual (preferencial)
   jackpotKey?: number       // incrementar para disparar explosão jackpot
 }
 
 // ── Estágios de evolução ───────────────────────────────────────────────────────
 export type EvolutionStage = 'baby' | 'growing' | 'teen' | 'adult'
 
+/** Estágio baseado em nível CEFR — usado para voz e desbloqueio de conteúdo */
 export function getStage(level: number): EvolutionStage {
   if (level >= 15) return 'adult'
   if (level >= 10) return 'teen'
   if (level >= 5)  return 'growing'
+  return 'baby'
+}
+
+/** Estágio visual baseado em palavras aprendidas — responde rápido, independente do CEFR */
+export function getVisualStage(wordCount: number): EvolutionStage {
+  if (wordCount >= 40) return 'adult'
+  if (wordCount >= 15) return 'teen'
+  if (wordCount >= 5)  return 'growing'
   return 'baby'
 }
 
@@ -47,8 +57,8 @@ const STAGE_CONFIG: Record<EvolutionStage, {
   baseColor: string
   eyeScale: number
 }> = {
-  baby:    { scale: 0.88, baseColor: '#ddd6fe', eyeScale: 0.85 },
-  growing: { scale: 0.94, baseColor: '#c4b5fd', eyeScale: 0.93 },
+  baby:    { scale: 0.52, baseColor: '#ddd6fe', eyeScale: 0.65 },  // visivelmente pequeno
+  growing: { scale: 0.72, baseColor: '#c4b5fd', eyeScale: 0.82 },  // crescendo
   teen:    { scale: 1.00, baseColor: '#a78bfa', eyeScale: 1.00 },
   adult:   { scale: 1.00, baseColor: '#8b5cf6', eyeScale: 1.00 },
 }
@@ -212,8 +222,8 @@ function Eyes({ state, squeezed, hungry }: { state: BubState; squeezed: boolean;
   )
 }
 
-export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, level = 1, jackpotKey = 0 }: Props) {
-  const stage  = getStage(level)
+export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, level = 1, wordCount, jackpotKey = 0 }: Props) {
+  const stage  = wordCount !== undefined ? getVisualStage(wordCount) : getStage(level)
   const stageCfg = STAGE_CONFIG[stage]
   const [tapReaction, setTapReaction]   = useState<TapReaction | null>(null)
   const [particles, setParticles]       = useState<Particle[]>([])

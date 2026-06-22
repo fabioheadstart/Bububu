@@ -11,7 +11,7 @@ import { XpBar } from '@/components/ui/XpBar'
 import { LevelUpOverlay } from '@/components/ui/LevelUpOverlay'
 import { ComboOverlay } from '@/components/ui/ComboOverlay'
 import type { ComboData } from '@/components/ui/ComboOverlay'
-import { BububuCharacter, getStage } from '@/components/bububu/BububuCharacter'
+import { BububuCharacter, getStage, getVisualStage } from '@/components/bububu/BububuCharacter'
 import { useFeed } from '@/features/feed/useFeed'
 import { useBububuVoice, useAudio } from '@/lib/audio/useAudio'
 import {
@@ -65,7 +65,7 @@ import { getUnlockedPool, getNewlyUnlockedCategories, getTutorialChips } from '@
 import { QuizOptions } from '@/components/ui/QuizOptions'
 import { ALL_WORDS } from '@/data/vocabulary/index'
 import type { BubState } from '@/components/bububu/BububuCharacter'
-import type { FeedResult, VocabEntry } from '@/types'
+import type { FeedResult, VocabEntry, RewardTier } from '@/types'
 
 // ─── Fome do dia — categoria que o Bububu quer comer hoje ────────────────────
 const CRAVING_CATS = ['food', 'actions', 'adjectives', 'time', 'transport', 'animals', 'colors', 'home', 'phrases']
@@ -255,6 +255,9 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const popId            = useRef(0)
   const feeding          = useRef(false)
   const prevLevel        = useRef(computedLevel)
+  // Primeira sessão: wordCount = 0 no mount → script de onboarding ativo
+  const isFirstSession   = useRef(progress.wordsLearned.length === 0)
+  const prevVisualStage  = useRef(getVisualStage(progress.wordsLearned.length))
   const lastFedWords     = useRef<VocabEntry[]>([])
   const konamiProgress   = useRef(0)
   const chipsRef         = useRef<VocabEntry[]>([])
@@ -387,7 +390,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   // Preload do peido jackpot via ElevenLabs (faz uma só vez no mount)
   useEffect(() => { void preloadJackpotFart() }, [])
 
-  // Detecta mudança de estágio de evolução durante a sessão
+  // Detecta mudança de estágio de evolução (CEFR) durante a sessão
   useEffect(() => {
     const newStage = getStage(computedLevel)
     if (newStage !== prevStageRef.current) {
@@ -395,6 +398,21 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       prevStageRef.current = newStage
     }
   }, [computedLevel])
+
+  // Detecta mudança de estágio VISUAL (word-count) — evolução baby→growing→teen→adult
+  useEffect(() => {
+    const wordCount   = progress.wordsLearned.length
+    const newVisStage = getVisualStage(wordCount)
+    if (newVisStage !== prevVisualStage.current) {
+      prevVisualStage.current = newVisStage
+      // Dispara animação de evolução visual com flash e celebração
+      setEvolutionStage(newVisStage)
+      setScreenFlash('rgba(192,132,252,0.35)')
+      setTimeout(() => setScreenFlash(null), 600)
+      showSpeech(getBubPhrase('evolution', undefined, newVisStage, undefined, progress.userName), 3500)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [progress.wordsLearned.length])
 
   // Fome na abertura — se não alimentou nada hoje, Bububu pede logo
   useEffect(() => {
@@ -523,6 +541,31 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Sino de boas-vindas — só na primeira sessão, dispara em 45s
+  useEffect(() => {
+    if (!isFirstSession.current) return
+    const t = setTimeout(() => {
+      playChurchBell(1)
+      clearTimeout(bellTimerRef.current)
+      setBellsVisible(true)
+      bellTimerRef.current = setTimeout(() => setBellsVisible(false), 3500)
+      setTimeout(() => {
+        if (!feeding.current) showSpeech(getBubPhrase('sino', undefined, undefined, undefined, progress.userName), 3800)
+      }, 800)
+    }, 45_000)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /** Script da primeira sessão: garante recompensas específicas nas primeiras palavras */
+  function getFirstSessionOverride(wordCountBeforeFeed: number): RewardTier | undefined {
+    if (!isFirstSession.current) return undefined
+    if (wordCountBeforeFeed === 0) return 'context_bonus'  // palavra 1: bônus garantido
+    if (wordCountBeforeFeed === 2) return 'context_bonus'  // palavra 3: bônus garantido
+    if (wordCountBeforeFeed === 4) return 'jackpot'        // palavra 5: jackpot — coincide com evolução baby→growing
+    return undefined
+  }
+
   const { isSleeping, hoursHungry } = usePetState(progress.mode, progress.lastFedAt)
 
   // Fala de fome — dispara quando muda para estado faminto
@@ -637,11 +680,12 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
     })
 
     // Busca o resultado em paralelo com a animação
+    const wordCountBeforeFeed = progress.wordsLearned.length
     const { isNew, wordsToday: todayCount, justSatiated, overLimit: isOver, justMastered: isMastered } = recordWord(entry)
     setIsReview(!isNew)
     setOverLimit(isOver)
     setJustMastered(isMastered)
-    const feedResultPromise = feedWord(entry)
+    const feedResultPromise = feedWord(entry, getFirstSessionOverride(wordCountBeforeFeed))
 
     // ── t0 + 380ms: chip na boca ─────────────────────────────────────────────
     await delay(380)
@@ -1309,6 +1353,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             state={activeBubState}
             rewardTier={result?.rewardTier}
             level={computedLevel}
+            wordCount={progress.wordsLearned.length}
             jackpotKey={jackpotKey}
             onTap={() => {
               if (suppressNextTapRef.current) return
