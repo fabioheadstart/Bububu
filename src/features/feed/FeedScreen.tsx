@@ -961,6 +961,14 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const streak    = progress.streak
   const isFeeding = flyingId !== null
 
+  // Falta X palavras para o próximo estágio visual
+  const currentVisStage = getVisualStage(wordCount)
+  const VISUAL_NEXT: Partial<Record<EvolutionStage, number>> = { baby: 5, growing: 15, teen: 40 }
+  const wordsUntilNextVisual =
+    VISUAL_NEXT[currentVisStage] !== undefined
+      ? (VISUAL_NEXT[currentVisStage] as number) - wordCount
+      : null
+
   // Mapeia fome → visual do Bububu quando idle
   const idleMood = (): BubState => {
     if (forceAwake && isSleeping) return 'yawning'
@@ -1371,6 +1379,23 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             hungry={isHungryIdle}
           />
         </div>
+
+        {/* Falta X palavras para evoluir — some ao atingir adulto */}
+        {wordsUntilNextVisual !== null && wordsUntilNextVisual > 0 && (
+          <div style={{
+            fontSize: 11, fontWeight: 800, letterSpacing: 0.3,
+            color: isKids ? 'rgba(45,31,107,0.45)' : 'rgba(255,255,255,0.30)',
+            padding: '3px 11px', borderRadius: 99,
+            background: isKids ? 'rgba(45,31,107,0.06)' : 'rgba(255,255,255,0.05)',
+            border: `1px solid ${isKids ? 'rgba(45,31,107,0.10)' : 'rgba(255,255,255,0.08)'}`,
+            marginTop: 2, whiteSpace: 'nowrap',
+            pointerEvents: 'none', userSelect: 'none',
+          }}>
+            {currentVisStage === 'baby' ? '🥚' : currentVisStage === 'growing' ? '🌱' : '🌿'}
+            {' '}+{wordsUntilNextVisual} para evoluir
+          </div>
+        )}
+
         {xpPops.map(pop => createPortal(
           <div key={pop.id} style={{
             position: 'fixed',
