@@ -68,6 +68,10 @@ export function useBububuVoice(stage: EvolutionStage = 'teen') {
     const rate = STAGE_RATE[stage]
     if (!audioRef.current) audioRef.current = new Audio('/audio/bububu.mp3')
     audioRef.current.playbackRate = rate
+    // Sem isso o browser corrige o pitch ao mudar playbackRate — filhote soaria normal
+    audioRef.current.preservesPitch = false
+    ;(audioRef.current as any).mozPreservesPitch    = false
+    ;(audioRef.current as any).webkitPreservesPitch = false
     audioRef.current.currentTime  = 0
     audioRef.current.play().catch(() => {
       if (!('speechSynthesis' in window)) return
