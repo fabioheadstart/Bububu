@@ -51,6 +51,7 @@ import { BububuSpeech } from '@/components/ui/BububuSpeech'
 import { getBubPhrase } from '@/data/bububuPhrases'
 import { FloatingIsland } from '@/components/ui/FloatingIsland'
 import { BububuPhone } from '@/components/ui/BububuPhone'
+import { BububuLore } from '@/components/ui/BububuLore'
 import { SettingsPanel } from '@/components/ui/SettingsPanel'
 import { CategoryProgress } from '@/components/ui/CategoryProgress'
 import { SleepScreen } from '@/features/feed/SleepScreen'
@@ -1786,6 +1787,8 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       )}
 
       <ComboOverlay combo={activeCombo} onDone={() => setActiveCombo(null)} />
+
+      <BububuLore />
 
       {/* ── Confetti jackpot ───────────────────────────────────────── */}
       <ConfettiRain active={confettiActive} />
