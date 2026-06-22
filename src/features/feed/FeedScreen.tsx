@@ -393,12 +393,9 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   useEffect(() => {
     if (computedLevel > prevLevel.current) {
       const newCats = getNewlyUnlockedCategories(prevLevel.current, computedLevel)
-      const prevStage = getStage(prevLevel.current)
-      const newStage  = getStage(computedLevel)
       prevLevel.current = computedLevel
       setLevelUpData({ level: computedLevel, newCats })
-      // Fala especial de evolução (500ms de delay para o overlay aparecer primeiro)
-      // frase de evolução agora está dentro do EvolutionOverlay
+      // frase de evolução está dentro do EvolutionOverlay
     }
   }, [computedLevel, showSpeech])
 
