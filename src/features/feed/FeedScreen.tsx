@@ -229,6 +229,7 @@ export function FeedScreen() {
 
   const [superPeido,    setSuperPeido]    = useState(false)
   const [presentWaiting, setPresentWaiting] = useState(false)
+  const [presentOpening, setPresentOpening] = useState(false)
   const presentResolveRef = useRef<(() => void) | null>(null)
   const [evolutionStage, setEvolutionStage] = useState<EvolutionStage | null>(null)
   const prevStageRef = useRef<EvolutionStage>(getStage(computedLevel))
@@ -258,11 +259,16 @@ export function FeedScreen() {
 
   // Mostra uma fala do Bububu por `duration` ms, depois limpa
   const handlePresentTap = useCallback(() => {
-    if (presentResolveRef.current) {
-      presentResolveRef.current()
-      presentResolveRef.current = null
-    }
-  }, [])
+    if (!presentResolveRef.current || presentOpening) return
+    setPresentOpening(true)
+    setTimeout(() => {
+      setPresentOpening(false)
+      if (presentResolveRef.current) {
+        presentResolveRef.current()
+        presentResolveRef.current = null
+      }
+    }, 380)
+  }, [presentOpening])
 
   const showSpeech = useCallback((text: string, duration = 2900) => {
     clearTimeout(speechTimerRef.current)
@@ -1251,16 +1257,40 @@ export function FeedScreen() {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '18px 0 14px',
-              cursor: 'pointer',
+              cursor: presentOpening ? 'default' : 'pointer',
               userSelect: 'none',
-              animation: 'present-slide-in 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
+              position: 'relative',
+              animation: presentOpening ? undefined : 'present-slide-in 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
             }}
           >
+            {/* Partículas de abertura */}
+            {presentOpening && ['🎀','✨','⭐','💫','🌟','🎊'].map((emoji, i) => {
+              const angle = (i / 6) * 360
+              const rad = (angle * Math.PI) / 180
+              const dist = 55 + (i % 3) * 15
+              return (
+                <span key={i} style={{
+                  position: 'absolute',
+                  fontSize: 18 + (i % 3) * 4,
+                  pointerEvents: 'none',
+                  animation: 'present-particle 0.38s ease-out forwards',
+                  ['--px' as string]: `${Math.cos(rad) * dist}px`,
+                  ['--py' as string]: `${Math.sin(rad) * dist}px`,
+                } as React.CSSProperties}>
+                  {emoji}
+                </span>
+              )
+            })}
+
             <div style={{
               fontSize: 56,
-              animation: 'present-pulse 0.9s ease-in-out infinite',
-              filter: 'drop-shadow(0 0 18px rgba(251,191,36,0.55))',
               lineHeight: 1,
+              animation: presentOpening
+                ? 'present-burst 0.38s cubic-bezier(0.36,0.07,0.19,0.97) forwards'
+                : 'present-pulse 0.9s ease-in-out infinite',
+              filter: presentOpening
+                ? 'drop-shadow(0 0 28px rgba(251,191,36,0.9)) brightness(1.4)'
+                : 'drop-shadow(0 0 18px rgba(251,191,36,0.55))',
             }}>
               🎁
             </div>
@@ -1485,6 +1515,15 @@ export function FeedScreen() {
             @keyframes present-pulse {
               0%, 100% { transform: scale(1);    }
               50%       { transform: scale(1.12); }
+            }
+            @keyframes present-burst {
+              0%   { transform: scale(1);   opacity: 1; }
+              45%  { transform: scale(1.8); opacity: 0.7; }
+              100% { transform: scale(2.4); opacity: 0; }
+            }
+            @keyframes present-particle {
+              0%   { transform: translate(0, 0) scale(1);   opacity: 1; }
+              100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
             }
             @keyframes bt-zoom {
               from { opacity:0; transform:scale(0.05) rotate(-8deg); filter:blur(6px); }
