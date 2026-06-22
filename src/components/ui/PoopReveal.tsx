@@ -30,7 +30,6 @@ export function PoopReveal({ result, isReview, isBurp, isKids = false, justMaste
   const phoneticColor        = isKids ? 'rgba(45,31,107,0.55)' : 'rgba(255,255,255,0.58)'
   const translationColor     = isKids ? '#E83A5E'             : '#fde68a'
   const exampleColor         = isKids ? '#444'                : 'rgba(255,255,255,0.88)'
-  const exampleTransColor    = isKids ? '#777'                : 'rgba(255,255,255,0.45)'
   const reviewColor          = isKids ? 'rgba(45,31,107,0.45)' : 'rgba(255,255,255,0.35)'
 
   const xpColor  = isKids
