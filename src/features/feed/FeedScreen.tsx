@@ -45,6 +45,7 @@ import { BububuSpeech } from '@/components/ui/BububuSpeech'
 import { getBubPhrase } from '@/data/bububuPhrases'
 import { FloatingIsland } from '@/components/ui/FloatingIsland'
 import { BububuPhone } from '@/components/ui/BububuPhone'
+import { SettingsPanel } from '@/components/ui/SettingsPanel'
 import { SleepScreen } from '@/features/feed/SleepScreen'
 import { SuperPeidoOverlay } from '@/components/ui/SuperPeidoOverlay'
 import { EvolutionOverlay } from '@/components/ui/EvolutionOverlay'
@@ -159,7 +160,7 @@ const HOLD_DURATION = 3000          // ms para carregar o bullet time
 export function FeedScreen() {
   const { feedWord }                                           = useFeed()
   const { speakWord }                                          = useAudio()
-  const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty } = useProgress()
+  const { progress, computedLevel, levelProgress, dailyLimit, recordWord, setMode, setDifficulty, resetProgress } = useProgress()
   const { speakBububu, speakBububuBulletTime }                  = useBububuVoice(getStage(computedLevel))
   const [showSettings, setShowSettings] = useState(false)
   const [showShare, setShowShare]       = useState(false)
@@ -964,76 +965,6 @@ export function FeedScreen() {
             ⚙️
           </button>
 
-          {showSettings && createPortal(
-            <>
-              <div
-                onClick={() => setShowSettings(false)}
-                style={{ position: 'fixed', inset: 0, zIndex: 990 }}
-              />
-              <div style={{
-                position: 'fixed', top: 86, right: 16,
-                background: 'rgba(20,5,50,0.97)',
-                border: '1px solid rgba(167,139,250,0.28)',
-                borderRadius: 14, padding: '14px 16px',
-                zIndex: 1000, minWidth: 180,
-                animation: 'slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.50)',
-              }}>
-                <div style={{ fontSize: 10, color: 'rgba(196,181,253,0.45)', fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>
-                  MODO DE USO
-                </div>
-                {([
-                  { m: 'kids' as const, label: '🌱 Kids', sub: '6 a 12 anos' },
-                  { m: 'pro'  as const, label: '⚡ Pro',  sub: '13 anos ou mais' },
-                ]).map(({ m, label, sub }) => (
-                  <button
-                    key={m}
-                    onClick={() => { setMode(m); setShowSettings(false) }}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                      width: '100%',
-                      background: progress.mode === m ? 'rgba(124,58,237,0.35)' : 'transparent',
-                      border: progress.mode === m ? '1px solid rgba(167,139,250,0.40)' : '1px solid transparent',
-                      borderRadius: 9, padding: '8px 10px',
-                      cursor: 'pointer', marginBottom: 4,
-                    }}
-                  >
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#e9d5ff' }}>{label}</span>
-                    <span style={{ fontSize: 11, color: 'rgba(196,181,253,0.50)', marginTop: 1 }}>{sub}</span>
-                  </button>
-                ))}
-                <div style={{ height: 1, background: 'rgba(196,181,253,0.12)', margin: '8px 0' }} />
-                <div style={{ fontSize: 10, color: 'rgba(196,181,253,0.45)', fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
-                  NÍVEL
-                </div>
-                {([
-                  { d: 'easy'   as const, label: '🌱 Fácil' },
-                  { d: 'medium' as const, label: '⚡ Médio' },
-                  { d: 'hard'   as const, label: '🔥 Difícil' },
-                ]).map(({ d, label }) => (
-                  <button
-                    key={d}
-                    onClick={() => {
-                      setDifficulty(d)
-                      setChips(getRandomChips(4, getUnlockedPool(computedLevel, d)))
-                      setShowSettings(false)
-                    }}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                      width: '100%',
-                      background: progress.difficulty === d ? 'rgba(124,58,237,0.35)' : 'transparent',
-                      border: progress.difficulty === d ? '1px solid rgba(167,139,250,0.40)' : '1px solid transparent',
-                      borderRadius: 9, padding: '8px 10px',
-                      cursor: 'pointer', marginBottom: 4,
-                    }}
-                  >
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#e9d5ff' }}>{label}</span>
-                  </button>
-                ))}
-              </div>
-            </>,
-            document.body
-          )}
         </div>
       </div>
 
@@ -1417,6 +1348,22 @@ export function FeedScreen() {
         wordsLearned={progress.wordsLearned}
         streak={progress.streak ?? 0}
         isKids={isKids}
+      />
+
+<SettingsPanel
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        level={computedLevel}
+        wordsLearned={progress.wordsLearned.length}
+        streak={progress.streak ?? 0}
+        mode={progress.mode}
+        difficulty={progress.difficulty}
+        onSetMode={setMode}
+        onSetDifficulty={d => {
+          setDifficulty(d)
+          setChips(getRandomChips(4, getUnlockedPool(computedLevel, d)))
+        }}
+        onReset={resetProgress}
       />
 
       {showShare && (
