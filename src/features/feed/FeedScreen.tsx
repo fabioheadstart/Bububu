@@ -1152,6 +1152,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
               unlockedWorlds={unlockedWorlds}
               onSwitch={setWorld}
               direction="column"
+              currentLevel={computedLevel}
             />
           </div>
         )}

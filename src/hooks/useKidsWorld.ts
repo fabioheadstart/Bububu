@@ -5,8 +5,8 @@ export type KidsWorldId = 1 | 2 | 3
 // Nível mínimo para desbloquear cada mundo
 export const WORLD_UNLOCK_LEVEL: Record<KidsWorldId, number> = {
   1: 1,
-  2: 4,
-  3: 7,
+  2: 2,   // ~36 palavras — primeiras sessões
+  3: 5,   // ~180 palavras — mid-game
 }
 
 export const WORLD_META: Record<KidsWorldId, { emoji: string; name: string }> = {
