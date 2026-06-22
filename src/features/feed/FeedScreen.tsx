@@ -992,6 +992,35 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           />
         )}
 
+        {/* Botão celular — abre o BububuPhone */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => { setShowPhone(true); localStorage.setItem('bub_phone_seen', new Date().toISOString().slice(0,10)) }}
+            style={{
+              width: 26, height: 26, borderRadius: '50%',
+              border: `1px solid ${isKids ? 'rgba(45,31,107,0.20)' : 'rgba(255,255,255,0.18)'}`,
+              background: isKids ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.07)',
+              color: isKids ? 'rgba(45,31,107,0.60)' : 'rgba(255,255,255,0.45)',
+              fontSize: 13, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 0,
+            }}
+            title="Mensagens do Bububu"
+          >
+            📱
+          </button>
+          {/* Badge de notificação — some depois de abrir hoje */}
+          {localStorage.getItem('bub_phone_seen') !== new Date().toISOString().slice(0,10) && (
+            <div style={{
+              position: 'absolute', top: -2, right: -2,
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#f87171',
+              border: '1.5px solid rgba(10,4,30,0.9)',
+              pointerEvents: 'none',
+            }} />
+          )}
+        </div>
+
         {/* Botão compartilhar */}
         <button
           onClick={() => setShowShare(true)}
