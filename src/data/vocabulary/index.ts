@@ -23,9 +23,9 @@ export function getWordsByCategory(category: string): VocabEntry[] {
 
 /** Retorna o pool de vocabulário correspondente à dificuldade selecionada */
 export function getWordsByDifficulty(difficulty: DifficultyLevel): VocabEntry[] {
-  if (difficulty === 'easy')   return ALL_A1
-  if (difficulty === 'medium') return [...ALL_A1, ...ALL_A2]
-  return ALL_WORDS
+  if (difficulty === 'easy')   return [...ALL_A1, ...PHRASE_CARDS]
+  if (difficulty === 'medium') return [...ALL_A1, ...ALL_A2, ...PHRASE_CARDS]
+  return ALL_WORDS  // já inclui PHRASE_CARDS
 }
 
 export const CATEGORIES = [...new Set(ALL_WORDS.map(w => w.category))].sort()
