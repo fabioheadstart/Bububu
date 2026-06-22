@@ -398,9 +398,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       prevLevel.current = computedLevel
       setLevelUpData({ level: computedLevel, newCats })
       // Fala especial de evolução (500ms de delay para o overlay aparecer primeiro)
-      if (newStage !== prevStage) {
-        setTimeout(() => showSpeech(getBubPhrase('evolution', undefined, newStage), 3500), 500)
-      }
+      // frase de evolução agora está dentro do EvolutionOverlay
     }
   }, [computedLevel, showSpeech])
 
@@ -1506,7 +1504,11 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       <SuperPeidoOverlay active={superPeido} onDone={() => setSuperPeido(false)} />
       <WorldUnlockOverlay worldId={newlyUnlocked} onDone={dismissNewlyUnlocked} />
       {evolutionStage && (
-        <EvolutionOverlay stage={evolutionStage} onDone={() => setEvolutionStage(null)} />
+        <EvolutionOverlay
+          stage={evolutionStage}
+          phrase={getBubPhrase('evolution', undefined, evolutionStage, undefined, progress.userName)}
+          onDone={() => setEvolutionStage(null)}
+        />
       )}
 
       <ComboOverlay combo={activeCombo} onDone={() => setActiveCombo(null)} />
