@@ -241,6 +241,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
   const [evolutionStage, setEvolutionStage] = useState<EvolutionStage | null>(null)
   const prevStageRef = useRef<EvolutionStage>(getStage(computedLevel))
   const [streakToast,   setStreakToast]   = useState(false)
+  const [streakWarning, setStreakWarning] = useState(false)
   const [activeCombo,   setActiveCombo]   = useState<ComboData | null>(null)
   const [hintIds,       setHintIds]       = useState<Set<string>>(new Set())
   const [konamiHintId,  setKonamiHintId]  = useState<string | null>(null)
@@ -374,6 +375,23 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
       localStorage.setItem('bub_streak_toast', today)
       setTimeout(() => setStreakToast(false), 3000)
     }, 1800)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Aviso de risco: streak > 0 + sem palavras hoje + hora >= 20
+  useEffect(() => {
+    const hour = new Date().getHours()
+    if ((progress.streak ?? 0) <= 0) return
+    if ((progress.wordsToday ?? 0) > 0) return
+    if (hour < 20) return
+    const today = new Date().toISOString().slice(0, 10)
+    if (localStorage.getItem('bub_risk_warned') === today) return
+    const t = setTimeout(() => {
+      setStreakWarning(true)
+      localStorage.setItem('bub_risk_warned', today)
+      setTimeout(() => setStreakWarning(false), 10_000)
+    }, 2200)
     return () => clearTimeout(t)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -1567,6 +1585,44 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           <span style={{ fontSize: 22 }}>🔥</span>
           {progress.streak} dias seguidos!
         </div>
+      )}
+
+      {/* ── Aviso de sequência em risco (após 20h sem palavras) ── */}
+      {streakWarning && createPortal(
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          zIndex: 9990,
+          background: 'linear-gradient(135deg, #78350f 0%, #b45309 100%)',
+          padding: '14px 18px 34px',
+          display: 'flex', alignItems: 'center', gap: 12,
+          animation: 'toast-in 0.45s cubic-bezier(0.34,1.56,0.64,1)',
+          boxShadow: '0 -6px 28px rgba(180,83,9,0.45)',
+        }}>
+          <div style={{ fontSize: 30, flexShrink: 0 }}>🔥</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 14, color: '#fef3c7', lineHeight: 1.3 }}>
+              {progress.userName
+                ? `${progress.userName}, sequência em risco!`
+                : 'Sequência em risco!'}
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(254,243,199,0.68)', marginTop: 3, lineHeight: 1.4 }}>
+              {progress.streak} {progress.streak === 1 ? 'dia' : 'dias'} de seguida — alimente o Bububu antes da meia-noite! ⚡
+            </div>
+          </div>
+          <button
+            onClick={() => setStreakWarning(false)}
+            style={{
+              background: 'rgba(255,255,255,0.14)',
+              border: '1px solid rgba(255,255,255,0.20)',
+              color: '#fef3c7', borderRadius: 8,
+              padding: '6px 12px', fontWeight: 700,
+              fontSize: 13, cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              flexShrink: 0,
+            }}
+          >✕</button>
+        </div>,
+        document.body
       )}
 
       <SuperPeidoOverlay active={superPeido} onDone={() => setSuperPeido(false)} />
