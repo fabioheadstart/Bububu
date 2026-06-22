@@ -67,6 +67,32 @@ import { ALL_WORDS } from '@/data/vocabulary/index'
 import type { BubState } from '@/components/bububu/BububuCharacter'
 import type { FeedResult, VocabEntry, RewardTier } from '@/types'
 
+// ─── Presente SVG amarelo-ouro (cor fixa, independente de OS/Android) ─────────
+function GiftSvg({ size = 56 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+      {/* Caixa */}
+      <rect x="7"  y="28" width="42" height="22" rx="3" fill="#FBBF24"/>
+      <rect x="7"  y="28" width="42" height="10" rx="0" fill="#F59E0B" opacity="0.55"/>
+      {/* Tampa */}
+      <rect x="5"  y="20" width="46" height="11" rx="3" fill="#FCD34D"/>
+      {/* Fita vertical */}
+      <rect x="24" y="20" width="8"  height="30" fill="#EF4444"/>
+      {/* Fita horizontal */}
+      <rect x="5"  y="33" width="46" height="7"  fill="#DC2626"/>
+      {/* Laço esquerdo */}
+      <ellipse cx="22" cy="20" rx="10" ry="7" fill="#EF4444" transform="rotate(-15 22 20)"/>
+      {/* Laço direito */}
+      <ellipse cx="34" cy="20" rx="10" ry="7" fill="#EF4444" transform="rotate(15 34 20)"/>
+      {/* Centro do laço */}
+      <circle cx="28" cy="20" r="5" fill="#DC2626"/>
+      {/* Brilho */}
+      <ellipse cx="14" cy="25" rx="4.5" ry="2.5" fill="rgba(255,255,255,0.30)" transform="rotate(-12 14 25)"/>
+      <ellipse cx="14" cy="37" rx="3.5" ry="2"   fill="rgba(255,255,255,0.15)" transform="rotate(-5 14 37)"/>
+    </svg>
+  )
+}
+
 // ─── Fome do dia — categoria que o Bububu quer comer hoje ────────────────────
 const CRAVING_CATS = ['food', 'actions', 'adjectives', 'time', 'transport', 'animals', 'colors', 'home', 'phrases']
 
@@ -1606,7 +1632,7 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
           animation: 'poop-fixed-drop 0.80s cubic-bezier(0.25,0.46,0.45,0.94) forwards',
           ['--poop-drop-y' as string]: `${poopFixed.dropPx}px`,
         } as React.CSSProperties}>
-          {isBurp ? '🤢' : '🎁'}
+          {isBurp ? '🤢' : <GiftSvg size={30} />}
         </div>
       )}
 
@@ -1714,17 +1740,16 @@ export function FeedScreen({ onResetToOnboarding }: FeedScreenProps = {}) {
             )}
 
             <div style={{
-              fontSize: 56,
               lineHeight: 1,
               position: 'relative', zIndex: 1,
               animation: presentOpening
                 ? 'present-burst 0.38s cubic-bezier(0.36,0.07,0.19,0.97) forwards'
                 : 'present-float 1.4s ease-in-out infinite',
               filter: presentOpening
-                ? 'drop-shadow(0 0 28px rgba(251,191,36,0.9)) brightness(1.4)'
+                ? 'drop-shadow(0 0 28px rgba(251,191,36,0.9)) brightness(1.2)'
                 : 'drop-shadow(0 0 16px rgba(251,191,36,0.85)) drop-shadow(0 0 40px rgba(251,191,36,0.40))',
             }}>
-              🎁
+              <GiftSvg size={56} />
             </div>
           </div>
         )}

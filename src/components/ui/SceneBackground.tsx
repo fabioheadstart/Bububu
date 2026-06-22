@@ -356,12 +356,15 @@ function TinyTrain() {
     function schedule(delay: number) {
       t = setTimeout(() => {
         setVisible(true)
-        setTimeout(() => setVisible(false), 14000)
-        schedule(Math.round((15 + Math.random() * 15) * 1_000))
+        setTimeout(() => {
+          setVisible(false)
+          // próxima aparição só DEPOIS que o trem sumiu: 50-80s de espera
+          schedule(Math.round((50 + Math.random() * 30) * 1_000))
+        }, 14_000)
       }, delay)
     }
 
-    schedule(5_000) // primeira aparição em 5s; depois 15-30s
+    schedule(4_000) // primeira aparição em 4s
     return () => clearTimeout(t)
   }, [])
 
@@ -475,11 +478,12 @@ function TinyTruck() {
         setVisible(true)
         setTimeout(() => {
           setVisible(false)
-          schedule(Math.round((18 + Math.random() * 12) * 1_000))
+          // próxima aparição só depois que o caminhão sumiu: 55-85s de espera
+          schedule(Math.round((55 + Math.random() * 30) * 1_000))
         }, 13_000)
       }, delay)
     }
-    schedule(10_000)
+    schedule(28_000) // primeira aparição em 28s (trem já passou)
     return () => clearTimeout(t)
   }, [])
   if (!visible) return null
@@ -529,11 +533,12 @@ function TinyCar() {
         setVisible(true)
         setTimeout(() => {
           setVisible(false)
-          schedule(Math.round((15 + Math.random() * 10) * 1_000))
+          // próxima aparição só depois que o carro sumiu: 45-70s de espera
+          schedule(Math.round((45 + Math.random() * 25) * 1_000))
         }, 10_000)
       }, delay)
     }
-    schedule(7_000)
+    schedule(52_000) // primeira aparição em 52s (trem+caminhão já passaram)
     return () => clearTimeout(t)
   }, [])
   if (!visible) return null
