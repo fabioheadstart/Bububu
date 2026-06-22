@@ -538,6 +538,9 @@ export function FeedScreen() {
     setMunchText(false)
     const feedResult = await feedResultPromise
 
+    setBubState('pooping')   // expressão de esforço durante a cagada
+    setTimeout(() => setBubState('idle'), 950)
+
     if (feedResult.rewardTier === 'jackpot') {
       playFartJackpot()      // reward-jackpot.wav → ElevenLabs → mega synth
       playBububuSuper()      // bububu-super.wav (triplicado)

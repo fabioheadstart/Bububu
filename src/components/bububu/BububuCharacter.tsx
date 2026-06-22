@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { RewardTier } from '@/types'
 
-export type BubState = 'idle' | 'eating' | 'celebrating' | 'sleeping' | 'sad' | 'yawning'
+export type BubState = 'idle' | 'eating' | 'celebrating' | 'sleeping' | 'sad' | 'yawning' | 'pooping'
 type TapReaction  = 'squish' | 'jiggle' | 'bounce' | 'spin'
 
 const TAP_REACTIONS: TapReaction[] = ['squish', 'jiggle', 'bounce', 'spin']
@@ -86,6 +86,17 @@ function Mouth({ state, squeezed }: { state: BubState; squeezed: boolean }) {
         stroke="#1a1a2e" strokeWidth="3" fill="none" strokeLinecap="round" />
     )
   }
+  if (state === 'pooping') {
+    // Grimace de esforço — boca fechada tensa, cantos presos
+    return (
+      <>
+        <path d="M 48 79 Q 60 83 72 79"
+          stroke="#1a1a2e" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+        <path d="M 48 79 Q 60 75 72 79"
+          stroke="#1a1a2e" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.3" />
+      </>
+    )
+  }
   if (squeezed) {
     return <ellipse cx="60" cy="79" rx="8" ry="6" fill="#1a1a2e" />
   }
@@ -133,6 +144,19 @@ function Eyes({ state, squeezed, hungry }: { state: BubState; squeezed: boolean;
         {/* Olho direito quase fechado */}
         <ellipse cx="76" cy="51" rx="8" ry="3" fill="#1a1a2e" />
         <circle cx="74" cy="50" r="1.5" fill="white" />
+      </>
+    )
+  }
+  if (state === 'pooping') {
+    // Olhos semicerrados de esforço + sobrancelhas franzidas no centro
+    return (
+      <>
+        <path d="M 36 42 Q 44 47 52 43" stroke="#1a1a2e" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <path d="M 68 43 Q 76 47 84 42" stroke="#1a1a2e" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        <ellipse cx="44" cy="51" rx="8" ry="4" fill="#1a1a2e" />
+        <ellipse cx="76" cy="51" rx="8" ry="4" fill="#1a1a2e" />
+        <circle cx="42" cy="50" r="2" fill="white" />
+        <circle cx="74" cy="50" r="2" fill="white" />
       </>
     )
   }
@@ -314,6 +338,7 @@ export function BububuCharacter({ state, rewardTier, onTap, onMegaFart, hungry, 
     if (state === 'sleeping')    return 'bub-float 5s ease-in-out infinite'
     if (state === 'yawning')     return 'bub-munch 1.2s ease-in-out 1'
     if (state === 'sad')         return 'bub-sad 3s ease-in-out infinite'
+    if (state === 'pooping')     return 'bub-poop 0.95s cubic-bezier(0.36,0.07,0.19,0.97) 1'
     if (hungry)                  return 'bub-hungry 2s ease-in-out infinite'
     return 'bub-float 3s ease-in-out infinite'
   })()
